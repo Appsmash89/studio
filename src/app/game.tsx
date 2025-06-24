@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -230,6 +230,8 @@ export default function Game() {
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
+  const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -306,6 +308,20 @@ export default function Game() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          setBackgroundImage(result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSkipCountdown = () => {
@@ -503,7 +519,7 @@ export default function Game() {
     <div className="relative flex flex-col items-center justify-between min-h-screen text-foreground p-4 overflow-hidden">
       <Image
         alt="Carnival background"
-        src="https://placehold.co/1920x1080.png"
+        src={backgroundImage}
         data-ai-hint="carnival night"
         fill
         className="object-cover z-[-2]"
@@ -667,6 +683,17 @@ export default function Game() {
                     <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
                         <FastForward className="mr-2 h-3 w-3" />
                         Skip Timer
+                    </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-3 w-3" />
+                      Upload BG
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                         <Download className="mr-2 h-3 w-3" />
