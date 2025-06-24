@@ -9,6 +9,10 @@ import { Wallet, Sparkles, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
+import { CoinFlipBonus } from '@/components/bonus/coin-flip-bonus';
+import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
+import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
+import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
 
 
 const BET_OPTIONS = [
@@ -202,7 +206,7 @@ export default function Game() {
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
 
-  const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT'>('BETTING');
+  const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] & { id: number } | null>(null);
   const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0] & { id: number })[]>([]);
@@ -226,8 +230,30 @@ export default function Game() {
     setBets(initialBetsState);
   }
 
+  const handleBonusComplete = useCallback(async (bonusWinnings: number) => {
+    const winningLabel = winningSegment!.label;
+    const betOnWinner = bets[winningLabel] || 0;
+    const totalWinnings = betOnWinner + bonusWinnings;
+
+    setBalance(prev => prev + totalWinnings);
+
+    try {
+        const encouragement = await getEncouragement({
+            gameEvent: 'win',
+            betAmount: totalBet,
+            winAmount: totalWinnings,
+        });
+        setAiMessage(encouragement);
+    } catch (error) {
+        console.error("AI encouragement error:", error);
+        setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
+    }
+
+    setGameState('RESULT');
+  }, [bets, totalBet, winningSegment]);
+
   const handleSpin = useCallback(async () => {
-    if (gameState !== 'BETTING') return;
+    if (gameState !== 'BETTING' || totalBet === 0) return;
     setGameState('SPINNING');
     setAiMessage(null);
 
@@ -262,17 +288,36 @@ export default function Game() {
     });
     
     setTimeout(async () => {
-      let totalWinnings = 0;
       const winningLabel = winningSegmentWithId.label;
       const betOnWinner = bets[winningLabel] || 0;
 
+      if (winningSegmentWithId.type === 'bonus') {
+          if (betOnWinner > 0) {
+              setWinningSegment(winningSegmentWithId);
+              setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
+              setGameState(`BONUS_${winningLabel}` as any);
+          } else {
+              try {
+                  const encouragement = await getEncouragement({
+                      gameEvent: 'loss',
+                      betAmount: totalBet,
+                      winAmount: 0,
+                  });
+                  setAiMessage(encouragement);
+              } catch (error) {
+                  console.error("AI encouragement error:", error);
+                  setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
+              }
+              setWinningSegment(winningSegmentWithId);
+              setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
+              setGameState('RESULT');
+          }
+          return;
+      }
+      
+      let totalWinnings = 0;
       if (betOnWinner > 0) {
-        if (winningSegmentWithId.type === 'number') {
-          totalWinnings = betOnWinner * winningSegmentWithId.multiplier + betOnWinner;
-        } else {
-          totalWinnings = betOnWinner;
-          toast({ title: "Bonus Round!", description: `You entered the ${winningLabel.replace('_', ' ')} bonus game!` });
-        }
+        totalWinnings = betOnWinner * winningSegmentWithId.multiplier + betOnWinner;
       }
       
       setBalance(prev => prev + totalWinnings);
@@ -296,7 +341,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, forcedWinner, gameState]);
+  }, [bets, totalBet, forcedWinner, gameState, handleBonusComplete]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -332,6 +377,11 @@ export default function Game() {
   
   return (
     <div className="flex flex-col items-center justify-between min-h-screen bg-background text-foreground p-4 overflow-hidden">
+      {gameState === 'BONUS_COIN_FLIP' && <CoinFlipBonus betAmount={bets['COIN_FLIP']} onComplete={handleBonusComplete} />}
+      {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} />}
+      {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
+      {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} />}
+
       <header className="w-full flex justify-between items-center absolute top-4 px-4">
         <div className="flex items-center gap-4">
           <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
@@ -503,5 +553,3 @@ export default function Game() {
     </div>
   );
 }
-
-    
