@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface BonusGameProps {
     betAmount: number;
-    onComplete: (winnings: number) => void;
+    onComplete: (winnings: number, details?: any) => void;
 }
 
 export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {

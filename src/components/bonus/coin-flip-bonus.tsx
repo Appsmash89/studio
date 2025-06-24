@@ -9,7 +9,7 @@ import { Sparkles } from 'lucide-react';
 
 interface BonusGameProps {
     betAmount: number;
-    onComplete: (winnings: number) => void;
+    onComplete: (winnings: number, details?: any) => void;
 }
 
 const MULTIPLIERS = [2, 3, 4, 5, 10, 15, 20, 25, 50, 100];
@@ -22,9 +22,9 @@ export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
     const [isCompleted, setIsCompleted] = useState(false);
 
     const handleComplete = () => {
-        if (isCompleted) return;
+        if (isCompleted || !multipliers) return;
         setIsCompleted(true);
-        onComplete(winnings);
+        onComplete(winnings, { coinFlipMultipliers: multipliers });
     };
 
     // Game flow handler

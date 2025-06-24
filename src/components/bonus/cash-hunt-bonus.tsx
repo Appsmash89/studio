@@ -9,7 +9,7 @@ import { Star, Heart, Spade, Club, Diamond, Gift, Cake, Bird, Shuffle } from 'lu
 
 interface BonusGameProps {
     betAmount: number;
-    onComplete: (winnings: number) => void;
+    onComplete: (winnings: number, details?: any) => void;
 }
 
 // Generate 108 multipliers with a specific distribution
@@ -73,7 +73,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
     const handleComplete = () => {
         if (isCompleted) return;
         setIsCompleted(true);
-        onComplete(winnings);
+        onComplete(winnings, { cashHuntMultipliers: multipliers });
     };
 
     return (

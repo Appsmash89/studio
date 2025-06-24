@@ -110,6 +110,10 @@ type GameLogEntry = {
   };
   isBonus: boolean;
   bonusWinnings?: number;
+  bonusDetails?: {
+    coinFlipMultipliers?: { red: number; blue: number };
+    cashHuntMultipliers?: number[];
+  };
   roundWinnings: number;
   netResult: number;
 };
@@ -263,7 +267,7 @@ export default function Game() {
     document.body.removeChild(downloadLink);
   };
 
-  const handleBonusComplete = useCallback(async (bonusWinnings: number) => {
+  const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     const winningLabel = winningSegment!.label;
     const betOnWinner = bets[winningLabel] || 0;
     const roundWinnings = betOnWinner + bonusWinnings;
@@ -290,6 +294,7 @@ export default function Game() {
         winningSegment: { label: winningSegment!.label, type: winningSegment!.type, multiplier: 0 },
         isBonus: true,
         bonusWinnings: bonusWinnings,
+        bonusDetails: bonusDetails,
         roundWinnings: roundWinnings,
         netResult: roundWinnings - totalBet,
     };
