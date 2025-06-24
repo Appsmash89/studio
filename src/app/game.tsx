@@ -210,6 +210,7 @@ export default function Game() {
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] & { id: number } | null>(null);
   const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0] & { id: number })[]>([]);
+  const [forceNextSpin, setForceNextSpin] = useState(false);
   const spinIdCounter = useRef(0);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
@@ -248,13 +249,14 @@ export default function Game() {
         console.error("AI encouragement error:", error);
         setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
     }
-
+    setForceNextSpin(true);
     setGameState('RESULT');
   }, [bets, totalBet, winningSegment]);
 
   const handleSpin = useCallback(async () => {
-    if (gameState !== 'BETTING' || totalBet === 0) return;
+    if (gameState !== 'BETTING' || (totalBet === 0 && !forceNextSpin)) return;
     setGameState('SPINNING');
+    setForceNextSpin(false);
     setAiMessage(null);
 
     let winningSegmentIndex;
@@ -341,7 +343,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, forcedWinner, gameState, handleBonusComplete]);
+  }, [bets, totalBet, forcedWinner, gameState, handleBonusComplete, forceNextSpin]);
 
   // Game Loop Timer
   useEffect(() => {
