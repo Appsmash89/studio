@@ -266,6 +266,22 @@ export default function Game() {
     downloadLink.click();
     document.body.removeChild(downloadLink);
   };
+  
+  const handleDownloadLatestSpinData = () => {
+    if (gameLog.length === 0) {
+      toast({ variant: 'destructive', title: 'No spin data to download.' });
+      return;
+    }
+    const dataStr = JSON.stringify(gameLog[0], null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.setAttribute('href', dataUri);
+    downloadLink.setAttribute('download', `latest_spin_data_${new Date().toISOString()}.json`);
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
 
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     const winningLabel = winningSegment!.label;
@@ -603,10 +619,16 @@ export default function Game() {
                   <p className="text-xs text-muted-foreground font-semibold">
                       DEV TOOLS
                   </p>
-                  <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
-                      <Download className="mr-2 h-3 w-3" />
-                      Download Log
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
+                        <Download className="mr-2 h-3 w-3" />
+                        Latest Spin
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
+                        <Download className="mr-2 h-3 w-3" />
+                        Full Log
+                    </Button>
+                  </div>
               </div>
               <p className="text-xs text-muted-foreground mb-1">
                 Force Next Spin Outcome:
