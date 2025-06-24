@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -499,7 +500,17 @@ export default function Game() {
   };
   
   return (
-    <div className="flex flex-col items-center justify-between min-h-screen bg-background text-foreground p-4 overflow-hidden">
+    <div className="relative flex flex-col items-center justify-between min-h-screen text-foreground p-4 overflow-hidden">
+      <Image
+        alt="Carnival background"
+        src="https://placehold.co/1920x1080.png"
+        data-ai-hint="carnival night"
+        fill
+        className="object-cover z-[-2]"
+        priority
+      />
+      <div className="absolute inset-0 bg-background/80 z-[-1]"></div>
+      
       {gameState === 'BONUS_COIN_FLIP' && <CoinFlipBonus betAmount={bets['COIN_FLIP']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
