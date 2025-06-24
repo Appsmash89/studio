@@ -180,15 +180,15 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
          style={{ background: 'radial-gradient(circle, hsl(43, 98%, 68%) 60%, hsl(43, 88%, 48%))' }}
        >
        </div>
-       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2"
         style={{
           clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
           width: '30px',
           height: '40px',
+          transform: 'translateY(-12px)',
           backgroundColor: 'hsl(var(--accent))',
           filter: 'drop-shadow(0px 3px 3px rgba(0,0,0,0.5))',
-          transform: 'translateX(-50%) translateY(-8px) rotate(180deg)'
         }}
       />
     </div>
@@ -209,6 +209,7 @@ export default function Home() {
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
+  const [audioInitialized, setAudioInitialized] = useState(false);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -237,6 +238,16 @@ export default function Home() {
     };
   }, []);
 
+  const initializeAudio = useCallback(async () => {
+    if (audioInitialized || !sounds.current.initialized) return;
+    try {
+      await Tone.start();
+      setAudioInitialized(true);
+    } catch (e) {
+      console.error("Could not start audio context", e);
+    }
+  }, [audioInitialized]);
+
   const playSound = useCallback((sound: 'spin' | 'win' | 'lose' | 'chip') => {
     if (isMuted || !sounds.current.initialized) return;
     const now = Tone.now();
@@ -253,6 +264,7 @@ export default function Home() {
   }, [isMuted]);
 
   const handleBet = (optionId: string) => {
+    initializeAudio();
     if (gameState !== 'BETTING') return;
     if (balance < selectedChip) {
       toast({ variant: "destructive", title: "Not enough balance to place that bet." });
@@ -264,14 +276,13 @@ export default function Home() {
   }
 
   const handleClearBets = () => {
+    initializeAudio();
     if (gameState !== 'BETTING') return;
     setBalance(prev => prev + totalBet);
     setBets(initialBetsState);
   }
 
   const handleSpin = useCallback(async () => {
-    if (Tone.context.state !== 'running') await Tone.start();
-    
     setGameState('SPINNING');
     setAiMessage(null);
     playSound('spin');
@@ -316,12 +327,14 @@ export default function Home() {
         }
       }
       
-      if (totalWinnings > 0) playSound('win'); else playSound('lose');
+      if (totalBet > 0) {
+        if (totalWinnings > totalBet) playSound('win'); else playSound('lose');
+      }
       setBalance(prev => prev + totalWinnings);
 
       try {
         const encouragement = await getEncouragement({
-          gameEvent: totalWinnings > totalBet ? 'win' : 'loss',
+          gameEvent: totalBet > 0 ? (totalWinnings > totalBet ? 'win' : 'loss') : 'spin',
           betAmount: totalBet,
           winAmount: totalWinnings,
         });
@@ -361,14 +374,9 @@ export default function Home() {
   // Trigger Spin when countdown ends
   useEffect(() => {
     if (countdown <= 0 && gameState === 'BETTING') {
-      if (totalBet > 0) {
-        handleSpin();
-      } else {
-        // No bets placed, just restart the betting round
-        setCountdown(BETTING_TIME_SECONDS);
-      }
+      handleSpin();
     }
-  }, [countdown, gameState, totalBet, handleSpin]);
+  }, [countdown, gameState, handleSpin]);
   
   useEffect(() => { Tone.Destination.mute = isMuted; }, [isMuted]);
 
@@ -479,7 +487,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
                 {CHIP_VALUES.map(chip => (
-                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING'}>
+                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => { initializeAudio(); setSelectedChip(chip); }} disabled={gameState !== 'BETTING'}>
                     ${chip}
                   </Button>
                 ))}
@@ -524,5 +532,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
