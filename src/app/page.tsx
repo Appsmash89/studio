@@ -3,26 +3,66 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { Wallet, Volume2, VolumeX, Sparkles, XCircle } from 'lucide-react';
 import * as Tone from 'tone';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 
-const SEGMENTS = [
-  { multiplier: 2, label: '2x', color: 'hsl(var(--primary))' },
-  { multiplier: 0.5, label: '0.5x', color: 'hsl(var(--secondary))' },
-  { multiplier: 3, label: '3x', color: 'hsl(var(--primary))' },
-  { multiplier: 0, label: 'Lose', color: 'hsl(var(--secondary))' },
-  { multiplier: 1.5, label: '1.5x', color: 'hsl(var(--primary))' },
-  { multiplier: 0.5, label: '0.5x', color: 'hsl(var(--secondary))' },
-  { multiplier: 5, label: '5x', color: 'hsl(var(--primary))' },
-  { multiplier: 0, label: 'Lose', color: 'hsl(var(--secondary))' },
-];
-const SPIN_DURATION_SECONDS = 6;
+// Based on Crazy Time distribution
+const buildSegments = () => {
+  const S = (label: string, type: 'number' | 'bonus', multiplier: number, color: string) => ({ label, type, multiplier, color });
+  // prettier-ignore
+  const segments = [
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('5', 'number', 5, 'hsl(45, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('PACHINKO', 'bonus', 0, 'hsl(320, 60%, 70%)'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(var(--primary))'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 70%)'), S('2', 'number', 2, 'hsl(var(--primary))'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
+    S('5', 'number', 5, 'hsl(45, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('PACHINKO', 'bonus', 0, 'hsl(320, 60%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('CRAZY TIME', 'bonus', 0, 'hsl(var(--accent))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('10', 'number', 10, 'hsl(280, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('5', 'number', 5, 'hsl(45, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 70%)'), S('2', 'number', 2, 'hsl(var(--primary))'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(var(--primary))'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'),
+    S('2', 'number', 2, 'hsl(var(--primary))'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
+  ];
+  return segments;
+};
+
+const SEGMENTS = buildSegments();
 const NUM_SEGMENTS = SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
+const SPIN_DURATION_SECONDS = 8;
+
+const BET_OPTIONS = [
+  { id: '1', label: '1', type: 'number', color: 'bg-gray-400' },
+  { id: '2', label: '2', type: 'number', color: 'bg-blue-400' },
+  { id: '5', label: '5', type: 'number', color: 'bg-yellow-400' },
+  { id: '10', label: '10', type: 'number', color: 'bg-purple-400' },
+  { id: 'COIN FLIP', label: 'Coin Flip', type: 'bonus', color: 'bg-red-500' },
+  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'bg-pink-500' },
+  { id: 'CASH HUNT', label: 'Cash Hunt', type: 'bonus', color: 'bg-green-500' },
+  { id: 'CRAZY TIME', label: 'Crazy Time', type: 'bonus', color: 'bg-red-700' },
+];
+
+const CHIP_VALUES = [1, 5, 10, 25, 100];
+const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
 
 // Wheel Component
 const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: number }) => {
@@ -32,10 +72,8 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
   const getSegmentPath = (index: number) => {
     const startAngle = index * SEGMENT_ANGLE;
     const endAngle = (index + 1) * SEGMENT_ANGLE;
-    
     const start = polarToCartesian(center, center, radius, endAngle);
     const end = polarToCartesian(center, center, radius, startAngle);
-
     return `M ${center},${center} L ${start.x},${start.y} A ${radius},${radius} 0 0 0 ${end.x},${end.y} Z`;
   };
   
@@ -49,7 +87,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
 
   const getLabelPosition = (index: number) => {
     const angle = (index + 0.5) * SEGMENT_ANGLE;
-    return polarToCartesian(center, center, radius * 0.65, angle);
+    return polarToCartesian(center, center, radius * 0.75, angle);
   };
 
   return (
@@ -70,17 +108,17 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
           <g filter="url(#shadow)">
             {segments.map((segment, index) => (
               <g key={index}>
-                <path d={getSegmentPath(index)} fill={segment.color} stroke="hsl(var(--accent))" strokeWidth="2" />
+                <path d={getSegmentPath(index)} fill={segment.color} stroke="hsl(var(--accent))" strokeWidth="1" />
                 <text
                   x={getLabelPosition(index).x}
                   y={getLabelPosition(index).y}
-                  fill="hsl(var(--primary-foreground))"
+                  fill={segment.type === 'number' ? 'hsl(var(--foreground))' : 'white'}
                   textAnchor="middle"
                   dy=".3em"
-                  className="text-2xl font-bold font-headline"
-                  transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
+                  className="text-[10px] font-bold"
+                  transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
                 >
-                  {segment.label}
+                  {segment.label.replace(' ', '\n')}
                 </text>
               </g>
             ))}
@@ -105,37 +143,30 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
 
 export default function Home() {
   const [balance, setBalance] = useState(1000);
-  const [bet, setBet] = useState(10);
+  const [bets, setBets] = useState<{[key: string]: number}>(initialBetsState);
+  const [selectedChip, setSelectedChip] = useState(10);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const { toast } = useToast();
 
+  const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
+
   const sounds = useRef<{
     spin?: Tone.NoiseSynth;
     win?: Tone.Synth;
     lose?: Tone.Synth;
+    chip?: Tone.Synth;
     initialized: boolean;
   }>({ initialized: false });
   
   useEffect(() => {
     if (typeof window !== 'undefined' && !sounds.current.initialized) {
-        sounds.current.spin = new Tone.NoiseSynth({
-            noise: { type: 'white' },
-            envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.2 },
-            volume: -20,
-        }).toDestination();
-        sounds.current.win = new Tone.Synth({
-            oscillator: { type: 'triangle' },
-            envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 },
-            volume: -10,
-        }).toDestination();
-        sounds.current.lose = new Tone.Synth({
-            oscillator: { type: 'sine' },
-            envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.5 },
-            volume: -10,
-        }).toDestination();
+        sounds.current.spin = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.2 }, volume: -20 }).toDestination();
+        sounds.current.win = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }, volume: -10 }).toDestination();
+        sounds.current.lose = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.5 }, volume: -10 }).toDestination();
+        sounds.current.chip = new Tone.MembraneSynth({ octaves: 4, pitchDecay: 0.1, volume: -15 }).toDestination();
         sounds.current.initialized = true;
     }
 
@@ -143,69 +174,80 @@ export default function Home() {
         sounds.current.spin?.dispose();
         sounds.current.win?.dispose();
         sounds.current.lose?.dispose();
+        sounds.current.chip?.dispose();
     };
   }, []);
 
-  const playSound = useCallback((sound: 'spin' | 'win' | 'lose') => {
+  const playSound = useCallback((sound: 'spin' | 'win' | 'lose' | 'chip') => {
     if (isMuted || !sounds.current.initialized) return;
     const now = Tone.now();
     if (sound === 'spin' && sounds.current.spin) {
-      sounds.current.spin.triggerAttackRelease("8n", now);
+      sounds.current.spin.triggerAttackRelease("2n", now);
     } else if (sound === 'win' && sounds.current.win) {
       sounds.current.win.triggerAttackRelease('C5', '8n', now);
       sounds.current.win.triggerAttackRelease('G5', '8n', now + 0.2);
     } else if (sound === 'lose' && sounds.current.lose) {
       sounds.current.lose.triggerAttackRelease('C3', '4n', now);
+    } else if (sound === 'chip' && sounds.current.chip) {
+      sounds.current.chip.triggerAttackRelease('C2', '8n', now);
     }
   }, [isMuted]);
 
-  const handleSpin = async () => {
+  const handleBet = (optionId: string) => {
     if (isSpinning) return;
-    if (bet > balance) {
-      toast({
-        variant: "destructive",
-        title: "Insufficient Balance",
-        description: "Your balance is too low to place this bet.",
-      });
+    playSound('chip');
+    setBets(prev => ({...prev, [optionId]: prev[optionId] + selectedChip}));
+  }
+
+  const handleClearBets = () => {
+    if (isSpinning) return;
+    setBets(initialBetsState);
+  }
+
+  const handleSpin = async () => {
+    if (isSpinning || totalBet === 0) return;
+    if (totalBet > balance) {
+      toast({ variant: "destructive", title: "Insufficient Balance" });
       return;
     }
     
-    if (Tone.context.state !== 'running') {
-      await Tone.start();
-    }
+    if (Tone.context.state !== 'running') await Tone.start();
     
     setIsSpinning(true);
-    setBalance(prev => prev - bet);
+    setBalance(prev => prev - totalBet);
     setAiMessage(null);
     playSound('spin');
 
     const winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
     const winningSegment = SEGMENTS[winningSegmentIndex];
     
-    const fullRotations = 5;
-    const targetRotation = (fullRotations * 360) - (winningSegmentIndex * SEGMENT_ANGLE) - (SEGMENT_ANGLE / 2);
-    
-    const randomOffset = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.8);
-    const finalRotation = targetRotation + randomOffset;
-    
-    setRotation(prev => prev + finalRotation);
+    const fullRotations = 7;
+    const targetRotation = (fullRotations * 360) - (winningSegmentIndex * SEGMENT_ANGLE);
+    const randomOffset = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.9);
+    setRotation(prev => prev + targetRotation + randomOffset);
     
     setTimeout(async () => {
-      const winAmount = bet * winningSegment.multiplier;
-      setBalance(prev => prev + winAmount);
-      
-      const gameEvent = winAmount > bet ? 'win' : (winAmount < bet ? 'loss' : 'spin');
-      if (winAmount > 0 && winningSegment.multiplier > 0) {
-        playSound('win');
-      } else {
-        playSound('lose');
+      let totalWinnings = 0;
+      const winningLabel = winningSegment.label;
+      const betOnWinner = bets[winningLabel] || 0;
+
+      if (betOnWinner > 0) {
+        if (winningSegment.type === 'number') {
+          totalWinnings = betOnWinner * winningSegment.multiplier + betOnWinner; // Payout + stake back
+        } else { // Bonus game
+          totalWinnings = betOnWinner; // Return stake, show toast
+          toast({ title: "Bonus Round!", description: `You entered the ${winningLabel} bonus game!` });
+        }
       }
+      
+      if (totalWinnings > 0) playSound('win'); else playSound('lose');
+      setBalance(prev => prev + totalWinnings);
 
       try {
         const encouragement = await getEncouragement({
-          gameEvent,
-          betAmount: bet,
-          winAmount: winAmount,
+          gameEvent: totalWinnings > totalBet ? 'win' : 'loss',
+          betAmount: totalBet,
+          winAmount: totalWinnings,
         });
         setAiMessage(encouragement);
       } catch (error) {
@@ -217,9 +259,7 @@ export default function Home() {
     }, SPIN_DURATION_SECONDS * 1000);
   };
   
-  useEffect(() => {
-    Tone.Destination.mute = isMuted;
-  }, [isMuted]);
+  useEffect(() => { Tone.Destination.mute = isMuted; }, [isMuted]);
 
   const aiMessageColor = {
     low: 'text-muted-foreground',
@@ -228,60 +268,74 @@ export default function Home() {
   };
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 overflow-hidden">
-      <header className="absolute top-4 right-4 flex items-center gap-4">
-          <Button onClick={() => setIsMuted(!isMuted)} variant="ghost" size="icon">
-              {isMuted ? <VolumeX /> : <Volume2 />}
-              <span className="sr-only">Toggle Sound</span>
-          </Button>
+    <div className="flex flex-col items-center justify-between min-h-screen bg-background text-foreground p-4 overflow-hidden">
+      <header className="w-full flex justify-between items-center absolute top-4 px-4">
+        <div className="flex items-center gap-4">
+          <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <Wallet className="text-accent" />
+              <span>${balance.toLocaleString()}</span>
+            </div>
+          </Card>
+        </div>
+        <Button onClick={() => setIsMuted(!isMuted)} variant="ghost" size="icon">
+            {isMuted ? <VolumeX /> : <Volume2 />}
+            <span className="sr-only">Toggle Sound</span>
+        </Button>
       </header>
 
-      <main className="flex flex-col items-center justify-center gap-8 w-full max-w-4xl">
+      <main className="flex flex-col items-center justify-center gap-4 pt-20">
         <h1 className="text-6xl font-headline text-accent tracking-wider" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
           SpinRiches
         </h1>
 
         <Wheel segments={SEGMENTS} rotation={rotation} />
         
-        <div className="h-20 flex items-center justify-center text-center">
+        <div className="h-16 flex items-center justify-center text-center">
             {aiMessage && (
-                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-4 transition-all duration-500", isSpinning ? "opacity-0" : "opacity-100")}>
+                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", isSpinning ? "opacity-0" : "opacity-100")}>
                     <CardContent className="p-0 flex items-center gap-3">
-                      <Sparkles className="text-accent w-6 h-6"/>
-                      <p className={cn("text-lg", aiMessageColor[aiMessage.encouragementLevel])}>
+                      <Sparkles className="text-accent w-5 h-5"/>
+                      <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
                         {aiMessage.message}
                       </p>
                     </CardContent>
                 </Card>
             )}
         </div>
+      </main>
 
-        <Card className="w-full max-w-md p-6 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
-          <CardContent className="p-0 flex flex-col gap-6">
-            <div className="flex justify-between items-center text-2xl font-bold">
-              <div className="flex items-center gap-2">
-                <Wallet className="text-accent" />
-                <span>Balance</span>
-              </div>
-              <span>${balance.toLocaleString()}</span>
+      <footer className="w-full max-w-4xl">
+        <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
+          <CardContent className="p-0 flex flex-col gap-4">
+            {/* Betting spots */}
+            <div className="grid grid-cols-4 gap-2">
+              {BET_OPTIONS.map(option => (
+                <Button key={option.id} variant="secondary" className={cn("h-auto flex-col p-2", option.type === 'bonus' && "text-white", option.color)} onClick={() => handleBet(option.id)} disabled={isSpinning}>
+                  <span className="font-bold text-sm">{option.label}</span>
+                  <span className="text-xs font-mono">${bets[option.id].toLocaleString()}</span>
+                </Button>
+              ))}
             </div>
-            
-            <div className="flex items-center gap-4">
-              <Input 
-                type="number"
-                value={bet}
-                onChange={(e) => setBet(Math.max(1, parseInt(e.target.value) || 0))}
-                className="text-lg text-center font-bold"
-                disabled={isSpinning}
-                aria-label="Bet amount"
-              />
-              <Button onClick={handleSpin} disabled={isSpinning} size="lg" className="flex-1 text-xl font-bold font-headline bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-accent/30 active:scale-95">
-                {isSpinning ? 'Spinning...' : 'SPIN'}
-              </Button>
+            {/* Chip selection and actions */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
+                {CHIP_VALUES.map(chip => (
+                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={isSpinning}>
+                    ${chip}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex-grow flex items-center justify-end gap-2">
+                <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={isSpinning || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
+                 <Button onClick={handleSpin} disabled={isSpinning || totalBet === 0} size="lg" className="flex-1 max-w-xs text-xl font-bold font-headline bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-accent/30 active:scale-95">
+                  {isSpinning ? 'Spinning...' : `SPIN ($${totalBet.toLocaleString()})`}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
-      </main>
+      </footer>
     </div>
   );
 }
