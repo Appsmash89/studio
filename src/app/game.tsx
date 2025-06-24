@@ -113,6 +113,8 @@ type GameLogEntry = {
   bonusDetails?: {
     coinFlipMultipliers?: { red: number; blue: number };
     cashHuntMultipliers?: number[];
+    pachinkoDropHistory?: (number | 'DOUBLE')[];
+    pachinkoFinalMultipliers?: (number | 'DOUBLE')[];
   };
   roundWinnings: number;
   netResult: number;
@@ -293,15 +295,16 @@ export default function Game() {
 
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     const winningLabel = winningSegment!.label;
-    const betOnWinner = bets[winningLabel] || 0;
+    const betOnWinner = spinDataRef.current.bets[winningLabel] || 0;
     const roundWinnings = betOnWinner + bonusWinnings;
+    const currentTotalBet = spinDataRef.current.totalBet;
 
     setBalance(prev => prev + roundWinnings);
 
     try {
         const encouragement = await getEncouragement({
             gameEvent: 'win',
-            betAmount: totalBet,
+            betAmount: currentTotalBet,
             winAmount: roundWinnings,
         });
         setAiMessage(encouragement);
@@ -313,19 +316,19 @@ export default function Game() {
     const newLogEntry: GameLogEntry = {
         spinId: winningSegment!.id,
         timestamp: new Date().toISOString(),
-        bets,
-        totalBet,
+        bets: spinDataRef.current.bets,
+        totalBet: currentTotalBet,
         winningSegment: { label: winningSegment!.label, type: winningSegment!.type, multiplier: 0 },
         isBonus: true,
         bonusWinnings: bonusWinnings,
         bonusDetails: bonusDetails,
         roundWinnings: roundWinnings,
-        netResult: roundWinnings - totalBet,
+        netResult: roundWinnings - currentTotalBet,
     };
     setGameLog(prev => [newLogEntry, ...prev]);
 
     setGameState('RESULT');
-  }, [bets, totalBet, winningSegment]);
+  }, [winningSegment]);
 
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
@@ -672,3 +675,5 @@ export default function Game() {
     </div>
   );
 }
+
+    
