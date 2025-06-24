@@ -343,7 +343,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, forcedWinner, gameState, handleBonusComplete, forceNextSpin]);
+  }, [bets, totalBet, forcedWinner, gameState, forceNextSpin]);
 
   // Game Loop Timer
   useEffect(() => {
