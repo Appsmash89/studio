@@ -9,7 +9,23 @@ import * as Tone from 'tone';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 
-const SEGMENTS = [
+const BET_OPTIONS = [
+  { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
+  { id: '2', label: '2', type: 'number', color: 'hsl(210, 80%, 55%)', textColor: 'white' },
+  { id: '5', label: '5', type: 'number', color: 'hsl(140, 60%, 50%)', textColor: 'white' },
+  { id: '10', label: '10', type: 'number', color: 'hsl(280, 80%, 65%)', textColor: 'white' },
+  { id: 'COIN_FLIP', label: 'Coin Flip', type: 'bonus', color: 'hsl(45, 90%, 60%)', textColor: 'hsl(var(--background))' },
+  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'hsl(320, 70%, 60%)', textColor: 'white' },
+  { id: 'CASH_HUNT', label: 'Cash Hunt', type: 'bonus', color: 'hsl(100, 60%, 60%)', textColor: 'hsl(var(--background))' },
+  { id: 'CRAZY_TIME', label: 'Crazy Time', type: 'bonus', color: 'hsl(0, 80%, 60%)', textColor: 'white' },
+];
+
+const textColorMap = BET_OPTIONS.reduce((acc, option) => {
+  acc[option.id] = option.textColor;
+  return acc;
+}, {} as Record<string, string>);
+
+const SEGMENTS_CONFIG = [
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
@@ -64,21 +80,12 @@ const SEGMENTS = [
     { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
-  ];
-const NUM_SEGMENTS = SEGMENTS.length;
+].map(seg => ({ ...seg, textColor: textColorMap[seg.label]! }));
+
+
+const NUM_SEGMENTS = SEGMENTS_CONFIG.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 const SPIN_DURATION_SECONDS = 8;
-
-const BET_OPTIONS = [
-  { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
-  { id: '2', label: '2', type: 'number', color: 'hsl(210, 80%, 55%)', textColor: 'white' },
-  { id: '5', label: '5', type: 'number', color: 'hsl(140, 60%, 50%)', textColor: 'white' },
-  { id: '10', label: '10', type: 'number', color: 'hsl(280, 80%, 65%)', textColor: 'white' },
-  { id: 'COIN_FLIP', label: 'Coin Flip', type: 'bonus', color: 'hsl(45, 90%, 60%)', textColor: 'hsl(var(--background))' },
-  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'hsl(320, 70%, 60%)', textColor: 'white' },
-  { id: 'CASH_HUNT', label: 'Cash Hunt', type: 'bonus', color: 'hsl(100, 60%, 60%)', textColor: 'hsl(var(--background))' },
-  { id: 'CRAZY_TIME', label: 'Crazy Time', type: 'bonus', color: 'hsl(0, 80%, 60%)', textColor: 'white' },
-];
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
 const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
@@ -90,7 +97,7 @@ const adjustHsl = (hsl: string, h: number, l: number) => {
 }
 
 // Wheel Component
-const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: number }) => {
+const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotation: number }) => {
   const radius = 200;
   const center = 210;
 
@@ -129,18 +136,32 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
             <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
               <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="rgba(0,0,0,0.5)" />
             </filter>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
           <g filter="url(#shadow)">
             {segments.map((segment, index) => (
               <g key={index}>
-                <path d={getSegmentPath(index)} fill={segment.color} stroke="hsl(var(--accent))" strokeWidth="1" />
+                <path 
+                  d={getSegmentPath(index)} 
+                  fill={segment.color} 
+                  stroke="hsl(var(--accent))" 
+                  strokeWidth="2"
+                  filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
+                />
                 <text
                   x={getLabelPosition(index).x}
                   y={getLabelPosition(index).y}
-                  fill={segment.color.startsWith('hsl(220') ? 'hsl(var(--background))' : 'white'}
+                  fill={segment.textColor}
                   textAnchor="middle"
                   dy=".3em"
-                  className="text-[10px] font-bold"
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
                   transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
                 >
                   {segment.label.replace('_', '\n')}
@@ -150,7 +171,10 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
           </g>
         </svg>
       </div>
-       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-accent border-4 border-background flex items-center justify-center shadow-lg">
+       <div 
+         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-4 border-background flex items-center justify-center shadow-lg"
+         style={{ background: 'radial-gradient(circle, hsl(43, 98%, 68%) 60%, hsl(43, 88%, 48%))' }}
+       >
        </div>
        <div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
@@ -159,6 +183,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
+          filter: 'drop-shadow(0px 3px 3px rgba(0,0,0,0.5))'
         }}
       />
     </div>
@@ -247,7 +272,7 @@ export default function Home() {
 
     let winningSegmentIndex;
     if (forcedWinner) {
-      const possibleIndices = SEGMENTS.reduce((acc, segment, index) => {
+      const possibleIndices = SEGMENTS_CONFIG.reduce((acc, segment, index) => {
         if (segment.label === forcedWinner) {
           acc.push(index);
         }
@@ -265,7 +290,7 @@ export default function Home() {
       winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
     }
     
-    const winningSegment = SEGMENTS[winningSegmentIndex];
+    const winningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     const fullRotations = 7;
     const targetRotation = (fullRotations * 360) - (winningSegmentIndex * SEGMENT_ANGLE);
@@ -336,7 +361,7 @@ export default function Home() {
           SpinRiches
         </h1>
 
-        <Wheel segments={SEGMENTS} rotation={rotation} />
+        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
         
         <div className="h-16 flex items-center justify-center text-center">
             {aiMessage && (
