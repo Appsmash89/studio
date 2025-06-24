@@ -128,7 +128,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-accent border-4 border-background flex items-center justify-center shadow-lg">
        </div>
        <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform rotate-180"
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2"
         style={{
           clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
           width: '30px',
