@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -205,6 +206,7 @@ export default function Game() {
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] & { id: number } | null>(null);
   const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0] & { id: number })[]>([]);
+  const spinIdCounter = useRef(0);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -225,6 +227,7 @@ export default function Game() {
   }
 
   const handleSpin = useCallback(async () => {
+    if (gameState !== 'BETTING') return;
     setGameState('SPINNING');
     setAiMessage(null);
 
@@ -248,7 +251,7 @@ export default function Game() {
     }
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
-    const winningSegmentWithId = { ...currentWinningSegment, id: Date.now() + Math.random() };
+    const winningSegmentWithId = { ...currentWinningSegment, id: ++spinIdCounter.current };
     
     const fullSpins = 7 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
@@ -293,34 +296,32 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, forcedWinner]);
+  }, [bets, totalBet, forcedWinner, gameState]);
 
   // Game Loop Timer
   useEffect(() => {
-    if (gameState === 'BETTING') {
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            handleSpin();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
+    let timer: NodeJS.Timeout;
 
-    if (gameState === 'RESULT') {
-      const timer = setTimeout(() => {
+    if (gameState === 'BETTING') {
+      if (countdown <= 0) {
+        handleSpin();
+      } else {
+        timer = setTimeout(() => {
+          setCountdown(c => c - 1);
+        }, 1000);
+      }
+    } else if (gameState === 'RESULT') {
+      timer = setTimeout(() => {
         setGameState('BETTING');
         setCountdown(BETTING_TIME_SECONDS);
         setBets(initialBetsState);
         setAiMessage(null);
         setWinningSegment(null);
       }, RESULT_DISPLAY_SECONDS * 1000);
-      return () => clearTimeout(timer);
     }
-  }, [gameState, handleSpin]);
+
+    return () => clearTimeout(timer);
+  }, [gameState, countdown, handleSpin]);
   
 
   const aiMessageColor = {
@@ -502,3 +503,5 @@ export default function Game() {
     </div>
   );
 }
+
+    
