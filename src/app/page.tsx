@@ -150,8 +150,8 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                 <path 
                   d={getSegmentPath(index)} 
                   fill={segment.color} 
-                  stroke="hsl(var(--accent))" 
-                  strokeWidth="6" 
+                  stroke="hsl(43, 78%, 58%)" 
+                  strokeWidth="8" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
                 />
                 <text
@@ -160,7 +160,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                   fill={segment.textColor}
                   textAnchor="middle"
                   dy=".3em"
-                  className="text-base font-bold uppercase tracking-wider"
+                  className="text-lg font-bold uppercase tracking-wider"
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
                   transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
                 >
@@ -179,7 +179,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
        <div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
         style={{
-          clipPath: 'polygon(0% 0%, 100% 0%, 50% 100%)',
+          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
@@ -400,9 +400,9 @@ export default function Home() {
                 >
                   <span className={cn(
                     "font-bold drop-shadow-md",
-                    option.type === 'number' ? 'text-2xl' : 'text-[10px] tracking-wide uppercase leading-tight text-center'
+                    option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center'
                   )}>
-                    {option.label.replace('_', ' ')}
+                    {option.label}
                   </span>
                   <span className="text-sm font-mono font-semibold text-white/90 drop-shadow-sm">
                     ${bets[option.id].toLocaleString()}
@@ -430,14 +430,22 @@ export default function Home() {
                 Dev Tools: Force Next Spin Outcome
               </p>
               <div className="grid grid-cols-4 gap-2">
-                <Button size="sm" variant="outline" onClick={() => setForcedWinner('COIN_FLIP')} disabled={isSpinning}>Coin Flip</Button>
-                <Button size="sm" variant="outline" onClick={() => setForcedWinner('PACHINKO')} disabled={isSpinning}>Pachinko</Button>
-                <Button size="sm" variant="outline" onClick={() => setForcedWinner('CASH_HUNT')} disabled={isSpinning}>Cash Hunt</Button>
-                <Button size="sm" variant="outline" onClick={() => setForcedWinner('CRAZY_TIME')} disabled={isSpinning}>Crazy Time</Button>
+                {BET_OPTIONS.map(option => (
+                  <Button
+                    key={`force-${option.id}`}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setForcedWinner(option.id)}
+                    disabled={isSpinning}
+                    className="h-auto p-1 text-[10px]"
+                  >
+                    {option.label}
+                  </Button>
+                ))}
               </div>
               {forcedWinner && (
                 <p className="text-xs text-center text-accent mt-2 animate-pulse">
-                  Next spin will land on: {forcedWinner.replace('_', ' ')}
+                  Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
                 </p>
               )}
             </div>
@@ -447,5 +455,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
