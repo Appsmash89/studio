@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -222,6 +222,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
 export default function Game() {
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState<{[key: string]: number}>(initialBetsState);
+  const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
@@ -248,12 +249,30 @@ export default function Game() {
     }
     setBalance(prev => prev - selectedChip);
     setBets(prev => ({...prev, [optionId]: prev[optionId] + selectedChip}));
+    setBetHistory(prev => [...prev, { optionId, amount: selectedChip }]);
   }
+
+  const handleUndoBet = () => {
+    if (gameState !== 'BETTING' || betHistory.length === 0) return;
+
+    const lastBet = betHistory[betHistory.length - 1];
+    if (!lastBet) return;
+
+    setBalance(prev => prev + lastBet.amount);
+
+    setBets(prev => ({
+      ...prev,
+      [lastBet.optionId]: prev[lastBet.optionId] - lastBet.amount
+    }));
+
+    setBetHistory(prev => prev.slice(0, -1));
+  };
 
   const handleClearBets = () => {
     if (gameState !== 'BETTING') return;
     setBalance(prev => prev + totalBet);
     setBets(initialBetsState);
+    setBetHistory([]);
   }
 
   const handleDownloadLog = () => {
@@ -463,6 +482,7 @@ export default function Game() {
         setGameState('BETTING');
         setCountdown(BETTING_TIME_SECONDS);
         setBets(initialBetsState);
+        setBetHistory([]);
         setAiMessage(null);
         setWinningSegment(null);
       }, RESULT_DISPLAY_SECONDS * 1000);
@@ -617,6 +637,7 @@ export default function Game() {
                 ))}
               </div>
               <div className="flex-grow flex items-center justify-end gap-2">
+                <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0}><RotateCcw className="w-5 h-5"/></Button>
                 <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
                  <Card className="bg-card/80">
                     <CardContent className="p-2 text-center">
@@ -675,5 +696,3 @@ export default function Game() {
     </div>
   );
 }
-
-    
