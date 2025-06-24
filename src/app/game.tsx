@@ -203,7 +203,8 @@ export default function Game() {
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
-  const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
+  const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] & { id: number } | null>(null);
+  const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0] & { id: number })[]>([]);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -247,6 +248,7 @@ export default function Game() {
     }
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
+    const winningSegmentWithId = { ...currentWinningSegment, id: Date.now() + Math.random() };
     
     const fullRotations = 7;
     const targetRotation = (fullRotations * 360) - (winningSegmentIndex * SEGMENT_ANGLE);
@@ -255,12 +257,12 @@ export default function Game() {
     
     setTimeout(async () => {
       let totalWinnings = 0;
-      const winningLabel = currentWinningSegment.label;
+      const winningLabel = winningSegmentWithId.label;
       const betOnWinner = bets[winningLabel] || 0;
 
       if (betOnWinner > 0) {
-        if (currentWinningSegment.type === 'number') {
-          totalWinnings = betOnWinner * currentWinningSegment.multiplier + betOnWinner;
+        if (winningSegmentWithId.type === 'number') {
+          totalWinnings = betOnWinner * winningSegmentWithId.multiplier + betOnWinner;
         } else {
           totalWinnings = betOnWinner;
           toast({ title: "Bonus Round!", description: `You entered the ${winningLabel.replace('_', ' ')} bonus game!` });
@@ -283,7 +285,8 @@ export default function Game() {
         }
       }
       
-      setWinningSegment(currentWinningSegment);
+      setWinningSegment(winningSegmentWithId);
+      setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
@@ -370,6 +373,37 @@ export default function Game() {
         
         <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
         
+        <div className="h-20 flex items-center justify-center">
+            <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
+                <CardContent className="p-0 flex items-center gap-3">
+                    <p className="text-sm font-bold pr-3 border-r border-muted-foreground/50 self-stretch flex items-center text-muted-foreground">
+                        History
+                    </p>
+                    <div className="flex gap-1.5">
+                        {spinHistory.map((segment) => (
+                            <div
+                                key={segment.id}
+                                className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
+                                style={{
+                                    backgroundColor: segment.color,
+                                    color: segment.textColor,
+                                    textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
+                                }}
+                                title={segment.label.replace('_', ' ')}
+                            >
+                                <span className="text-center leading-tight">
+                                    {segment.label.replace('_', '\n')}
+                                </span>
+                            </div>
+                        ))}
+                        {[...Array(Math.max(0, 7 - spinHistory.length))].map((_, i) => (
+                            <div key={`placeholder-${i}`} className="w-10 h-10 rounded-md bg-background/30" />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+
         <div className="h-16 flex items-center justify-center text-center">
             {aiMessage && gameState === 'RESULT' && (
                 <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
