@@ -9,56 +9,77 @@ import * as Tone from 'tone';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 
-// Based on Crazy Time distribution
-const buildSegments = () => {
-  const S = (label: string, type: 'number' | 'bonus', multiplier: number, color: string) => ({ label, type, multiplier, color });
-  // prettier-ignore
-  const segments = [
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 40%)'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('5', 'number', 5, 'hsl(45, 90%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('PACHINKO', 'bonus', 0, 'hsl(320, 70%, 60%)'), S('10', 'number', 10, 'hsl(280, 80%, 65%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(210, 80%, 55%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 90%, 60%)'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 60%)'), S('2', 'number', 2, 'hsl(210, 80%, 55%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 40%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('10', 'number', 10, 'hsl(280, 80%, 65%)'),
-    S('5', 'number', 5, 'hsl(45, 90%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('PACHINKO', 'bonus', 0, 'hsl(320, 70%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 40%)'), S('5', 'number', 5, 'hsl(45, 90%, 60%)'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('CRAZY TIME', 'bonus', 0, 'hsl(0, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('10', 'number', 10, 'hsl(280, 80%, 65%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('5', 'number', 5, 'hsl(45, 90%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 60%)'), S('2', 'number', 2, 'hsl(210, 80%, 55%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('10', 'number', 10, 'hsl(280, 80%, 65%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(210, 80%, 55%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 90%, 60%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 40%)'),
-    S('2', 'number', 2, 'hsl(210, 80%, 55%)'), S('5', 'number', 5, 'hsl(45, 90%, 60%)'),
+const SEGMENTS = [
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'PACHINKO', type: 'bonus', multiplier: 0, color: 'hsl(320, 70%, 60%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'CASH HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'PACHINKO', type: 'bonus', multiplier: 0, color: 'hsl(320, 70%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'CRAZY TIME', type: 'bonus', multiplier: 0, color: 'hsl(0, 80%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'CASH HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
   ];
-  return segments;
-};
-
-const SEGMENTS = buildSegments();
 const NUM_SEGMENTS = SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 const SPIN_DURATION_SECONDS = 8;
 
+// You can replace these placeholder URLs with your own texture images.
+// For example, create a 'public/textures' folder, add 'blue-felt.png', and use '/textures/blue-felt.png'.
 const BET_OPTIONS = [
-  { id: '1', label: '1', type: 'number', color: 'bg-gradient-to-b from-gray-400 to-gray-600' },
-  { id: '2', label: '2', type: 'number', color: 'bg-gradient-to-b from-blue-400 to-blue-600' },
-  { id: '5', label: '5', type: 'number', color: 'bg-gradient-to-b from-yellow-400 to-yellow-600' },
-  { id: '10', label: '10', type: 'number', color: 'bg-gradient-to-b from-purple-400 to-purple-600' },
-  { id: 'COIN FLIP', label: 'Coin Flip', type: 'bonus', color: 'bg-gradient-to-b from-cyan-400 to-cyan-600' },
-  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'bg-gradient-to-b from-pink-400 to-pink-600' },
-  { id: 'CASH HUNT', label: 'Cash Hunt', type: 'bonus', color: 'bg-gradient-to-b from-green-400 to-green-600' },
-  { id: 'CRAZY TIME', label: 'Crazy Time', type: 'bonus', color: 'bg-gradient-to-b from-red-500 to-red-700' },
+  { id: '1', label: '1', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'gray felt' },
+  { id: '2', label: '2', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'blue felt' },
+  { id: '5', label: '5', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'green felt' },
+  { id: '10', label: '10', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'purple felt' },
+  { id: 'COIN FLIP', label: 'Coin Flip', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'gold pattern' },
+  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'pink pattern' },
+  { id: 'CASH HUNT', label: 'Cash Hunt', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'green pattern' },
+  { id: 'CRAZY TIME', label: 'Crazy Time', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'red pattern' },
 ];
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
@@ -112,7 +133,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
                 <text
                   x={getLabelPosition(index).x}
                   y={getLabelPosition(index).y}
-                  fill={segment.type === 'number' ? 'hsl(var(--foreground))' : 'white'}
+                  fill={segment.color.startsWith('hsl(220') ? 'hsl(var(--background))' : 'white'}
                   textAnchor="middle"
                   dy=".3em"
                   className="text-[10px] font-bold"
@@ -128,9 +149,9 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-accent border-4 border-background flex items-center justify-center shadow-lg">
        </div>
        <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2"
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
         style={{
-          clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
+          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
@@ -216,7 +237,6 @@ export default function Home() {
     if (Tone.context.state !== 'running') await Tone.start();
     
     setIsSpinning(true);
-    // Balance is already deducted when placing bets
     setAiMessage(null);
     playSound('spin');
 
@@ -241,15 +261,6 @@ export default function Home() {
           toast({ title: "Bonus Round!", description: `You entered the ${winningLabel} bonus game!` });
         }
       }
-
-      // Return losing bets on other segments
-      let totalReturned = 0;
-      for (const betId in bets) {
-        if (bets[betId] > 0 && betId !== winningLabel) {
-          // This logic is flawed, we only get stake back on the winning bet
-          // Payout logic needs to be revisited.
-        }
-      }
       
       if (totalWinnings > 0) playSound('win'); else playSound('lose');
       setBalance(prev => prev + totalWinnings);
@@ -266,7 +277,6 @@ export default function Home() {
         setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
       }
       
-      // Reset bets after spin resolution
       setBets(initialBetsState);
       setIsSpinning(false);
     }, SPIN_DURATION_SECONDS * 1000);
@@ -321,17 +331,21 @@ export default function Home() {
       <footer className="w-full max-w-4xl">
         <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
           <CardContent className="p-0 flex flex-col gap-4">
-            {/* Betting spots */}
             <div className="grid grid-cols-4 gap-2">
               {BET_OPTIONS.map(option => (
                 <Button
                   key={option.id}
                   variant="secondary"
+                  style={{
+                    backgroundImage: `url(${option.textureUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                  data-ai-hint={option.hint}
                   className={cn(
                     "h-auto flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
                     "border-b-4 border-black/30 hover:border-b-2 active:border-b-0",
-                    "text-white",
-                    option.color
+                    "text-white"
                   )}
                   onClick={() => handleBet(option.id)}
                   disabled={isSpinning}
@@ -348,7 +362,6 @@ export default function Home() {
                 </Button>
               ))}
             </div>
-            {/* Chip selection and actions */}
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
                 {CHIP_VALUES.map(chip => (
