@@ -88,10 +88,15 @@ export default {
             height: '0',
           },
         },
+        flip: {
+          from: { transform: 'rotateY(0deg)' },
+          to: { transform: 'rotateY(1800deg)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'flip': 'flip 3s ease-out forwards',
       },
     },
   },
