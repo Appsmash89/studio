@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -153,7 +152,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                   d={getSegmentPath(index)} 
                   fill={segment.color} 
                   stroke="hsl(43, 78%, 58%)" 
-                  strokeWidth="8" 
+                  strokeWidth="2" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
                 />
                 <text
@@ -294,7 +293,13 @@ export default function Game() {
   useEffect(() => {
     if (gameState === 'BETTING') {
       const timer = setInterval(() => {
-        setCountdown((prev) => prev - 1);
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            handleSpin();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
       return () => clearInterval(timer);
     }
@@ -309,14 +314,8 @@ export default function Game() {
       }, RESULT_DISPLAY_SECONDS * 1000);
       return () => clearTimeout(timer);
     }
-  }, [gameState]);
-
-  // Trigger Spin when countdown ends
-  useEffect(() => {
-    if (countdown <= 0 && gameState === 'BETTING') {
-      handleSpin();
-    }
-  }, [countdown, gameState, handleSpin]);
+  }, [gameState, handleSpin]);
+  
 
   const aiMessageColor = {
     low: 'text-muted-foreground',
