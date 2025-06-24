@@ -155,7 +155,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
        <div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
         style={{
-          clipPath: 'polygon(50% 0, 100% 100%, 0 100%)',
+          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
