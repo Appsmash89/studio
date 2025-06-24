@@ -6,7 +6,6 @@ import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-enco
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Wallet, Volume2, VolumeX, Sparkles, XCircle } from 'lucide-react';
-import * as Tone from 'tone';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -213,22 +212,29 @@ export default function Home() {
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
+  const ToneRef = useRef<any>(null);
   const sounds = useRef<{
-    spin?: Tone.NoiseSynth;
-    win?: Tone.Synth;
-    lose?: Tone.Synth;
-    chip?: Tone.Synth;
+    spin?: any;
+    win?: any;
+    lose?: any;
+    chip?: any;
     initialized: boolean;
   }>({ initialized: false });
   
   useEffect(() => {
-    if (typeof window !== 'undefined' && !sounds.current.initialized) {
-        sounds.current.spin = new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.2 }, volume: -20 }).toDestination();
-        sounds.current.win = new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }, volume: -10 }).toDestination();
-        sounds.current.lose = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.5 }, volume: -10 }).toDestination();
-        sounds.current.chip = new Tone.MembraneSynth({ octaves: 4, pitchDecay: 0.1, volume: -15 }).toDestination();
+    const initialize = async () => {
+      if (typeof window !== 'undefined' && !sounds.current.initialized) {
+        const ToneModule = await import('tone');
+        ToneRef.current = ToneModule;
+        
+        sounds.current.spin = new ToneModule.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.2 }, volume: -20 }).toDestination();
+        sounds.current.win = new ToneModule.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }, volume: -10 }).toDestination();
+        sounds.current.lose = new ToneModule.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.5 }, volume: -10 }).toDestination();
+        sounds.current.chip = new ToneModule.MembraneSynth({ octaves: 4, pitchDecay: 0.1, volume: -15 }).toDestination();
         sounds.current.initialized = true;
-    }
+      }
+    };
+    initialize();
 
     return () => {
         sounds.current.spin?.dispose();
@@ -239,9 +245,9 @@ export default function Home() {
   }, []);
 
   const initializeAudio = useCallback(async () => {
-    if (audioInitialized || !sounds.current.initialized) return;
+    if (audioInitialized || !sounds.current.initialized || !ToneRef.current) return;
     try {
-      await Tone.start();
+      await ToneRef.current.start();
       setAudioInitialized(true);
     } catch (e) {
       console.error("Could not start audio context", e);
@@ -249,8 +255,8 @@ export default function Home() {
   }, [audioInitialized]);
 
   const playSound = useCallback((sound: 'spin' | 'win' | 'lose' | 'chip') => {
-    if (isMuted || !sounds.current.initialized) return;
-    const now = Tone.now();
+    if (isMuted || !sounds.current.initialized || !ToneRef.current) return;
+    const now = ToneRef.current.now();
     if (sound === 'spin' && sounds.current.spin) {
       sounds.current.spin.triggerAttackRelease("2n", now);
     } else if (sound === 'win' && sounds.current.win) {
@@ -332,16 +338,18 @@ export default function Home() {
       }
       setBalance(prev => prev + totalWinnings);
 
-      try {
-        const encouragement = await getEncouragement({
-          gameEvent: totalBet > 0 ? (totalWinnings > totalBet ? 'win' : 'loss') : 'spin',
-          betAmount: totalBet,
-          winAmount: totalWinnings,
-        });
-        setAiMessage(encouragement);
-      } catch (error) {
-        console.error("AI encouragement error:", error);
-        setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
+      if (totalBet > 0) {
+        try {
+          const encouragement = await getEncouragement({
+            gameEvent: totalWinnings > totalBet ? 'win' : 'loss',
+            betAmount: totalBet,
+            winAmount: totalWinnings,
+          });
+          setAiMessage(encouragement);
+        } catch (error) {
+          console.error("AI encouragement error:", error);
+          setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
+        }
       }
       
       setWinningSegment(currentWinningSegment);
@@ -378,7 +386,11 @@ export default function Home() {
     }
   }, [countdown, gameState, handleSpin]);
   
-  useEffect(() => { Tone.Destination.mute = isMuted; }, [isMuted]);
+  useEffect(() => { 
+    if (ToneRef.current) {
+        ToneRef.current.Destination.mute = isMuted; 
+    }
+  }, [isMuted]);
 
   const aiMessageColor = {
     low: 'text-muted-foreground',
