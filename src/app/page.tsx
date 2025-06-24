@@ -277,7 +277,7 @@ export default function Home() {
               />
               <Button onClick={handleSpin} disabled={isSpinning} size="lg" className="flex-1 text-xl font-bold font-headline bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-accent/30 active:scale-95">
                 {isSpinning ? 'Spinning...' : 'SPIN'}
-              </a >
+              </Button>
             </div>
           </CardContent>
         </Card>

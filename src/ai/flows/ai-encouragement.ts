@@ -1,4 +1,4 @@
-// use server'
+'use server';
 
 /**
  * @fileOverview AI-driven encouragement and casino-style catchphrases for user engagement.
