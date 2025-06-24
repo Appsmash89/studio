@@ -250,10 +250,13 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     const winningSegmentWithId = { ...currentWinningSegment, id: Date.now() + Math.random() };
     
-    const fullRotations = 7;
-    const targetRotation = (fullRotations * 360) - (winningSegmentIndex * SEGMENT_ANGLE);
-    const randomOffset = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.9);
-    setRotation(prev => prev + targetRotation + randomOffset);
+    const fullSpins = 7 * 360;
+    const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
+    
+    setRotation(prev => {
+      const currentOffset = prev % 360;
+      return prev - currentOffset + fullSpins + (360 - targetAngle);
+    });
     
     setTimeout(async () => {
       let totalWinnings = 0;
