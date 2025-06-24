@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,8 +10,8 @@ import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
 import type { SoundPlayerHandle } from '@/components/sound-player';
+import SoundPlayer from '@/components/sound-player';
 
-const DynamicSoundPlayer = dynamic(() => import('@/components/sound-player'), { ssr: false });
 
 const BET_OPTIONS = [
   { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
@@ -346,7 +345,7 @@ export default function Game() {
   
   return (
     <div className="flex flex-col items-center justify-between min-h-screen bg-background text-foreground p-4 overflow-hidden">
-      <DynamicSoundPlayer ref={soundPlayerRef} isMuted={isMuted} />
+      <SoundPlayer ref={soundPlayerRef} isMuted={isMuted} />
       <header className="w-full flex justify-between items-center absolute top-4 px-4">
         <div className="flex items-center gap-4">
           <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
