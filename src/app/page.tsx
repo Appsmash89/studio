@@ -155,11 +155,10 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
        <div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
         style={{
-          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
+          clipPath: 'polygon(50% 0, 100% 100%, 0 100%)',
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
-          transform: 'rotate(180deg)',
         }}
       />
     </div>
@@ -176,6 +175,7 @@ export default function Home() {
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const { toast } = useToast();
+  const [forcedWinner, setForcedWinner] = useState<string | null>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -245,7 +245,26 @@ export default function Home() {
     setAiMessage(null);
     playSound('spin');
 
-    const winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
+    let winningSegmentIndex;
+    if (forcedWinner) {
+      const possibleIndices = SEGMENTS.reduce((acc, segment, index) => {
+        if (segment.label === forcedWinner) {
+          acc.push(index);
+        }
+        return acc;
+      }, [] as number[]);
+      
+      if (possibleIndices.length > 0) {
+        winningSegmentIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
+      } else {
+        // Fallback to random if forcedWinner is invalid
+        winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
+      }
+      setForcedWinner(null); // Reset for the next spin
+    } else {
+      winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
+    }
+    
     const winningSegment = SEGMENTS[winningSegmentIndex];
     
     const fullRotations = 7;
@@ -380,6 +399,22 @@ export default function Home() {
                   {isSpinning ? 'Spinning...' : `SPIN ($${totalBet.toLocaleString()})`}
                 </Button>
               </div>
+            </div>
+            <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
+              <p className="text-xs text-center text-muted-foreground mb-2">
+                Dev Tools: Force Next Spin Outcome
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                <Button size="sm" variant="outline" onClick={() => setForcedWinner('COIN_FLIP')} disabled={isSpinning}>Coin Flip</Button>
+                <Button size="sm" variant="outline" onClick={() => setForcedWinner('PACHINKO')} disabled={isSpinning}>Pachinko</Button>
+                <Button size="sm" variant="outline" onClick={() => setForcedWinner('CASH_HUNT')} disabled={isSpinning}>Cash Hunt</Button>
+                <Button size="sm" variant="outline" onClick={() => setForcedWinner('CRAZY_TIME')} disabled={isSpinning}>Crazy Time</Button>
+              </div>
+              {forcedWinner && (
+                <p className="text-xs text-center text-accent mt-2 animate-pulse">
+                  Next spin will land on: {forcedWinner.replace('_', ' ')}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
