@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -97,6 +97,22 @@ const RESULT_DISPLAY_SECONDS = 5;
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
 const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
+
+type GameLogEntry = {
+  spinId: number;
+  timestamp: string;
+  bets: { [key: string]: number };
+  totalBet: number;
+  winningSegment: {
+    label: string;
+    type: string;
+    multiplier: number;
+  };
+  isBonus: boolean;
+  bonusWinnings?: number;
+  roundWinnings: number;
+  netResult: number;
+};
 
 const adjustHsl = (hsl: string, h: number, l: number) => {
   const [hue, saturation, lightness] = hsl.match(/\d+/g)!.map(Number);
@@ -205,6 +221,7 @@ export default function Game() {
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
+  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -230,29 +247,58 @@ export default function Game() {
     setBets(initialBetsState);
   }
 
+  const handleDownloadLog = () => {
+    if (gameLog.length === 0) {
+      toast({ variant: 'destructive', title: 'No game data to download.' });
+      return;
+    }
+    const dataStr = JSON.stringify(gameLog, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.setAttribute('href', dataUri);
+    downloadLink.setAttribute('download', `wheel_of_fortune_log_${new Date().toISOString()}.json`);
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
   const handleBonusComplete = useCallback(async (bonusWinnings: number) => {
     const winningLabel = winningSegment!.label;
     const betOnWinner = bets[winningLabel] || 0;
-    const totalWinnings = betOnWinner + bonusWinnings;
+    const roundWinnings = betOnWinner + bonusWinnings;
 
-    setBalance(prev => prev + totalWinnings);
+    setBalance(prev => prev + roundWinnings);
 
     try {
         const encouragement = await getEncouragement({
             gameEvent: 'win',
             betAmount: totalBet,
-            winAmount: totalWinnings,
+            winAmount: roundWinnings,
         });
         setAiMessage(encouragement);
     } catch (error) {
         console.error("AI encouragement error:", error);
         setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
     }
+    
+    const newLogEntry: GameLogEntry = {
+        spinId: winningSegment!.id,
+        timestamp: new Date().toISOString(),
+        bets,
+        totalBet,
+        winningSegment: { label: winningSegment!.label, type: winningSegment!.type, multiplier: 0 },
+        isBonus: true,
+        bonusWinnings: bonusWinnings,
+        roundWinnings: roundWinnings,
+        netResult: roundWinnings - totalBet,
+    };
+    setGameLog(prev => [newLogEntry, ...prev]);
+
     setGameState('RESULT');
   }, [bets, totalBet, winningSegment]);
 
   const handleSpin = useCallback(async () => {
-    if (gameState !== 'BETTING') return;
     setGameState('SPINNING');
     setAiMessage(null);
 
@@ -307,6 +353,19 @@ export default function Game() {
                   console.error("AI encouragement error:", error);
                   setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
               }
+              const roundWinnings = 0;
+              const newLogEntry: GameLogEntry = {
+                  spinId: winningSegmentWithId.id,
+                  timestamp: new Date().toISOString(),
+                  bets,
+                  totalBet,
+                  winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: 0 },
+                  isBonus: true,
+                  roundWinnings: roundWinnings,
+                  netResult: roundWinnings - totalBet,
+              };
+              setGameLog(prev => [newLogEntry, ...prev]);
+
               setWinningSegment(winningSegmentWithId);
               setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
               setGameState('RESULT');
@@ -314,19 +373,19 @@ export default function Game() {
           return;
       }
       
-      let totalWinnings = 0;
+      let roundWinnings = 0;
       if (betOnWinner > 0) {
-        totalWinnings = betOnWinner * winningSegmentWithId.multiplier + betOnWinner;
+        roundWinnings = betOnWinner * winningSegmentWithId.multiplier + betOnWinner;
       }
       
-      setBalance(prev => prev + totalWinnings);
+      setBalance(prev => prev + roundWinnings);
 
       if (totalBet > 0) {
         try {
           const encouragement = await getEncouragement({
-            gameEvent: totalWinnings > totalBet ? 'win' : 'loss',
+            gameEvent: roundWinnings > totalBet ? 'win' : 'loss',
             betAmount: totalBet,
-            winAmount: totalWinnings,
+            winAmount: roundWinnings,
           });
           setAiMessage(encouragement);
         } catch (error) {
@@ -335,12 +394,24 @@ export default function Game() {
         }
       }
       
+      const newLogEntry: GameLogEntry = {
+          spinId: winningSegmentWithId.id,
+          timestamp: new Date().toISOString(),
+          bets,
+          totalBet,
+          winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: winningSegmentWithId.multiplier },
+          isBonus: false,
+          roundWinnings: roundWinnings,
+          netResult: roundWinnings - totalBet,
+      };
+      setGameLog(prev => [newLogEntry, ...prev]);
+      
       setWinningSegment(winningSegmentWithId);
       setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, forcedWinner, gameState]);
+  }, [bets, totalBet, forcedWinner]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -523,8 +594,17 @@ export default function Game() {
               </div>
             </div>
             <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
-              <p className="text-xs text-center text-muted-foreground mb-2">
-                Dev Tools: Force Next Spin Outcome
+              <div className="flex justify-between items-center mb-2">
+                  <p className="text-xs text-muted-foreground font-semibold">
+                      DEV TOOLS
+                  </p>
+                  <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
+                      <Download className="mr-2 h-3 w-3" />
+                      Download Log
+                  </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">
+                Force Next Spin Outcome:
               </p>
               <div className="grid grid-cols-4 gap-2">
                 {BET_OPTIONS.map(option => (
