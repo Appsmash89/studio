@@ -116,6 +116,11 @@ type GameLogEntry = {
     cashHuntMultipliers?: number[];
     pachinkoDropHistory?: (number | 'DOUBLE')[];
     pachinkoFinalMultipliers?: (number | 'DOUBLE')[];
+    crazyTimeDetails?: {
+        selectedFlapper: 'green' | 'blue' | 'yellow' | null;
+        spinHistory: (string | number)[];
+        finalSegments: (string | number)[];
+    };
   };
   roundWinnings: number;
   netResult: number;
@@ -734,3 +739,5 @@ export default function Game() {
     </div>
   );
 }
+
+    
