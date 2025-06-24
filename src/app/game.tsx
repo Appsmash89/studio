@@ -5,12 +5,10 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Volume2, VolumeX, Sparkles, XCircle } from 'lucide-react';
+import { Wallet, Sparkles, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
-import type { SoundPlayerHandle } from '@/components/sound-player';
-import SoundPlayer from '@/components/sound-player';
 
 
 const BET_OPTIONS = [
@@ -201,39 +199,26 @@ export default function Game() {
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
-  const soundPlayerRef = useRef<SoundPlayerHandle>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
-  const initializeAudio = useCallback(() => {
-    soundPlayerRef.current?.initializeAudio();
-  }, []);
-
-  const playSound = useCallback((sound: 'spin' | 'win' | 'lose' | 'chip') => {
-    soundPlayerRef.current?.playSound(sound);
-  }, []);
-
   const handleBet = (optionId: string) => {
-    initializeAudio();
     if (gameState !== 'BETTING') return;
     if (balance < selectedChip) {
       toast({ variant: "destructive", title: "Not enough balance to place that bet." });
       return;
     }
     setBalance(prev => prev - selectedChip);
-    playSound('chip');
     setBets(prev => ({...prev, [optionId]: prev[optionId] + selectedChip}));
   }
 
   const handleClearBets = () => {
-    initializeAudio();
     if (gameState !== 'BETTING') return;
     setBalance(prev => prev + totalBet);
     setBets(initialBetsState);
@@ -242,7 +227,6 @@ export default function Game() {
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
     setAiMessage(null);
-    playSound('spin');
 
     let winningSegmentIndex;
     if (forcedWinner) {
@@ -284,9 +268,6 @@ export default function Game() {
         }
       }
       
-      if (totalBet > 0) {
-        if (totalWinnings > totalBet) playSound('win'); else playSound('lose');
-      }
       setBalance(prev => prev + totalWinnings);
 
       if (totalBet > 0) {
@@ -307,7 +288,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, playSound, forcedWinner]);
+  }, [bets, totalBet, forcedWinner]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -345,7 +326,6 @@ export default function Game() {
   
   return (
     <div className="flex flex-col items-center justify-between min-h-screen bg-background text-foreground p-4 overflow-hidden">
-      <SoundPlayer ref={soundPlayerRef} isMuted={isMuted} />
       <header className="w-full flex justify-between items-center absolute top-4 px-4">
         <div className="flex items-center gap-4">
           <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
@@ -355,10 +335,6 @@ export default function Game() {
             </div>
           </Card>
         </div>
-        <Button onClick={() => setIsMuted(!isMuted)} variant="ghost" size="icon">
-            {isMuted ? <VolumeX /> : <Volume2 />}
-            <span className="sr-only">Toggle Sound</span>
-        </Button>
       </header>
 
       <main className="flex flex-col items-center justify-center gap-4 pt-20">
@@ -445,7 +421,7 @@ export default function Game() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
                 {CHIP_VALUES.map(chip => (
-                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => { initializeAudio(); setSelectedChip(chip); }} disabled={gameState !== 'BETTING'}>
+                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING'}>
                     ${chip}
                   </Button>
                 ))}
