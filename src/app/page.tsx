@@ -14,33 +14,33 @@ const buildSegments = () => {
   const S = (label: string, type: 'number' | 'bonus', multiplier: number, color: string) => ({ label, type, multiplier, color });
   // prettier-ignore
   const segments = [
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('5', 'number', 5, 'hsl(45, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('PACHINKO', 'bonus', 0, 'hsl(320, 60%, 70%)'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(var(--primary))'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 70%)'), S('2', 'number', 2, 'hsl(var(--primary))'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 50%)'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('5', 'number', 5, 'hsl(45, 90%, 65%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('PACHINKO', 'bonus', 0, 'hsl(320, 70%, 65%)'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(210, 80%, 60%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 90%, 65%)'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 70%)'), S('2', 'number', 2, 'hsl(210, 80%, 60%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 50%)'),
     S('1', 'number', 1, 'hsl(var(--secondary))'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
-    S('5', 'number', 5, 'hsl(45, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('PACHINKO', 'bonus', 0, 'hsl(320, 60%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('CRAZY TIME', 'bonus', 0, 'hsl(var(--accent))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('5', 'number', 5, 'hsl(45, 90%, 65%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('PACHINKO', 'bonus', 0, 'hsl(320, 70%, 65%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 50%)'), S('5', 'number', 5, 'hsl(45, 90%, 65%)'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('CRAZY TIME', 'bonus', 0, 'hsl(0, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
     S('10', 'number', 10, 'hsl(280, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('5', 'number', 5, 'hsl(45, 80%, 70%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
-    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 70%)'), S('2', 'number', 2, 'hsl(var(--primary))'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('5', 'number', 5, 'hsl(45, 90%, 65%)'), S('1', 'number', 1, 'hsl(var(--secondary))'),
+    S('CASH HUNT', 'bonus', 0, 'hsl(100, 60%, 70%)'), S('2', 'number', 2, 'hsl(210, 80%, 60%)'),
     S('1', 'number', 1, 'hsl(var(--secondary))'), S('10', 'number', 10, 'hsl(280, 80%, 70%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(var(--primary))'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
-    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(20, 80%, 70%)'),
-    S('2', 'number', 2, 'hsl(var(--primary))'), S('5', 'number', 5, 'hsl(45, 80%, 70%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('2', 'number', 2, 'hsl(210, 80%, 60%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('5', 'number', 5, 'hsl(45, 90%, 65%)'),
+    S('1', 'number', 1, 'hsl(var(--secondary))'), S('COIN FLIP', 'bonus', 0, 'hsl(180, 70%, 50%)'),
+    S('2', 'number', 2, 'hsl(210, 80%, 60%)'), S('5', 'number', 5, 'hsl(45, 90%, 65%)'),
   ];
   return segments;
 };
@@ -51,14 +51,14 @@ const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 const SPIN_DURATION_SECONDS = 8;
 
 const BET_OPTIONS = [
-  { id: '1', label: '1', type: 'number', color: 'bg-gray-400' },
-  { id: '2', label: '2', type: 'number', color: 'bg-blue-400' },
-  { id: '5', label: '5', type: 'number', color: 'bg-yellow-400' },
-  { id: '10', label: '10', type: 'number', color: 'bg-purple-400' },
-  { id: 'COIN FLIP', label: 'Coin Flip', type: 'bonus', color: 'bg-red-500' },
+  { id: '1', label: '1', type: 'number', color: 'bg-gray-500' },
+  { id: '2', label: '2', type: 'number', color: 'bg-blue-500' },
+  { id: '5', label: '5', type: 'number', color: 'bg-yellow-500' },
+  { id: '10', label: '10', type: 'number', color: 'bg-purple-500' },
+  { id: 'COIN FLIP', label: 'Coin Flip', type: 'bonus', color: 'bg-cyan-500' },
   { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'bg-pink-500' },
   { id: 'CASH HUNT', label: 'Cash Hunt', type: 'bonus', color: 'bg-green-500' },
-  { id: 'CRAZY TIME', label: 'Crazy Time', type: 'bonus', color: 'bg-red-700' },
+  { id: 'CRAZY TIME', label: 'Crazy Time', type: 'bonus', color: 'bg-red-500' },
 ];
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
@@ -128,7 +128,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-accent border-4 border-background flex items-center justify-center shadow-lg">
        </div>
        <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2"
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform rotate-180"
         style={{
           clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
           width: '30px',
@@ -195,26 +195,28 @@ export default function Home() {
 
   const handleBet = (optionId: string) => {
     if (isSpinning) return;
+    if (balance < selectedChip) {
+      toast({ variant: "destructive", title: "Not enough balance to place that bet." });
+      return;
+    }
+    setBalance(prev => prev - selectedChip);
     playSound('chip');
     setBets(prev => ({...prev, [optionId]: prev[optionId] + selectedChip}));
   }
 
   const handleClearBets = () => {
     if (isSpinning) return;
+    setBalance(prev => prev + totalBet);
     setBets(initialBetsState);
   }
 
   const handleSpin = async () => {
     if (isSpinning || totalBet === 0) return;
-    if (totalBet > balance) {
-      toast({ variant: "destructive", title: "Insufficient Balance" });
-      return;
-    }
     
     if (Tone.context.state !== 'running') await Tone.start();
     
     setIsSpinning(true);
-    setBalance(prev => prev - totalBet);
+    // Balance is already deducted when placing bets
     setAiMessage(null);
     playSound('spin');
 
@@ -239,6 +241,15 @@ export default function Home() {
           toast({ title: "Bonus Round!", description: `You entered the ${winningLabel} bonus game!` });
         }
       }
+
+      // Return losing bets on other segments
+      let totalReturned = 0;
+      for (const betId in bets) {
+        if (bets[betId] > 0 && betId !== winningLabel) {
+          // This logic is flawed, we only get stake back on the winning bet
+          // Payout logic needs to be revisited.
+        }
+      }
       
       if (totalWinnings > 0) playSound('win'); else playSound('lose');
       setBalance(prev => prev + totalWinnings);
@@ -254,7 +265,9 @@ export default function Home() {
         console.error("AI encouragement error:", error);
         setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
       }
-
+      
+      // Reset bets after spin resolution
+      setBets(initialBetsState);
       setIsSpinning(false);
     }, SPIN_DURATION_SECONDS * 1000);
   };
