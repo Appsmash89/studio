@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -282,6 +282,11 @@ export default function Game() {
     downloadLink.click();
     document.body.removeChild(downloadLink);
   };
+
+  const handleSkipCountdown = () => {
+    if (gameState !== 'BETTING') return;
+    setCountdown(0);
+  }
 
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     const winningLabel = winningSegment!.label;
@@ -620,6 +625,10 @@ export default function Game() {
                       DEV TOOLS
                   </p>
                   <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
+                        <FastForward className="mr-2 h-3 w-3" />
+                        Skip Timer
+                    </Button>
                     <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                         <Download className="mr-2 h-3 w-3" />
                         Latest Spin
