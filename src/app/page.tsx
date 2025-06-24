@@ -151,7 +151,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                   d={getSegmentPath(index)} 
                   fill={segment.color} 
                   stroke="hsl(var(--accent))" 
-                  strokeWidth="2"
+                  strokeWidth="6" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
                 />
                 <text
@@ -160,7 +160,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                   fill={segment.textColor}
                   textAnchor="middle"
                   dy=".3em"
-                  className="text-xs font-bold uppercase tracking-wider"
+                  className="text-base font-bold uppercase tracking-wider"
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
                   transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
                 >
@@ -179,7 +179,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
        <div
         className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 transform"
         style={{
-          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
+          clipPath: 'polygon(0% 0%, 100% 0%, 50% 100%)',
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
@@ -447,3 +447,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
