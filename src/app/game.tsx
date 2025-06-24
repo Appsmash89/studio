@@ -337,8 +337,8 @@ export default function Game() {
       </header>
 
       <main className="flex flex-col items-center justify-center gap-4 pt-20">
-        <h1 className="text-6xl font-headline text-accent tracking-wider" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
-          SpinRiches
+        <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
+          Wheel of Fortune Casino – Free Spins
         </h1>
         
         <div className="h-24 flex flex-col items-center justify-center text-center">

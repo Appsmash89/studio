@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SpinRiches',
+  title: 'Wheel of Fortune Casino – Free Spins',
   description: 'A virtual Wheel of Fortune game',
 };
 
