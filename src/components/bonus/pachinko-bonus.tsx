@@ -159,9 +159,13 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
                         <div className="relative w-full h-[85%]">
                             {Pegs}
                             {gameState === 'dropping' && (
-                                <svg className="absolute inset-0 w-full h-full">
+                                <svg
+                                  className="absolute inset-0 w-full h-full"
+                                  viewBox="0 0 100 100"
+                                  preserveAspectRatio="none"
+                                >
                                     <path d={animationPath} fill="none" stroke="none" id="puck-path" />
-                                    <circle r="12" fill="hsl(var(--accent))" stroke="white" strokeWidth="2" key={puckKey}>
+                                    <circle r="3" fill="hsl(var(--accent))" stroke="white" strokeWidth="1" key={puckKey}>
                                         <animateMotion dur="2.5s" begin="0s" fill="freeze" repeatCount="1">
                                             <mpath href="#puck-path" />
                                         </animateMotion>
@@ -200,5 +204,3 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
         </div>
     );
 }
-
-    
