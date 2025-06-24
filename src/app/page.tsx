@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -8,6 +9,7 @@ import { Wallet, Volume2, VolumeX, Sparkles, XCircle } from 'lucide-react';
 import * as Tone from 'tone';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
+import { Progress } from "@/components/ui/progress"
 
 const BET_OPTIONS = [
   { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
@@ -86,6 +88,8 @@ const SEGMENTS_CONFIG = [
 const NUM_SEGMENTS = SEGMENTS_CONFIG.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 const SPIN_DURATION_SECONDS = 8;
+const BETTING_TIME_SECONDS = 15;
+const RESULT_DISPLAY_SECONDS = 5;
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
 const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
@@ -119,13 +123,13 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
 
   const getLabelPosition = (index: number) => {
     const angle = (index + 0.5) * SEGMENT_ANGLE;
-    return polarToCartesian(center, center, radius * 0.75, angle);
+    return polarToCartesian(center, center, radius * 0.7, angle);
   };
 
   return (
     <div className="relative w-[420px] h-[420px] flex items-center justify-center">
       <div
-        className="absolute w-full h-full rounded-full shadow-2xl"
+        className="absolute w-full h-full rounded-full"
         style={{
           transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.25, 0.1, 0.25, 1)`,
           transform: `rotate(${rotation}deg)`,
@@ -183,7 +187,8 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
-          filter: 'drop-shadow(0px 3px 3px rgba(0,0,0,0.5))'
+          filter: 'drop-shadow(0px 3px 3px rgba(0,0,0,0.5))',
+          transform: 'translateX(-50%) translateY(-8px) rotate(180deg)'
         }}
       />
     </div>
@@ -195,12 +200,15 @@ export default function Home() {
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState<{[key: string]: number}>(initialBetsState);
   const [selectedChip, setSelectedChip] = useState(10);
-  const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
+
+  const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT'>('BETTING');
+  const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
+  const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -245,7 +253,7 @@ export default function Home() {
   }, [isMuted]);
 
   const handleBet = (optionId: string) => {
-    if (isSpinning) return;
+    if (gameState !== 'BETTING') return;
     if (balance < selectedChip) {
       toast({ variant: "destructive", title: "Not enough balance to place that bet." });
       return;
@@ -256,17 +264,15 @@ export default function Home() {
   }
 
   const handleClearBets = () => {
-    if (isSpinning) return;
+    if (gameState !== 'BETTING') return;
     setBalance(prev => prev + totalBet);
     setBets(initialBetsState);
   }
 
-  const handleSpin = async () => {
-    if (isSpinning || totalBet === 0) return;
-    
+  const handleSpin = useCallback(async () => {
     if (Tone.context.state !== 'running') await Tone.start();
     
-    setIsSpinning(true);
+    setGameState('SPINNING');
     setAiMessage(null);
     playSound('spin');
 
@@ -282,15 +288,14 @@ export default function Home() {
       if (possibleIndices.length > 0) {
         winningSegmentIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
       } else {
-        // Fallback to random if forcedWinner is invalid
         winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
       }
-      setForcedWinner(null); // Reset for the next spin
+      setForcedWinner(null);
     } else {
       winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
     }
     
-    const winningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
+    const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     const fullRotations = 7;
     const targetRotation = (fullRotations * 360) - (winningSegmentIndex * SEGMENT_ANGLE);
@@ -299,14 +304,14 @@ export default function Home() {
     
     setTimeout(async () => {
       let totalWinnings = 0;
-      const winningLabel = winningSegment.label;
+      const winningLabel = currentWinningSegment.label;
       const betOnWinner = bets[winningLabel] || 0;
 
       if (betOnWinner > 0) {
-        if (winningSegment.type === 'number') {
-          totalWinnings = betOnWinner * winningSegment.multiplier + betOnWinner; // Payout + stake back
-        } else { // Bonus game
-          totalWinnings = betOnWinner; // Return stake, show toast
+        if (currentWinningSegment.type === 'number') {
+          totalWinnings = betOnWinner * currentWinningSegment.multiplier + betOnWinner;
+        } else {
+          totalWinnings = betOnWinner;
           toast({ title: "Bonus Round!", description: `You entered the ${winningLabel.replace('_', ' ')} bonus game!` });
         }
       }
@@ -326,10 +331,44 @@ export default function Home() {
         setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
       }
       
-      setBets(initialBetsState);
-      setIsSpinning(false);
+      setWinningSegment(currentWinningSegment);
+      setGameState('RESULT');
+
     }, SPIN_DURATION_SECONDS * 1000);
-  };
+  }, [bets, totalBet, playSound, forcedWinner]);
+
+  // Game Loop Timer
+  useEffect(() => {
+    if (gameState === 'BETTING') {
+      const timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+
+    if (gameState === 'RESULT') {
+      const timer = setTimeout(() => {
+        setGameState('BETTING');
+        setCountdown(BETTING_TIME_SECONDS);
+        setBets(initialBetsState);
+        setAiMessage(null);
+        setWinningSegment(null);
+      }, RESULT_DISPLAY_SECONDS * 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState]);
+
+  // Trigger Spin when countdown ends
+  useEffect(() => {
+    if (countdown <= 0 && gameState === 'BETTING') {
+      if (totalBet > 0) {
+        handleSpin();
+      } else {
+        // No bets placed, just restart the betting round
+        setCountdown(BETTING_TIME_SECONDS);
+      }
+    }
+  }, [countdown, gameState, totalBet, handleSpin]);
   
   useEffect(() => { Tone.Destination.mute = isMuted; }, [isMuted]);
 
@@ -360,12 +399,39 @@ export default function Home() {
         <h1 className="text-6xl font-headline text-accent tracking-wider" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
           SpinRiches
         </h1>
-
+        
+        <div className="h-24 flex flex-col items-center justify-center text-center">
+            {gameState === 'BETTING' && (
+                <>
+                    <h2 className="text-xl font-bold uppercase tracking-wider text-accent mb-2">
+                        Place Your Bets
+                    </h2>
+                    <div className="flex items-center gap-2">
+                        <p className="text-4xl font-headline">{countdown}</p>
+                    </div>
+                    <Progress value={(countdown / BETTING_TIME_SECONDS) * 100} className="w-64 mt-2" />
+                </>
+            )}
+            {gameState === 'SPINNING' && (
+                <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
+                    No More Bets!
+                </h2>
+            )}
+            {gameState === 'RESULT' && winningSegment && (
+                <>
+                    <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
+                        Winner is...
+                    </h2>
+                    <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
+                </>
+            )}
+        </div>
+        
         <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
         
         <div className="h-16 flex items-center justify-center text-center">
-            {aiMessage && (
-                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", isSpinning ? "opacity-0" : "opacity-100")}>
+            {aiMessage && gameState === 'RESULT' && (
+                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
                     <CardContent className="p-0 flex items-center gap-3">
                       <Sparkles className="text-accent w-5 h-5"/>
                       <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
@@ -396,7 +462,7 @@ export default function Home() {
                     "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
                   )}
                   onClick={() => handleBet(option.id)}
-                  disabled={isSpinning}
+                  disabled={gameState !== 'BETTING'}
                 >
                   <span className={cn(
                     "font-bold drop-shadow-md",
@@ -413,16 +479,19 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
                 {CHIP_VALUES.map(chip => (
-                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={isSpinning}>
+                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING'}>
                     ${chip}
                   </Button>
                 ))}
               </div>
               <div className="flex-grow flex items-center justify-end gap-2">
-                <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={isSpinning || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
-                 <Button onClick={handleSpin} disabled={isSpinning || totalBet === 0} size="lg" className="flex-1 max-w-xs text-xl font-bold font-headline bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-all duration-300 hover:shadow-accent/30 active:scale-95">
-                  {isSpinning ? 'Spinning...' : `SPIN ($${totalBet.toLocaleString()})`}
-                </Button>
+                <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
+                 <Card className="bg-card/80">
+                    <CardContent className="p-2 text-center">
+                        <p className="text-sm text-muted-foreground">Total Bet</p>
+                        <p className="text-2xl font-bold text-accent">${totalBet.toLocaleString()}</p>
+                    </CardContent>
+                </Card>
               </div>
             </div>
             <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
@@ -436,8 +505,8 @@ export default function Home() {
                     size="sm"
                     variant="outline"
                     onClick={() => setForcedWinner(option.id)}
-                    disabled={isSpinning}
-                    className="h-auto p-1 text-[10px]"
+                    disabled={gameState !== 'BETTING'}
+                    className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
                   >
                     {option.label}
                   </Button>
@@ -455,3 +524,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
