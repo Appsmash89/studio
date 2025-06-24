@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,6 +10,9 @@ import { Wallet, Volume2, VolumeX, Sparkles, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
+import type { SoundPlayerHandle } from '@/components/sound-player';
+
+const DynamicSoundPlayer = dynamic(() => import('@/components/sound-player'), { ssr: false });
 
 const BET_OPTIONS = [
   { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
@@ -204,66 +209,17 @@ export default function Game() {
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
-  const [audioInitialized, setAudioInitialized] = useState(false);
+  const soundPlayerRef = useRef<SoundPlayerHandle>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
-  const ToneRef = useRef<any>(null);
-  const sounds = useRef<{
-    spin?: any;
-    win?: any;
-    lose?: any;
-    chip?: any;
-    initialized: boolean;
-  }>({ initialized: false });
-  
-  useEffect(() => {
-    const initialize = async () => {
-      if (typeof window !== 'undefined' && !sounds.current.initialized) {
-        const ToneModule = await import('tone');
-        ToneRef.current = ToneModule;
-        
-        sounds.current.spin = new ToneModule.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.2 }, volume: -20 }).toDestination();
-        sounds.current.win = new ToneModule.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }, volume: -10 }).toDestination();
-        sounds.current.lose = new ToneModule.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.5 }, volume: -10 }).toDestination();
-        sounds.current.chip = new ToneModule.MembraneSynth({ octaves: 4, pitchDecay: 0.1, volume: -15 }).toDestination();
-        sounds.current.initialized = true;
-      }
-    };
-    initialize();
-
-    return () => {
-        sounds.current.spin?.dispose();
-        sounds.current.win?.dispose();
-        sounds.current.lose?.dispose();
-        sounds.current.chip?.dispose();
-    };
+  const initializeAudio = useCallback(() => {
+    soundPlayerRef.current?.initializeAudio();
   }, []);
 
-  const initializeAudio = useCallback(async () => {
-    if (audioInitialized || !sounds.current.initialized || !ToneRef.current) return;
-    try {
-      await ToneRef.current.start();
-      setAudioInitialized(true);
-    } catch (e) {
-      console.error("Could not start audio context", e);
-    }
-  }, [audioInitialized]);
-
   const playSound = useCallback((sound: 'spin' | 'win' | 'lose' | 'chip') => {
-    if (isMuted || !sounds.current.initialized || !ToneRef.current) return;
-    const now = ToneRef.current.now();
-    if (sound === 'spin' && sounds.current.spin) {
-      sounds.current.spin.triggerAttackRelease("2n", now);
-    } else if (sound === 'win' && sounds.current.win) {
-      sounds.current.win.triggerAttackRelease('C5', '8n', now);
-      sounds.current.win.triggerAttackRelease('G5', '8n', now + 0.2);
-    } else if (sound === 'lose' && sounds.current.lose) {
-      sounds.current.lose.triggerAttackRelease('C3', '4n', now);
-    } else if (sound === 'chip' && sounds.current.chip) {
-      sounds.current.chip.triggerAttackRelease('C2', '8n', now);
-    }
-  }, [isMuted]);
+    soundPlayerRef.current?.playSound(sound);
+  }, []);
 
   const handleBet = (optionId: string) => {
     initializeAudio();
@@ -381,12 +337,6 @@ export default function Game() {
       handleSpin();
     }
   }, [countdown, gameState, handleSpin]);
-  
-  useEffect(() => { 
-    if (ToneRef.current) {
-        ToneRef.current.Destination.mute = isMuted; 
-    }
-  }, [isMuted]);
 
   const aiMessageColor = {
     low: 'text-muted-foreground',
@@ -396,6 +346,7 @@ export default function Game() {
   
   return (
     <div className="flex flex-col items-center justify-between min-h-screen bg-background text-foreground p-4 overflow-hidden">
+      <DynamicSoundPlayer ref={soundPlayerRef} isMuted={isMuted} />
       <header className="w-full flex justify-between items-center absolute top-4 px-4">
         <div className="flex items-center gap-4">
           <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
