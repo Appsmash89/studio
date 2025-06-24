@@ -43,6 +43,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
     const [symbols, setSymbols] = useState<JSX.Element[]>([]);
     const [winnings, setWinnings] = useState(0);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+    const [isCompleted, setIsCompleted] = useState(false);
 
     const shuffleBoard = () => {
         // Shuffle multipliers
@@ -69,6 +70,12 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
         setGameState('revealed');
     };
 
+    const handleComplete = () => {
+        if (isCompleted) return;
+        setIsCompleted(true);
+        onComplete(winnings);
+    };
+
     return (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-in fade-in p-4">
             <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -83,7 +90,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                         <div className="text-center animate-in fade-in zoom-in-50">
                             <p className="text-xl font-semibold">You picked a {multipliers[selectedIndex!]}x multiplier!</p>
                             <p className="text-4xl font-bold text-accent my-2">You Won ${winnings.toLocaleString()}!</p>
-                            <Button onClick={() => onComplete(winnings)} className="mt-2">Continue</Button>
+                            <Button onClick={handleComplete} disabled={isCompleted} className="mt-2">Continue</Button>
                         </div>
                     )}
                    

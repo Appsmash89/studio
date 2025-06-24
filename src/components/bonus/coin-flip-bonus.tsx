@@ -19,6 +19,13 @@ export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
     const [multipliers, setMultipliers] = useState<{ red: number; blue: number } | null>(null);
     const [flipResult, setFlipResult] = useState<'red' | 'blue' | null>(null);
     const [winnings, setWinnings] = useState(0);
+    const [isCompleted, setIsCompleted] = useState(false);
+
+    const handleComplete = () => {
+        if (isCompleted) return;
+        setIsCompleted(true);
+        onComplete(winnings);
+    };
 
     // Game flow handler
     useEffect(() => {
@@ -110,7 +117,7 @@ export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
                              <p className="text-2xl font-bold text-accent">You Won!</p>
                              <p className="text-lg">Your Bet: ${betAmount.toLocaleString()}</p>
                              <p className="text-3xl font-bold">Total Win: ${winnings.toLocaleString()}</p>
-                             <Button onClick={() => onComplete(winnings)} className="mt-4">Continue</Button>
+                             <Button onClick={handleComplete} disabled={isCompleted} className="mt-4">Continue</Button>
                          </div>
                     )}
 
