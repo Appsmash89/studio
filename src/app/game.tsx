@@ -235,6 +235,9 @@ export default function Game() {
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
+  const spinDataRef = useRef({ bets, totalBet });
+  spinDataRef.current = { bets, totalBet };
+
   const handleBet = (optionId: string) => {
     if (gameState !== 'BETTING') return;
     if (balance < selectedChip) {
@@ -359,8 +362,9 @@ export default function Game() {
     });
     
     setTimeout(async () => {
+      const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
       const winningLabel = winningSegmentWithId.label;
-      const betOnWinner = bets[winningLabel] || 0;
+      const betOnWinner = currentBets[winningLabel] || 0;
 
       if (winningSegmentWithId.type === 'bonus') {
           if (betOnWinner > 0) {
@@ -371,7 +375,7 @@ export default function Game() {
               try {
                   const encouragement = await getEncouragement({
                       gameEvent: 'loss',
-                      betAmount: totalBet,
+                      betAmount: currentTotalBet,
                       winAmount: 0,
                   });
                   setAiMessage(encouragement);
@@ -383,12 +387,12 @@ export default function Game() {
               const newLogEntry: GameLogEntry = {
                   spinId: winningSegmentWithId.id,
                   timestamp: new Date().toISOString(),
-                  bets,
-                  totalBet,
+                  bets: currentBets,
+                  totalBet: currentTotalBet,
                   winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: 0 },
                   isBonus: true,
                   roundWinnings: roundWinnings,
-                  netResult: roundWinnings - totalBet,
+                  netResult: roundWinnings - currentTotalBet,
               };
               setGameLog(prev => [newLogEntry, ...prev]);
 
@@ -406,11 +410,11 @@ export default function Game() {
       
       setBalance(prev => prev + roundWinnings);
 
-      if (totalBet > 0) {
+      if (currentTotalBet > 0) {
         try {
           const encouragement = await getEncouragement({
-            gameEvent: roundWinnings > totalBet ? 'win' : 'loss',
-            betAmount: totalBet,
+            gameEvent: roundWinnings > currentTotalBet ? 'win' : 'loss',
+            betAmount: currentTotalBet,
             winAmount: roundWinnings,
           });
           setAiMessage(encouragement);
@@ -423,12 +427,12 @@ export default function Game() {
       const newLogEntry: GameLogEntry = {
           spinId: winningSegmentWithId.id,
           timestamp: new Date().toISOString(),
-          bets,
-          totalBet,
+          bets: currentBets,
+          totalBet: currentTotalBet,
           winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: winningSegmentWithId.multiplier },
           isBonus: false,
           roundWinnings: roundWinnings,
-          netResult: roundWinnings - totalBet,
+          netResult: roundWinnings - currentTotalBet,
       };
       setGameLog(prev => [newLogEntry, ...prev]);
       
@@ -437,7 +441,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [bets, totalBet, forcedWinner]);
+  }, [forcedWinner]);
 
   // Game Loop Timer
   useEffect(() => {
