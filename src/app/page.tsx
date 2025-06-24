@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const SEGMENTS = [
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
@@ -26,10 +26,10 @@ const SEGMENTS = [
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'CASH HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
+    { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
@@ -40,11 +40,11 @@ const SEGMENTS = [
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'CRAZY TIME', type: 'bonus', multiplier: 0, color: 'hsl(0, 80%, 60%)' },
+    { label: 'CRAZY_TIME', type: 'bonus', multiplier: 0, color: 'hsl(0, 80%, 60%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
@@ -52,7 +52,7 @@ const SEGMENTS = [
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'CASH HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
+    { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
@@ -61,7 +61,7 @@ const SEGMENTS = [
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
-    { label: 'COIN FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
   ];
@@ -69,21 +69,25 @@ const NUM_SEGMENTS = SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 const SPIN_DURATION_SECONDS = 8;
 
-// You can replace these placeholder URLs with your own texture images.
-// For example, create a 'public/textures' folder, add 'blue-felt.png', and use '/textures/blue-felt.png'.
 const BET_OPTIONS = [
-  { id: '1', label: '1', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'gray felt' },
-  { id: '2', label: '2', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'blue felt' },
-  { id: '5', label: '5', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'green felt' },
-  { id: '10', label: '10', type: 'number', textureUrl: 'https://placehold.co/200x100.png', hint: 'purple felt' },
-  { id: 'COIN FLIP', label: 'Coin Flip', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'gold pattern' },
-  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'pink pattern' },
-  { id: 'CASH HUNT', label: 'Cash Hunt', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'green pattern' },
-  { id: 'CRAZY TIME', label: 'Crazy Time', type: 'bonus', textureUrl: 'https://placehold.co/200x100.png', hint: 'red pattern' },
+  { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
+  { id: '2', label: '2', type: 'number', color: 'hsl(210, 80%, 55%)', textColor: 'white' },
+  { id: '5', label: '5', type: 'number', color: 'hsl(140, 60%, 50%)', textColor: 'white' },
+  { id: '10', label: '10', type: 'number', color: 'hsl(280, 80%, 65%)', textColor: 'white' },
+  { id: 'COIN_FLIP', label: 'Coin Flip', type: 'bonus', color: 'hsl(45, 90%, 60%)', textColor: 'hsl(var(--background))' },
+  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'hsl(320, 70%, 60%)', textColor: 'white' },
+  { id: 'CASH_HUNT', label: 'Cash Hunt', type: 'bonus', color: 'hsl(100, 60%, 60%)', textColor: 'hsl(var(--background))' },
+  { id: 'CRAZY_TIME', label: 'Crazy Time', type: 'bonus', color: 'hsl(0, 80%, 60%)', textColor: 'white' },
 ];
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
 const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
+
+// Helper to adjust HSL color values for gradients
+const adjustHsl = (hsl: string, h: number, l: number) => {
+  const [hue, saturation, lightness] = hsl.match(/\d+/g)!.map(Number);
+  return `hsl(${hue + h}, ${saturation}%, ${lightness + l}%)`;
+}
 
 // Wheel Component
 const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: number }) => {
@@ -139,7 +143,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
                   className="text-[10px] font-bold"
                   transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
                 >
-                  {segment.label.replace(' ', '\n')}
+                  {segment.label.replace('_', '\n')}
                 </text>
               </g>
             ))}
@@ -155,6 +159,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS; rotation: nu
           width: '30px',
           height: '40px',
           backgroundColor: 'hsl(var(--accent))',
+          transform: 'rotate(180deg)',
         }}
       />
     </div>
@@ -258,7 +263,7 @@ export default function Home() {
           totalWinnings = betOnWinner * winningSegment.multiplier + betOnWinner; // Payout + stake back
         } else { // Bonus game
           totalWinnings = betOnWinner; // Return stake, show toast
-          toast({ title: "Bonus Round!", description: `You entered the ${winningLabel} bonus game!` });
+          toast({ title: "Bonus Round!", description: `You entered the ${winningLabel.replace('_', ' ')} bonus game!` });
         }
       }
       
@@ -337,24 +342,23 @@ export default function Home() {
                   key={option.id}
                   variant="secondary"
                   style={{
-                    backgroundImage: `url(${option.textureUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    background: `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`,
+                    color: option.textColor,
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
+                    fontFamily: "'Playfair Display', serif",
                   }}
-                  data-ai-hint={option.hint}
                   className={cn(
                     "h-auto flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
-                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0",
-                    "text-white"
+                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
                   )}
                   onClick={() => handleBet(option.id)}
                   disabled={isSpinning}
                 >
                   <span className={cn(
                     "font-bold drop-shadow-md",
-                    option.type === 'number' ? 'font-headline text-2xl' : 'text-[10px] tracking-wide uppercase leading-tight text-center'
+                    option.type === 'number' ? 'text-2xl' : 'text-[10px] tracking-wide uppercase leading-tight text-center'
                   )}>
-                    {option.label}
+                    {option.label.replace('_', ' ')}
                   </span>
                   <span className="text-sm font-mono font-semibold text-white/90 drop-shadow-sm">
                     ${bets[option.id].toLocaleString()}
