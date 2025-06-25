@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, TestTube2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -254,6 +254,14 @@ export default function Game() {
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
 
+  useEffect(() => {
+    // Set initial random result for Top Slot on component mount
+    setTopSlotResult({
+      left: TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
+      right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
+    });
+  }, []);
+
   const handleBet = (optionId: string) => {
     if (gameState !== 'BETTING') return;
     if (balance < selectedChip) {
@@ -359,21 +367,20 @@ export default function Game() {
         setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
     }
     
-    // The log for the spin that *triggered* the bonus is already created in handleSpin.
-    // This new log entry is specifically for the *outcome* of the bonus round.
-    const newLogEntry: GameLogEntry = {
-        spinId: winningSegment!.id,
-        timestamp: new Date().toISOString(),
-        bets: spinDataRef.current.bets,
-        totalBet: currentTotalBet,
-        winningSegment: { label: winningSegment!.label, type: winningSegment!.type, multiplier: 0 },
-        isBonus: true,
-        bonusWinnings: bonusWinnings,
-        bonusDetails: bonusDetails,
-        roundWinnings: roundWinnings,
-        netResult: roundWinnings - currentTotalBet,
-    };
-    setGameLog(prev => [newLogEntry, ...prev]);
+    setGameLog(prevLog => {
+        const updatedLog = [...prevLog];
+        const spinLogIndex = updatedLog.findIndex(log => log.spinId === winningSegment!.id);
+        if (spinLogIndex > -1) {
+            updatedLog[spinLogIndex] = {
+                ...updatedLog[spinLogIndex],
+                bonusWinnings: bonusWinnings,
+                bonusDetails: bonusDetails,
+                roundWinnings: roundWinnings,
+                netResult: roundWinnings - updatedLog[spinLogIndex].totalBet,
+            };
+        }
+        return updatedLog;
+    });
 
     setGameState('RESULT');
   }, [winningSegment]);
@@ -388,11 +395,8 @@ export default function Game() {
         right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
     };
 
-    // Start the Top Slot's visual spin immediately
     setIsTopSlotSpinning(true);
     
-    // After 4 seconds, set the final result and stop the reels.
-    // This ensures the top slot finishes before the main wheel.
     setTimeout(() => {
         setTopSlotResult(finalTopSlotResult);
         setIsTopSlotSpinning(false);
@@ -459,8 +463,8 @@ export default function Game() {
               winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: 0 },
               topSlotResult: finalTopSlotResult,
               isBonus: true,
-              roundWinnings: 0,
-              netResult: -currentTotalBet,
+              roundWinnings: 0, // This will be updated in handleBonusComplete
+              netResult: -currentTotalBet, // This will be updated in handleBonusComplete
           };
           setGameLog(prev => [newLogEntry, ...prev]);
           
@@ -478,7 +482,6 @@ export default function Game() {
       let roundWinnings = 0;
       if (betOnWinner > 0) {
         let effectiveMultiplier = winningSegmentWithId.multiplier;
-        // Use the `finalTopSlotResult` from the start of the spin to avoid stale state
         if (finalTopSlotResult && finalTopSlotResult.left === winningSegmentWithId.label && finalTopSlotResult.right) {
             effectiveMultiplier = finalTopSlotResult.right;
         }
@@ -541,7 +544,6 @@ export default function Game() {
         setBetHistory([]);
         setAiMessage(null);
         setWinningSegment(null);
-        // Do not reset top slot result here, let it persist for next spin reference
       }, RESULT_DISPLAY_SECONDS * 1000);
     }
 
@@ -619,7 +621,7 @@ export default function Game() {
                 )}
             </div>
 
-            <div className="my-4">
+            <div className="my-4 z-20">
               <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} />
             </div>
             
@@ -728,6 +730,10 @@ export default function Game() {
                           DEV TOOLS
                       </p>
                       <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => setIsTopSlotSpinning(s => !s)}>
+                            <TestTube2 className="mr-2 h-3 w-3" />
+                            Test Top Slot
+                        </Button>
                         <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
                             <FastForward className="mr-2 h-3 w-3" />
                             Skip Timer

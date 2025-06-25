@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 export const TOP_SLOT_LEFT_REEL_ITEMS = ['1', '2', '5', '10', 'COIN_FLIP', 'PACHINKO', 'CASH_HUNT', 'CRAZY_TIME'];
 export const TOP_SLOT_RIGHT_REEL_ITEMS = [2, 3, 5, 7, 10, 15, 20, 50];
@@ -11,59 +11,80 @@ interface ReelProps {
     items: (string | number)[];
     result: string | number | null;
     isSpinning: boolean;
-    stopDelay: number;
-    spinDuration: string;
+    spinDuration: number; // in seconds
+    reelIndex: number;
 }
 
-const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps) => {
+const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps) => {
     const duplicatedItems = useMemo(() => [...items, ...items, ...items, ...items], [items]);
-    const stopTimeoutRef = useRef<NodeJS.Timeout>();
-    const [style, setStyle] = useState<React.CSSProperties>({});
+    const reelRef = useRef<HTMLDivElement>(null);
+    const currentOffset = useRef(0);
     const prevSpinningRef = useRef(isSpinning);
 
-    // This effect handles the change between spinning and stopping states.
+    // Effect to set the initial/final position of the reel when not spinning
     useEffect(() => {
-        clearTimeout(stopTimeoutRef.current);
+        if (!isSpinning && result !== null && reelRef.current) {
+            const resultIndex = items.findIndex(item => String(item) === String(result));
+            if (resultIndex === -1) return;
+            
+            // Set position to the 2nd set of items for seamless looping
+            const targetIndex = items.length + resultIndex;
+            const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
 
-        if (isSpinning) {
-            // Instantly start the main spin animation.
-            setStyle({
-                transform: 'translateY(0)', // Ensure we start from a clean slate for the animation loop.
-                animation: `reel-spin ${spinDuration} linear infinite`,
-            });
-        } else {
-            // This runs when isSpinning becomes false.
-            // We only want to run the stop logic if it was previously spinning.
-            if (prevSpinningRef.current && result !== null) {
-                stopTimeoutRef.current = setTimeout(() => {
-                    const resultIndex = items.findIndex(item => String(item).replace(' ', '_') === String(result).replace(' ', '_'));
-                    // Position to land on the third set of items for a smoother visual stop.
-                    const targetIndex = items.length * 2 + (resultIndex >= 0 ? resultIndex : 0);
-                    const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
+            reelRef.current.style.transition = 'none'; // Snap to position without animation
+            reelRef.current.style.transform = `translateY(-${targetOffset}px)`;
+            currentOffset.current = -targetOffset;
+        }
+    }, [result, items, isSpinning, duplicatedItems.length]);
+    
 
-                    // Stop the CSS animation and use a CSS transition to smoothly land on the result.
-                    setStyle({
-                        animation: 'none', // Stop the infinite spin.
-                        transition: 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1)', // Smooth stop with overshoot.
-                        transform: `translateY(-${targetOffset}px)`,
-                    });
-                }, stopDelay);
-            }
+    // Effect to handle the start and stop of the spinning animation
+    useEffect(() => {
+        if (!reelRef.current) return;
+
+        const wasSpinning = prevSpinningRef.current;
+        
+        if (isSpinning && !wasSpinning) {
+            // START SPINNING
+            const spinRevolutions = 10 + reelIndex * 2; // More spin for the right reel
+            const spinDistance = duplicatedItems.length * REEL_ITEM_HEIGHT * spinRevolutions;
+            
+            reelRef.current.style.transition = `transform ${spinDuration}s linear`;
+            const newTransform = currentOffset.current - spinDistance;
+            reelRef.current.style.transform = `translateY(${newTransform}px)`;
+
+        } else if (!isSpinning && wasSpinning) {
+            // STOP SPINNING
+            if (result === null) return;
+            
+            const resultIndex = items.findIndex(item => String(item) === String(result));
+            if (resultIndex === -1) return;
+
+            // Get the current transform value to calculate the closest stop point
+            const currentTransform = getComputedStyle(reelRef.current).transform;
+            const matrix = new DOMMatrixReadOnly(currentTransform);
+            const currentY = matrix.m42;
+
+            const singleRevolutionHeight = items.length * REEL_ITEM_HEIGHT;
+            const currentRevolutions = Math.abs(Math.ceil(currentY / singleRevolutionHeight));
+
+            const targetIndex = items.length + resultIndex; // Land on the 2nd set of items
+            const finalOffset = (currentRevolutions * singleRevolutionHeight) + (targetIndex * REEL_ITEM_HEIGHT);
+
+            currentOffset.current = -finalOffset;
+
+            reelRef.current.style.transition = `transform ${1.5 + reelIndex * 0.5}s cubic-bezier(0.25, 1, 0.5, 1)`;
+            reelRef.current.style.transform = `translateY(-${finalOffset}px)`;
         }
 
-        // Update the ref at the end of the effect.
         prevSpinningRef.current = isSpinning;
-
-        return () => {
-            clearTimeout(stopTimeoutRef.current);
-        };
-    }, [isSpinning, result, items, spinDuration, stopDelay]);
+    }, [isSpinning, result, items, duplicatedItems.length, spinDuration, reelIndex]);
 
     return (
         <div className="w-1/2 h-full overflow-hidden">
             <div
+                ref={reelRef}
                 className="flex flex-col"
-                style={style}
             >
                 {duplicatedItems.map((item, i) => (
                     <div key={i} className="h-20 flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
@@ -77,8 +98,8 @@ const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps)
 
 export const TopSlot = ({ result, isSpinning }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean }) => {
     return (
-        <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 z-20">
-            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
+        <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1">
+             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
@@ -87,18 +108,18 @@ export const TopSlot = ({ result, isSpinning }: { result: { left: string | null;
                     items={TOP_SLOT_LEFT_REEL_ITEMS} 
                     result={result?.left ?? null} 
                     isSpinning={isSpinning}
-                    spinDuration="0.4s"
-                    stopDelay={1000}
+                    spinDuration={3}
+                    reelIndex={0}
                 />
                 <Reel 
                     items={TOP_SLOT_RIGHT_REEL_ITEMS} 
                     result={result?.right ?? null} 
                     isSpinning={isSpinning}
-                    spinDuration="0.2s"
-                    stopDelay={0}
+                    spinDuration={3.5}
+                    reelIndex={1}
                 />
             </div>
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
         </div>
     );
 };
