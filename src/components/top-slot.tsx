@@ -56,7 +56,7 @@ const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps)
                     setAnimationClass('');
                     setStyle({
                         animation: '',
-                        transition: 'transform 4s cubic-bezier(0.34, 1.56, 0.64, 1)', // easeOutBack curve
+                        transition: 'transform 2.5s cubic-bezier(0.34, 1.56, 0.64, 1)', // easeOutBack curve
                         transform: `translateY(-${targetOffset}px)`,
                     });
                 }, stopDelay);

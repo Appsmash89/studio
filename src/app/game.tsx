@@ -392,11 +392,11 @@ export default function Game() {
     // Delay the start of the Top Slot's visual spin
     setTimeout(() => {
         setIsTopSlotSpinning(true);
-        // After 4 seconds of spinning, show the result
+        // After 2 seconds of spinning, show the result
         setTimeout(() => {
             setTopSlotResult(finalTopSlotResult);
             setIsTopSlotSpinning(false);
-        }, 4000);
+        }, 2000);
     }, 1000); // 1-second delay
 
     // --- Main Wheel Logic ---
