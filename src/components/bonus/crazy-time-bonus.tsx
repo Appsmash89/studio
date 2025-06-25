@@ -30,7 +30,9 @@ const Reel = ({ items, result, isSpinning }: { items: (string | number)[], resul
             const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
             reelRef.current.style.transform = `translateY(-${targetOffset}px)`;
         } else if (isSpinning && reelRef.current) {
-            reelRef.current.style.transform = 'translateY(0)';
+            // Start animation from a random-ish point
+            const randomOffset = Math.floor(Math.random() * items.length) * REEL_ITEM_HEIGHT;
+            reelRef.current.style.transform = `translateY(-${randomOffset}px)`;
         }
     }, [isSpinning, result, items]);
 

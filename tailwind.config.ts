@@ -97,8 +97,8 @@ export default {
           '100%': { offsetDistance: '100%' }
         },
         'top-slot-spin': {
-          '0%': { transform: 'translateY(-200%)' },
-          '100%': { transform: 'translateY(0%)' },
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(-25%)' },
         }
       },
       animation: {
