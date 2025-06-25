@@ -898,24 +898,24 @@ export default function Game() {
               <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
 
               {/* Stand */}
-              <div className="relative -mt-8 w-96 h-40 z-[-1]">
+              <div className="relative -mt-5 w-80 h-20 z-[-1]">
                 {/* Stand Post */}
                 <div
-                  className="absolute bottom-8 left-1/2 -translate-x-1/2 h-24 w-16"
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 h-14 w-12"
                   style={{
                     background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                    clipPath: 'polygon(30% 0, 70% 0, 100% 100%, 0% 100%)',
-                    filter: 'drop-shadow(0px -5px 10px rgba(0,0,0,0.3))'
+                    clipPath: 'polygon(20% 0, 80% 0, 100% 100%, 0% 100%)',
+                    filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
                 </div>
                 {/* Stand Base */}
                 <div
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-80 rounded-t-full border-t-4 border-x-4 border-accent/80"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-5 w-64 rounded-t-full border-t-4 border-x-4 border-accent/60"
                   style={{
                     background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
-                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.7), inset 0 4px 6px hsl(var(--accent)/0.25)'
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8), inset 0 3px 5px hsl(var(--accent)/0.2)'
                   }}
                 />
               </div>
