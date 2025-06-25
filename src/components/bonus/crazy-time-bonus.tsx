@@ -90,7 +90,7 @@ const BonusWheel = ({ segments, rotation }: { segments: Segment[]; rotation: num
              <div
                 className="absolute w-full h-full rounded-full"
                 style={{
-                    transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.4, 0.0, 0.2, 1)`,
+                    transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.86, 0, 0.07, 1)`,
                     transform: `rotate(${rotation}deg)`,
                 }}
             >
