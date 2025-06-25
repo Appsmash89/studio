@@ -226,7 +226,10 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                   fill={textureUrl ? 'transparent' : segment.textColor}
                   textAnchor="middle"
                   dy=".3em"
-                  className="text-lg font-bold uppercase tracking-wider"
+                  className={cn(
+                    "font-bold uppercase tracking-wider",
+                    segment.type === 'bonus' ? "text-sm leading-tight" : "text-lg"
+                  )}
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
                   transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
                 >
@@ -945,24 +948,36 @@ export default function Game() {
                  <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                     {/* Stand Post */}
                     <div
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
-                    style={{
-                        background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                        clipPath: 'polygon(35% 0, 65% 0, 100% 100%, 0% 100%)',
-                        filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
-                    }}
+                      className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
+                      style={{
+                          background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
+                          clipPath: 'polygon(40% 0, 60% 0, 85% 100%, 15% 100%)',
+                          filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
+                      }}
                     >
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
                     </div>
+                    
                     {/* Stand Base */}
-                    <div
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-[250px] rounded-[100%_/_50%]"
-                    style={{
-                        background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
-                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8), inset 0 3px 5px hsl(var(--accent)/0.2)',
-                        borderTop: '4px solid hsl(var(--accent)/0.5)',
-                    }}
-                    />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[250px] h-8">
+                        {/* Cylinder side */}
+                        <div
+                            className="absolute bottom-0 left-0 w-full h-[85%] rounded-b-lg"
+                            style={{
+                                background: 'linear-gradient(to top, hsl(var(--primary)/0.7), hsl(var(--primary)/0.9))',
+                                boxShadow: '0 10px 15px -5px rgba(0,0,0,0.7)',
+                            }}
+                        />
+                        {/* Cylinder top face */}
+                        <div
+                            className="absolute top-0 left-0 w-full h-4 rounded-[100%_/_100%]"
+                            style={{
+                                background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.8))',
+                                border: '2px solid hsl(var(--accent)/0.3)',
+                                boxShadow: 'inset 0 2px 4px hsl(var(--accent)/0.2)',
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
             
@@ -1321,3 +1336,4 @@ export default function Game() {
     </div>
   );
 }
+
