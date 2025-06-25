@@ -19,6 +19,8 @@ import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
 import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
 import { TopSlot, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/components/top-slot';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 
 const BET_OPTIONS = [
@@ -152,7 +154,7 @@ const adjustHsl = (hsl: string, h: number, l: number) => {
   return `hsl(${hue + h}, ${saturation}%, ${lightness + l}%)`;
 }
 
-const Wheel = ({ segments, rotation, customTextures, hideText }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; }) => {
+const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; textureRotation: number; }) => {
   const radius = 200;
   const center = 210;
   const fullWheelTexture = customTextures['wheel-full'];
@@ -205,7 +207,7 @@ const Wheel = ({ segments, rotation, customTextures, hideText }: { segments: (ty
               </feMerge>
             </filter>
              {fullWheelTexture && (
-                <pattern id="pattern-wheel-full" patternUnits="userSpaceOnUse" width="420" height="420">
+                <pattern id="pattern-wheel-full" patternUnits="userSpaceOnUse" width="420" height="420" patternTransform={`rotate(${textureRotation} 210 210)`}>
                     <image href={fullWheelTexture} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
                 </pattern>
             )}
@@ -345,6 +347,7 @@ export default function Game() {
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(false);
+  const [textureRotation, setTextureRotation] = useState(0);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -1064,7 +1067,7 @@ export default function Game() {
             
             {/* Wheel and Stand Container */}
             <div className="relative flex flex-col items-center">
-                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} />
+                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} />
                  {/* Stand */}
                  <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                     {/* Stand Post */}
@@ -1376,6 +1379,20 @@ export default function Game() {
                         >
                           Hide text on textured elements
                         </label>
+                    </div>
+                    <div className="flex flex-col space-y-1 mb-2">
+                        <Label htmlFor="texture-rotation" className="text-xs font-medium text-muted-foreground">
+                          Wheel Texture Rotation ({textureRotation}°)
+                        </Label>
+                        <Slider
+                            id="texture-rotation"
+                            min={0}
+                            max={360}
+                            step={1}
+                            value={[textureRotation]}
+                            onValueChange={(value) => setTextureRotation(value[0])}
+                            disabled={!customTextures['wheel-full']}
+                        />
                     </div>
                      <div className="flex items-center space-x-2 mb-2">
                         <Checkbox 
