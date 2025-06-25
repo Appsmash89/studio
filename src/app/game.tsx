@@ -177,6 +177,8 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
   };
   
   const bulbs = Array.from({ length: NUM_SEGMENTS });
+  const uniqueLabelsWithTextures = [...new Set(segments.map(s => s.label))].filter(label => customTextures[label]);
+
 
   return (
     <div className="relative w-[420px] h-[420px] flex items-center justify-center">
@@ -199,21 +201,21 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            {Object.entries(customTextures).map(([id, url]) => (
-              <pattern key={`pattern-${id}`} id={`pattern-${id}`} patternUnits="userSpaceOnUse" width="420" height="420">
-                <image href={url} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
+            {uniqueLabelsWithTextures.map(label => (
+              <pattern key={`pattern-${label}`} id={`pattern-${label}`} patternUnits="userSpaceOnUse" width="420" height="420">
+                <image href={customTextures[label]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
               </pattern>
             ))}
           </defs>
           <g filter="url(#shadow)">
             {/* Segments */}
             {segments.map((segment, index) => {
-              const textureUrl = customTextures[segment.id];
+              const textureUrl = customTextures[segment.label];
               return (
-              <g key={index}>
+              <g key={segment.id}>
                 <path 
                   d={getSegmentPath(index)} 
-                  fill={textureUrl ? `url(#pattern-${segment.id})` : segment.color} 
+                  fill={textureUrl ? `url(#pattern-${segment.label})` : segment.color} 
                   stroke="hsl(43, 78%, 58%)" 
                   strokeWidth="2" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
@@ -935,13 +937,13 @@ export default function Game() {
             <div className="relative flex flex-col items-center">
                 <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} />
                  {/* Stand */}
-                 <div className="relative -mt-10 w-80 h-24 z-[-1]">
+                 <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                     {/* Stand Post */}
                     <div
                     className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
                     style={{
                         background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                        clipPath: 'polygon(33% 0, 67% 0, 100% 100%, 0% 100%)',
+                        clipPath: 'polygon(20% 0, 80% 0, 100% 100%, 0% 100%)',
                         filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                     }}
                     >
@@ -949,7 +951,7 @@ export default function Game() {
                     </div>
                     {/* Stand Base */}
                     <div
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-[200px] rounded-[100%_/_50%]"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-[250px] rounded-[100%_/_50%]"
                     style={{
                         background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
                         boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8), inset 0 3px 5px hsl(var(--accent)/0.2)',
@@ -966,22 +968,35 @@ export default function Game() {
                             History
                         </p>
                         <div className="flex gap-1.5">
-                            {spinHistory.map((segment) => (
-                                <div
-                                    key={segment.id}
-                                    className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
-                                    style={{
-                                        backgroundColor: segment.color,
-                                        color: segment.textColor,
-                                        textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
-                                    }}
-                                    title={segment.label.replace('_', ' ')}
-                                >
-                                    <span className="text-center leading-tight">
-                                        {segment.label.replace('_', '\n')}
-                                    </span>
-                                </div>
-                            ))}
+                            {spinHistory.map((segment, index) => {
+                                const customTexture = customTextures[segment.label];
+                                const style: React.CSSProperties = {
+                                    backgroundColor: segment.color,
+                                    color: segment.textColor,
+                                    textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
+                                };
+
+                                if (customTexture) {
+                                    style.backgroundImage = `url(${customTexture})`;
+                                    style.backgroundSize = 'cover';
+                                    style.backgroundPosition = 'center';
+                                    style.backgroundColor = 'transparent';
+                                    style.color = 'transparent';
+                                }
+
+                                return (
+                                    <div
+                                        key={`${segment.id}-${index}`}
+                                        className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
+                                        style={style}
+                                        title={segment.label.replace('_', ' ')}
+                                    >
+                                        <span className="text-center leading-tight">
+                                            {segment.label.replace('_', '\n')}
+                                        </span>
+                                    </div>
+                                );
+                            })}
                             {[...Array(Math.max(0, 7 - spinHistory.length))].map((_, i) => (
                                 <div key={`placeholder-${i}`} className="w-10 h-10 rounded-md bg-background/30" />
                             ))}
@@ -1009,9 +1024,9 @@ export default function Game() {
               <CardContent className="p-0 flex flex-col gap-4">
                 <div className="grid grid-cols-4 gap-2">
                   {BET_OPTIONS.map(option => {
-                    const customTexture = customTextures[`chip-${option.id}`];
+                    const customTexture = customTextures[option.id];
                     const style: React.CSSProperties = {
-                      color: customTexture ? 'transparent' : option.textColor,
+                      color: option.textColor,
                       textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
                       fontFamily: "'Playfair Display', serif",
                     };
@@ -1020,6 +1035,7 @@ export default function Game() {
                         style.backgroundImage = `url(${customTexture})`;
                         style.backgroundSize = 'cover';
                         style.backgroundPosition = 'center';
+                        style.color = 'transparent';
                     } else {
                         style.background = `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`;
                     }
@@ -1112,52 +1128,26 @@ export default function Game() {
                             <DropdownMenuTrigger asChild>
                                <Button variant="outline" size="sm">
                                 <UploadCloud className="mr-2 h-3 w-3" />
-                                Upload Texture
+                                Upload Textures
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="max-h-[400px] overflow-y-auto">
+                            <DropdownMenuContent className="max-h-[400px] overflow-y-auto w-64">
+                               <DropdownMenuLabel>Upload a texture to apply it to all related game elements.</DropdownMenuLabel>
+                               <DropdownMenuSeparator />
                               <DropdownMenuGroup>
-                                <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
-                                {SEGMENTS_CONFIG.map((segment, index) => (
-                                  <DropdownMenuItem
-                                    key={segment.id}
-                                    onSelect={() => {
-                                      setTextureUploadTarget(segment.id);
-                                      textureFileInputRef.current?.click();
-                                    }}
-                                  >
-                                    Segment {index + 1}: {segment.label.replace('_', ' ')}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuGroup>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuGroup>
-                                <DropdownMenuLabel>Betting Chips</DropdownMenuLabel>
+                                <DropdownMenuLabel>Game Symbols</DropdownMenuLabel>
                                 {BET_OPTIONS.map(option => (
                                   <DropdownMenuItem
-                                    key={`upload-chip-${option.id}`}
+                                    key={`upload-${option.id}`}
                                     onSelect={() => {
-                                      setTextureUploadTarget(`chip-${option.id}`);
+                                      setTextureUploadTarget(option.id);
                                       textureFileInputRef.current?.click();
                                     }}
+                                    className="flex justify-between"
                                   >
-                                    {option.label} Chip
+                                    <span>{option.label}</span>
+                                    <span className="text-muted-foreground text-xs">128x128px</span>
                                   </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuGroup>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuGroup>
-                                <DropdownMenuLabel>Top Slot Symbols</DropdownMenuLabel>
-                                {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
-                                    <DropdownMenuItem
-                                      key={`upload-top-left-${item}`}
-                                      onSelect={() => {
-                                        setTextureUploadTarget(`top-slot-left-${item}`);
-                                        textureFileInputRef.current?.click();
-                                      }}
-                                    >
-                                      Symbol: {item.replace('_', ' ')}
-                                    </DropdownMenuItem>
                                 ))}
                               </DropdownMenuGroup>
                               <DropdownMenuSeparator />
@@ -1167,11 +1157,13 @@ export default function Game() {
                                   <DropdownMenuItem
                                     key={`upload-top-right-${item}`}
                                     onSelect={() => {
-                                      setTextureUploadTarget(`top-slot-right-${String(item)}`);
+                                      setTextureUploadTarget(`${item}x`);
                                       textureFileInputRef.current?.click();
                                     }}
+                                    className="flex justify-between"
                                   >
-                                    Multiplier: {item}x
+                                    <span>Multiplier: {item}x</span>
+                                    <span className="text-muted-foreground text-xs">160x80px</span>
                                   </DropdownMenuItem>
                                 ))}
                               </DropdownMenuGroup>
