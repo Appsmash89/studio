@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, TestTube2, BookCopy, FileClock } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -282,6 +282,7 @@ export default function Game() {
   const [showLegend, setShowLegend] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -595,6 +596,9 @@ export default function Game() {
 
   // Game Loop Timer
   useEffect(() => {
+    if (isPaused) {
+      return;
+    }
     let timer: NodeJS.Timeout;
 
     if (gameState === 'BETTING') {
@@ -617,7 +621,7 @@ export default function Game() {
     }
 
     return () => clearTimeout(timer);
-  }, [gameState, countdown, handleSpin]);
+  }, [gameState, countdown, handleSpin, isPaused]);
   
   const generateHourOfData = () => {
     const NUM_SPINS_IN_HOUR = 120; // Approximate
@@ -866,7 +870,7 @@ export default function Game() {
                 {gameState === 'BETTING' && (
                     <>
                         <h2 className="text-xl font-bold uppercase tracking-wider text-accent mb-2">
-                            Place Your Bets
+                           {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
                         </h2>
                         <div className="flex items-center gap-2">
                             <p className="text-4xl font-headline">{countdown}</p>
@@ -882,7 +886,7 @@ export default function Game() {
                 {gameState === 'RESULT' && winningSegment && (
                     <>
                         <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
-                            Winner is...
+                            {isPaused ? 'GAME PAUSED' : 'Winner is...'}
                         </h2>
                         <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
                     </>
@@ -895,31 +899,30 @@ export default function Game() {
             
             {/* Wheel and Stand Container */}
             <div className="relative flex flex-col items-center">
-              <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
-
-              {/* Stand */}
-              <div className="relative -mt-10 w-80 h-24 z-[-1]">
-                {/* Stand Post */}
-                <div
-                  className="absolute bottom-[28px] left-1/2 -translate-x-1/2 h-10 w-40"
-                  style={{
-                    background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                    clipPath: 'polygon(9% 0, 91% 0, 100% 100%, 0% 100%)',
-                    filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
+                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
+                 {/* Stand */}
+                 <div className="relative -mt-10 w-80 h-24 z-[-1]">
+                    {/* Stand Post */}
+                    <div
+                    className="absolute bottom-[28px] left-1/2 -translate-x-1/2 h-10 w-40"
+                    style={{
+                        background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
+                        clipPath: 'polygon(25% 0, 75% 0, 100% 100%, 0% 100%)',
+                        filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
+                    }}
+                    >
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
+                    </div>
+                    {/* Stand Base */}
+                    <div
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-64 rounded-lg"
+                    style={{
+                        background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
+                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8), inset 0 3px 5px hsl(var(--accent)/0.2)',
+                        borderTop: '4px solid hsl(var(--accent)/0.5)',
+                    }}
+                    />
                 </div>
-                {/* Stand Base */}
-                <div
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-64 rounded-lg"
-                  style={{
-                    background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
-                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8), inset 0 3px 5px hsl(var(--accent)/0.2)',
-                    borderTop: '4px solid hsl(var(--accent)/0.5)',
-                  }}
-                />
-              </div>
             </div>
             
             <div className="h-20 flex items-center justify-center">
@@ -986,7 +989,7 @@ export default function Game() {
                         "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
                       )}
                       onClick={() => handleBet(option.id)}
-                      disabled={gameState !== 'BETTING'}
+                      disabled={gameState !== 'BETTING' || isPaused}
                     >
                       <span className={cn(
                         "font-bold drop-shadow-md",
@@ -1003,14 +1006,14 @@ export default function Game() {
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
                     {CHIP_VALUES.map(chip => (
-                      <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING'}>
+                      <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING' || isPaused}>
                         ${chip}
                       </Button>
                     ))}
                   </div>
                   <div className="flex-grow flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0}><RotateCcw className="w-5 h-5"/></Button>
-                    <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
+                    <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0 || isPaused}><RotateCcw className="w-5 h-5"/></Button>
+                    <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0 || isPaused}><XCircle className="w-5 h-5"/></Button>
                      <Card className="bg-card/80">
                         <CardContent className="p-2 text-center">
                             <p className="text-sm text-muted-foreground">Total Bet</p>
@@ -1033,9 +1036,13 @@ export default function Game() {
                             <TestTube2 className="mr-2 h-3 w-3" />
                             Test Top Slot
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
+                        <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING' || isPaused}>
                             <FastForward className="mr-2 h-3 w-3" />
                             Skip Timer
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
+                            {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
+                            {isPaused ? 'Resume' : 'Pause'}
                         </Button>
                         <input
                           type="file"
@@ -1066,7 +1073,8 @@ export default function Game() {
                       <Checkbox 
                         id="skip-bets" 
                         checked={skipBetsInDataGen} 
-                        onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))} 
+                        onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))}
+                        disabled={isPaused}
                       />
                       <label
                         htmlFor="skip-bets"
@@ -1085,7 +1093,7 @@ export default function Game() {
                         size="sm"
                         variant="outline"
                         onClick={() => setForcedWinner(option.id)}
-                        disabled={gameState !== 'BETTING'}
+                        disabled={gameState !== 'BETTING' || isPaused}
                         className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
                       >
                         {option.label}
