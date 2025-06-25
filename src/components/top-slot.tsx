@@ -27,7 +27,7 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
             const resultIndex = items.findIndex(item => String(item) === String(result));
             if (resultIndex === -1) return;
             
-            // Set position to the 2nd set of items for seamless looping
+            // Land on the second set of items to ensure seamless looping is possible
             const targetIndex = items.length + resultIndex;
             const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
 
@@ -35,7 +35,7 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
             reelRef.current.style.transform = `translateY(-${targetOffset}px)`;
             currentOffset.current = -targetOffset;
         }
-    }, [result, items, isSpinning, duplicatedItems.length]);
+    }, [result, items, isSpinning]);
     
 
     // Effect to handle the start and stop of the spinning animation
@@ -46,12 +46,22 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
         
         if (isSpinning && !wasSpinning) {
             // START SPINNING
-            const spinRevolutions = 10 + reelIndex * 2; // More spin for the right reel
-            const spinDistance = duplicatedItems.length * REEL_ITEM_HEIGHT * spinRevolutions;
+            const currentTransform = getComputedStyle(reelRef.current).transform;
+            const matrix = new DOMMatrixReadOnly(currentTransform);
+            const currentY = matrix.m42;
+
+            reelRef.current.style.transition = `transform ${spinDuration}s cubic-bezier(0.5, 0, 0.5, 1)`;
             
-            reelRef.current.style.transition = `transform ${spinDuration}s linear`;
-            const newTransform = currentOffset.current - spinDistance;
-            reelRef.current.style.transform = `translateY(${newTransform}px)`;
+            const spinRevolutions = 2 + reelIndex; // Reduced revolutions for realistic blur
+            const singleRevolutionHeight = items.length * REEL_ITEM_HEIGHT;
+
+            const completedRevolutions = Math.abs(Math.floor(currentY / singleRevolutionHeight));
+            
+            const startOfNextRevolutionY = (completedRevolutions + 1) * singleRevolutionHeight;
+            const finalOffset = startOfNextRevolutionY + (singleRevolutionHeight * spinRevolutions);
+            
+            reelRef.current.style.transform = `translateY(-${finalOffset}px)`;
+            currentOffset.current = -finalOffset;
 
         } else if (!isSpinning && wasSpinning) {
             // STOP SPINNING
@@ -60,20 +70,19 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
             const resultIndex = items.findIndex(item => String(item) === String(result));
             if (resultIndex === -1) return;
 
-            // Get the current transform value to calculate the closest stop point
             const currentTransform = getComputedStyle(reelRef.current).transform;
             const matrix = new DOMMatrixReadOnly(currentTransform);
             const currentY = matrix.m42;
 
             const singleRevolutionHeight = items.length * REEL_ITEM_HEIGHT;
-            const currentRevolutions = Math.abs(Math.ceil(currentY / singleRevolutionHeight));
-
-            const targetIndex = items.length + resultIndex; // Land on the 2nd set of items
-            const finalOffset = (currentRevolutions * singleRevolutionHeight) + (targetIndex * REEL_ITEM_HEIGHT);
+            const completedRevolutions = Math.abs(Math.floor(currentY / singleRevolutionHeight));
+            
+            const targetIndex = (completedRevolutions + 1) * items.length + resultIndex;
+            const finalOffset = targetIndex * REEL_ITEM_HEIGHT;
 
             currentOffset.current = -finalOffset;
 
-            reelRef.current.style.transition = `transform ${1.5 + reelIndex * 0.5}s cubic-bezier(0.25, 1, 0.5, 1)`;
+            reelRef.current.style.transition = `transform ${1 + reelIndex * 0.25}s cubic-bezier(0.25, 1, 0.5, 1)`;
             reelRef.current.style.transform = `translateY(-${finalOffset}px)`;
         }
 
@@ -99,7 +108,7 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
 export const TopSlot = ({ result, isSpinning }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean }) => {
     return (
         <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1">
-             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
+             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
@@ -119,7 +128,7 @@ export const TopSlot = ({ result, isSpinning }: { result: { left: string | null;
                     reelIndex={1}
                 />
             </div>
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
         </div>
     );
 };
