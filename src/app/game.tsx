@@ -173,7 +173,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
 
   const getLabelPosition = (index: number) => {
     const angle = (index + 0.5) * SEGMENT_ANGLE;
-    return polarToCartesian(center, center, radius * 0.7, angle);
+    return polarToCartesian(center, center, radius * 0.85, angle);
   };
   
   const bulbs = Array.from({ length: NUM_SEGMENTS });
