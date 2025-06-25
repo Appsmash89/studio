@@ -51,7 +51,7 @@ const INITIAL_WHEEL_SEGMENTS: Segment[] = [
 
 const NUM_SEGMENTS = INITIAL_WHEEL_SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-const SPIN_DURATION_SECONDS = 10;
+const SPIN_DURATION_SECONDS = 12;
 const MAX_MULTIPLIER = 20000;
 
 const FLAPPERS: { id: Flapper, color: string, position: number }[] = [
@@ -90,7 +90,7 @@ const BonusWheel = ({ segments, rotation }: { segments: Segment[]; rotation: num
              <div
                 className="absolute w-full h-full rounded-full"
                 style={{
-                    transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.2, 1, 0.2, 1)`,
+                    transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.4, 0.0, 0.2, 1)`,
                     transform: `rotate(${rotation}deg)`,
                 }}
             >
@@ -311,5 +311,3 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
         </div>
     );
 }
-
-    
