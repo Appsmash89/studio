@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -268,6 +269,9 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
 
 
 export default function Game() {
+  const searchParams = useSearchParams();
+  const isAdmin = searchParams.get('admin') === 'true';
+
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState<{[key: string]: number}>(initialBetsState);
   const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
@@ -904,10 +908,10 @@ export default function Game() {
                  <div className="relative -mt-10 w-80 h-24 z-[-1]">
                     {/* Stand Post */}
                     <div
-                    className="absolute bottom-[28px] left-1/2 -translate-x-1/2 h-10 w-40"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-20"
                     style={{
                         background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                        clipPath: 'polygon(25% 0, 75% 0, 100% 100%, 0% 100%)',
+                        clipPath: 'polygon(20% 0, 80% 0, 100% 100%, 0% 100%)',
                         filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                     }}
                     >
@@ -915,7 +919,7 @@ export default function Game() {
                     </div>
                     {/* Stand Base */}
                     <div
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-64 rounded-lg"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-8 w-[200px] rounded-[100%_/_50%]"
                     style={{
                         background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
                         boxShadow: '0 10px 25px -5px rgba(0,0,0,0.8), inset 0 3px 5px hsl(var(--accent)/0.2)',
@@ -1022,124 +1026,126 @@ export default function Game() {
                     </Card>
                   </div>
                 </div>
-                <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                      <p className="text-xs text-muted-foreground font-semibold">
-                          DEV TOOLS
-                      </p>
-                      <div className="flex items-center gap-2 flex-wrap justify-end">
-                        <Button variant="outline" size="sm" onClick={() => setShowLegend(s => !s)}>
-                            <BookCopy className="mr-2 h-3 w-3" />
-                            {showLegend ? 'Hide' : 'Show'} Legend
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setIsTopSlotSpinning(s => !s)}>
-                            <TestTube2 className="mr-2 h-3 w-3" />
-                            Test Top Slot
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING' || isPaused}>
-                            <FastForward className="mr-2 h-3 w-3" />
-                            Skip Timer
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
-                            {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
-                            {isPaused ? 'Resume' : 'Pause'}
-                        </Button>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleImageUpload}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                          <Upload className="mr-2 h-3 w-3" />
-                          Upload BG
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
-                            <Download className="mr-2 h-3 w-3" />
-                            Latest Spin
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleGenerateAndDownload} disabled={isGenerating}>
-                            <FileClock className="mr-2 h-3 w-3" />
-                            {isGenerating ? 'Generating...' : 'Generate Hour Log'}
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
-                            <Download className="mr-2 h-3 w-3" />
-                            Full Log
-                        </Button>
-                      </div>
-                  </div>
-                  <div className="flex items-center space-x-2 mb-2">
-                      <Checkbox 
-                        id="skip-bets" 
-                        checked={skipBetsInDataGen} 
-                        onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))}
-                        disabled={isPaused}
-                      />
-                      <label
-                        htmlFor="skip-bets"
-                        className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Skip random bet placement in simulation data
-                      </label>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Force Next Spin Outcome:
-                  </p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {BET_OPTIONS.map(option => (
-                      <Button
-                        key={`force-${option.id}`}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setForcedWinner(option.id)}
-                        disabled={gameState !== 'BETTING' || isPaused}
-                        className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
-                      >
-                        {option.label}
-                      </Button>
-                    ))}
-                  </div>
-                  {showLegend && (
-                    <Card className="mt-4 p-4 text-xs bg-background/70">
-                      <CardHeader className="p-0 pb-2">
-                        <CardTitle className="text-sm">Index Legend</CardTitle>
-                        <CardDescription className="text-xs">Categorized indexes used in the game log.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <h5 className="font-semibold mt-2">1. Main Wheel / Top Slot Bet Type</h5>
-                            <ul className="list-inside mt-1 space-y-1">
-                              {BET_OPTIONS.map((option, index) => (
-                                <li key={`legend-bet-${index}`} className="flex items-center gap-2">
-                                  <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
-                                  <span>{option.label}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          <div>
-                            <h5 className="font-semibold mt-2">2. Top Slot Multiplier</h5>
-                            <ul className="list-inside mt-1 space-y-1">
-                              {TOP_SLOT_RIGHT_REEL_ITEMS.map((item, index) => (
-                                <li key={`legend-mult-${index}`} className="flex items-center gap-2">
-                                  <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
-                                  <span>{item}x</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                {isAdmin && (
+                  <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-xs text-muted-foreground font-semibold">
+                            DEV TOOLS
+                        </p>
+                        <div className="flex items-center gap-2 flex-wrap justify-end">
+                          <Button variant="outline" size="sm" onClick={() => setShowLegend(s => !s)}>
+                              <BookCopy className="mr-2 h-3 w-3" />
+                              {showLegend ? 'Hide' : 'Show'} Legend
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setIsTopSlotSpinning(s => !s)}>
+                              <TestTube2 className="mr-2 h-3 w-3" />
+                              Test Top Slot
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING' || isPaused}>
+                              <FastForward className="mr-2 h-3 w-3" />
+                              Skip Timer
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
+                              {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
+                              {isPaused ? 'Resume' : 'Pause'}
+                          </Button>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/*"
+                            className="hidden"
+                          />
+                          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="mr-2 h-3 w-3" />
+                            Upload BG
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
+                              <Download className="mr-2 h-3 w-3" />
+                              Latest Spin
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleGenerateAndDownload} disabled={isGenerating}>
+                              <FileClock className="mr-2 h-3 w-3" />
+                              {isGenerating ? 'Generating...' : 'Generate Hour Log'}
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
+                              <Download className="mr-2 h-3 w-3" />
+                              Full Log
+                          </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {forcedWinner && (
-                    <p className="text-xs text-center text-accent mt-2 animate-pulse">
-                      Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
+                    </div>
+                    <div className="flex items-center space-x-2 mb-2">
+                        <Checkbox 
+                          id="skip-bets" 
+                          checked={skipBetsInDataGen} 
+                          onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))}
+                          disabled={isPaused}
+                        />
+                        <label
+                          htmlFor="skip-bets"
+                          className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Skip random bet placement in simulation data
+                        </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Force Next Spin Outcome:
                     </p>
-                  )}
-                </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {BET_OPTIONS.map(option => (
+                        <Button
+                          key={`force-${option.id}`}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setForcedWinner(option.id)}
+                          disabled={gameState !== 'BETTING' || isPaused}
+                          className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
+                        >
+                          {option.label}
+                        </Button>
+                      ))}
+                    </div>
+                    {showLegend && (
+                      <Card className="mt-4 p-4 text-xs bg-background/70">
+                        <CardHeader className="p-0 pb-2">
+                          <CardTitle className="text-sm">Index Legend</CardTitle>
+                          <CardDescription className="text-xs">Categorized indexes used in the game log.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <h5 className="font-semibold mt-2">1. Main Wheel / Top Slot Bet Type</h5>
+                              <ul className="list-inside mt-1 space-y-1">
+                                {BET_OPTIONS.map((option, index) => (
+                                  <li key={`legend-bet-${index}`} className="flex items-center gap-2">
+                                    <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                                    <span>{option.label}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <h5 className="font-semibold mt-2">2. Top Slot Multiplier</h5>
+                              <ul className="list-inside mt-1 space-y-1">
+                                {TOP_SLOT_RIGHT_REEL_ITEMS.map((item, index) => (
+                                  <li key={`legend-mult-${index}`} className="flex items-center gap-2">
+                                    <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                                    <span>{item}x</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    {forcedWinner && (
+                      <p className="text-xs text-center text-accent mt-2 animate-pulse">
+                        Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </footer>
@@ -1148,13 +1154,3 @@ export default function Game() {
     </div>
   );
 }
-
-    
-
-    
-
-    
-
-    
-
-    
