@@ -15,9 +15,10 @@ interface ReelProps {
     reelIndex: number;
     customTextures: Record<string, string>;
     type: 'left' | 'right';
+    hideText: boolean;
 }
 
-const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type }: ReelProps) => {
+const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type, hideText }: ReelProps) => {
     // Duplicate items to ensure the list is long enough for a seamless wrap-around illusion.
     const duplicatedItems = useMemo(() => Array.from({ length: 20 }).flatMap(() => items), [items]);
     const reelRef = useRef<HTMLDivElement>(null);
@@ -98,7 +99,12 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type }: Re
                     }
 
                     return (
-                        <div key={i} className="h-20 flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider" style={style}>
+                        <div key={i} 
+                            className={cn(
+                                "h-20 flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider",
+                                (customTexture && hideText) && 'text-transparent'
+                            )} 
+                            style={style}>
                             {typeof item === 'string' ? item.replace('_', '\n') : `${item}x`}
                         </div>
                     );
@@ -109,7 +115,7 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type }: Re
 };
 
 
-export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, customTextures: Record<string, string> }) => {
+export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, customTextures: Record<string, string>, hideText: boolean }) => {
     return (
         <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1">
             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0% 0%, 100% 50%, 0% 100%)' }} />
@@ -124,6 +130,7 @@ export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left
                     reelIndex={1}
                     customTextures={customTextures}
                     type="left"
+                    hideText={hideText}
                 />
                 <Reel 
                     items={TOP_SLOT_RIGHT_REEL_ITEMS} 
@@ -132,9 +139,12 @@ export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left
                     reelIndex={0}
                     customTextures={customTextures}
                     type="right"
+                    hideText={hideText}
                 />
             </div>
             <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0%, 0% 50%, 100% 100%)' }} />
         </div>
     );
 };
+
+    

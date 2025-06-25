@@ -152,7 +152,7 @@ const adjustHsl = (hsl: string, h: number, l: number) => {
   return `hsl(${hue + h}, ${saturation}%, ${lightness + l}%)`;
 }
 
-const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string> }) => {
+const Wheel = ({ segments, rotation, customTextures, hideText }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; }) => {
   const radius = 200;
   const center = 210;
   const fullWheelTexture = customTextures['wheel-full'];
@@ -229,7 +229,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                                 key={segment.id}
                                 x={labelPos.x}
                                 y={labelPos.y}
-                                fill={segment.textColor}
+                                fill={hideText ? 'transparent' : segment.textColor}
                                 textAnchor="middle"
                                 dy=".3em"
                                 className={cn(
@@ -262,7 +262,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                             <text
                             x={labelPos.x}
                             y={labelPos.y}
-                            fill={textureUrl ? 'transparent' : segment.textColor}
+                            fill={hideText || textureUrl ? 'transparent' : segment.textColor}
                             textAnchor="middle"
                             dy=".3em"
                             className={cn(
@@ -344,6 +344,7 @@ export default function Game() {
   const [customTextures, setCustomTextures] = useState<Record<string, string>>({});
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
+  const [hideText, setHideText] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -1058,12 +1059,12 @@ export default function Game() {
             </div>
 
             <div className="my-4 z-20">
-              <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} />
+              <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
             </div>
             
             {/* Wheel and Stand Container */}
             <div className="relative flex flex-col items-center">
-                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} />
+                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} />
                  {/* Stand */}
                  <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                     {/* Stand Post */}
@@ -1120,7 +1121,6 @@ export default function Game() {
                                     style.backgroundImage = `url(${customTexture})`;
                                     style.backgroundSize = 'cover';
                                     style.backgroundPosition = 'center';
-                                    style.backgroundColor = 'transparent';
                                     style.color = 'transparent';
                                 }
 
@@ -1194,11 +1194,15 @@ export default function Game() {
                     >
                       <span className={cn(
                         "font-bold drop-shadow-md",
-                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center'
+                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
+                        (customTexture && hideText) && 'text-transparent'
                       )}>
                         {option.label}
                       </span>
-                      <span className="text-sm font-mono font-semibold text-white/90 drop-shadow-sm">
+                      <span className={cn(
+                        "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
+                         (customTexture && hideText) && 'text-transparent'
+                      )}>
                         ${bets[option.id].toLocaleString()}
                       </span>
                     </Button>
@@ -1362,6 +1366,19 @@ export default function Game() {
                     </div>
                     <div className="flex items-center space-x-2 mb-2">
                         <Checkbox 
+                          id="hide-text" 
+                          checked={hideText} 
+                          onCheckedChange={(checked) => setHideText(Boolean(checked))}
+                        />
+                        <label
+                          htmlFor="hide-text"
+                          className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Hide text on textured elements
+                        </label>
+                    </div>
+                     <div className="flex items-center space-x-2 mb-2">
+                        <Checkbox 
                           id="skip-bets" 
                           checked={skipBetsInDataGen} 
                           onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))}
@@ -1477,3 +1494,6 @@ export default function Game() {
 
 
 
+
+
+    
