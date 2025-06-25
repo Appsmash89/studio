@@ -59,16 +59,20 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
         let timer: NodeJS.Timeout;
 
         if (gameState === 'dropping') {
+            // Deactivate any previous blinking slot
+            setActiveSlot(null);
+
             const dropIndex = Math.floor(Math.random() * multipliers.length);
             const result = multipliers[dropIndex];
             
             setDropHistory(prev => [...prev, result]);
             setAnimationPath(generatePath(dropIndex));
             setPuckKey(prev => prev + 1); // Remount the puck to restart animation
-            setActiveSlot(dropIndex);
 
             timer = setTimeout(() => {
-                setActiveSlot(null);
+                // Activate the slot after the puck has landed
+                setActiveSlot(dropIndex);
+
                 if (result === 'DOUBLE') {
                     setGameState('doubling');
                 } else {
@@ -78,8 +82,10 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
                     setFinalMultiplier(winningMultiplier);
                     setGameState('result');
                 }
-            }, 2500); // Wait for animation
+            }, 2500); // Wait for animation to finish
         } else if (gameState === 'doubling') {
+            // The 'DOUBLE' slot is already blinking.
+            // Update multipliers after a pause, then re-drop.
             setMultipliers(prevMultipliers => 
                 prevMultipliers.map(m =>
                     typeof m === 'number' ? Math.min(m * 2, MAX_MULTIPLIER) : 'DOUBLE'
@@ -87,7 +93,7 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
             );
 
             timer = setTimeout(() => {
-                setGameState('dropping'); // Re-drop the puck
+                setGameState('dropping'); // Re-drop the puck. The 'dropping' state will handle resetting the active slot.
             }, 1500); // Pause to show new values and "DOUBLE" message
         }
 
