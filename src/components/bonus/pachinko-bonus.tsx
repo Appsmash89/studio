@@ -53,52 +53,57 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
     const [activeSlot, setActiveSlot] = useState<number | null>(null);
     const [puckKey, setPuckKey] = useState(0);
 
+    // Effect to handle the doubling of multipliers
     useEffect(() => {
-        if (gameState !== 'dropping' && gameState !== 'doubling') return;
+        if (gameState !== 'doubling') return;
 
-        let timer: NodeJS.Timeout;
-
-        if (gameState === 'dropping') {
-            // Deactivate any previous blinking slot
-            setActiveSlot(null);
-
-            const dropIndex = Math.floor(Math.random() * multipliers.length);
-            const result = multipliers[dropIndex];
-            
-            setDropHistory(prev => [...prev, result]);
-            setAnimationPath(generatePath(dropIndex));
-            setPuckKey(prev => prev + 1); // Remount the puck to restart animation
-
-            timer = setTimeout(() => {
-                // Activate the slot after the puck has landed
-                setActiveSlot(dropIndex);
-
-                if (result === 'DOUBLE') {
-                    setGameState('doubling');
-                } else {
-                    const winningMultiplier = result as number;
-                    const finalWinnings = betAmount * winningMultiplier;
-                    setWinnings(finalWinnings);
-                    setFinalMultiplier(winningMultiplier);
-                    setGameState('result');
-                }
-            }, 2500); // Wait for animation to finish
-        } else if (gameState === 'doubling') {
-            // The 'DOUBLE' slot is already blinking.
-            // Update multipliers after a pause, then re-drop.
+        // After a delay, double the number multipliers and set the game to re-drop
+        const timer = setTimeout(() => {
             setMultipliers(prevMultipliers => 
                 prevMultipliers.map(m =>
                     typeof m === 'number' ? Math.min(m * 2, MAX_MULTIPLIER) : 'DOUBLE'
                 )
             );
-
-            timer = setTimeout(() => {
-                setGameState('dropping'); // Re-drop the puck. The 'dropping' state will handle resetting the active slot.
-            }, 1500); // Pause to show new values and "DOUBLE" message
-        }
+            setGameState('dropping');
+        }, 1500); // Pause to show new values
 
         return () => clearTimeout(timer);
-    }, [gameState, betAmount, multipliers]);
+    }, [gameState]); // Only depends on gameState
+
+    // Effect to handle the puck dropping animation and result
+    useEffect(() => {
+        if (gameState !== 'dropping') return;
+
+        // Deactivate any previous blinking slot
+        setActiveSlot(null);
+
+        const dropIndex = Math.floor(Math.random() * multipliers.length);
+        const result = multipliers[dropIndex];
+        
+        setDropHistory(prev => [...prev, result]);
+        setAnimationPath(generatePath(dropIndex));
+        setPuckKey(prev => prev + 1); // Remount the puck to restart animation
+
+        // Wait for animation to finish before proceeding
+        const timer = setTimeout(() => {
+            // Activate the slot after the puck has landed
+            setActiveSlot(dropIndex);
+
+            if (result === 'DOUBLE') {
+                // If it's a double, the 'doubling' useEffect will handle the logic
+                setGameState('doubling');
+            } else {
+                // Otherwise, calculate winnings and end the bonus round
+                const winningMultiplier = result as number;
+                const finalWinnings = betAmount * winningMultiplier;
+                setWinnings(finalWinnings);
+                setFinalMultiplier(winningMultiplier);
+                setGameState('result');
+            }
+        }, 2500); // Corresponds to animation duration
+
+        return () => clearTimeout(timer);
+    }, [gameState, multipliers, betAmount]); // Depends on the other values
 
 
     const handleDrop = () => {
@@ -152,7 +157,7 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
                             </>
                         )}
 
-                        {gameState === 'dropping' && (
+                        {(gameState === 'dropping' && !activeSlot) && (
                             <p className="text-xl font-bold text-accent animate-pulse">
                                Dropping...
                             </p>
