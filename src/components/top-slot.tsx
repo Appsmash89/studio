@@ -83,7 +83,7 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type }: Re
                 className="flex flex-col"
             >
                 {duplicatedItems.map((item, i) => {
-                    const textureKey = type === 'right' ? `${item}x` : String(item);
+                    const textureKey = type === 'right' ? `topslot-right-${item}x` : `topslot-left-${String(item)}`;
                     const customTexture = customTextures[textureKey];
                     
                     const style: React.CSSProperties = {

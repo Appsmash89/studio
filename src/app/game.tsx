@@ -177,7 +177,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
   };
   
   const bulbs = Array.from({ length: NUM_SEGMENTS });
-  const uniqueLabelsWithTextures = [...new Set(segments.map(s => s.label))].filter(label => customTextures[label]);
+  const uniqueLabelsWithTextures = [...new Set(segments.map(s => s.label))].filter(label => customTextures[`wheel-${label}`]);
 
 
   return (
@@ -202,20 +202,20 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
               </feMerge>
             </filter>
             {uniqueLabelsWithTextures.map(label => (
-              <pattern key={`pattern-${label}`} id={`pattern-${label}`} patternUnits="userSpaceOnUse" width="420" height="420">
-                <image href={customTextures[label]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
+              <pattern key={`pattern-wheel-${label}`} id={`pattern-wheel-${label}`} patternUnits="userSpaceOnUse" width="420" height="420">
+                <image href={customTextures[`wheel-${label}`]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
               </pattern>
             ))}
           </defs>
           <g filter="url(#shadow)">
             {/* Segments */}
             {segments.map((segment, index) => {
-              const textureUrl = customTextures[segment.label];
+              const textureUrl = customTextures[`wheel-${segment.label}`];
               return (
               <g key={segment.id}>
                 <path 
                   d={getSegmentPath(index)} 
-                  fill={textureUrl ? `url(#pattern-${segment.label})` : segment.color} 
+                  fill={textureUrl ? `url(#pattern-wheel-${segment.label})` : segment.color} 
                   stroke="hsl(43, 78%, 58%)" 
                   strokeWidth="2" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
@@ -400,6 +400,11 @@ export default function Game() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleUploadClick = (target: string) => {
+    setTextureUploadTarget(target);
+    textureFileInputRef.current?.click();
   };
 
   const handleTextureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -943,7 +948,7 @@ export default function Game() {
                     className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
                     style={{
                         background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                        clipPath: 'polygon(20% 0, 80% 0, 100% 100%, 0% 100%)',
+                        clipPath: 'polygon(35% 0, 65% 0, 100% 100%, 0% 100%)',
                         filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                     }}
                     >
@@ -969,7 +974,7 @@ export default function Game() {
                         </p>
                         <div className="flex gap-1.5">
                             {spinHistory.map((segment, index) => {
-                                const customTexture = customTextures[segment.label];
+                                const customTexture = customTextures[`history-${segment.label}`];
                                 const style: React.CSSProperties = {
                                     backgroundColor: segment.color,
                                     color: segment.textColor,
@@ -1024,7 +1029,7 @@ export default function Game() {
               <CardContent className="p-0 flex flex-col gap-4">
                 <div className="grid grid-cols-4 gap-2">
                   {BET_OPTIONS.map(option => {
-                    const customTexture = customTextures[option.id];
+                    const customTexture = customTextures[`chip-${option.id}`];
                     const style: React.CSSProperties = {
                       color: option.textColor,
                       textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
@@ -1131,43 +1136,65 @@ export default function Game() {
                                 Upload Textures
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="max-h-[400px] overflow-y-auto w-64">
-                               <DropdownMenuLabel>Upload a texture to apply it to all related game elements.</DropdownMenuLabel>
-                               <DropdownMenuSeparator />
-                              <DropdownMenuGroup>
-                                <DropdownMenuLabel>Game Symbols</DropdownMenuLabel>
-                                {BET_OPTIONS.map(option => (
-                                  <DropdownMenuItem
-                                    key={`upload-${option.id}`}
-                                    onSelect={() => {
-                                      setTextureUploadTarget(option.id);
-                                      textureFileInputRef.current?.click();
-                                    }}
-                                    className="flex justify-between"
-                                  >
-                                    <span>{option.label}</span>
-                                    <span className="text-muted-foreground text-xs">128x128px</span>
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuGroup>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuGroup>
-                                <DropdownMenuLabel>Top Slot Multipliers</DropdownMenuLabel>
-                                {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
-                                  <DropdownMenuItem
-                                    key={`upload-top-right-${item}`}
-                                    onSelect={() => {
-                                      setTextureUploadTarget(`${item}x`);
-                                      textureFileInputRef.current?.click();
-                                    }}
-                                    className="flex justify-between"
-                                  >
-                                    <span>Multiplier: {item}x</span>
-                                    <span className="text-muted-foreground text-xs">160x80px</span>
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuGroup>
-                            </DropdownMenuContent>
+                            <DropdownMenuContent className="max-h-[500px] overflow-y-auto w-64">
+                                <DropdownMenuLabel>Upload textures for specific components.</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuGroup>
+                                  <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
+                                  {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
+                                    <DropdownMenuItem key={`upload-wheel-${label}`} onSelect={() => handleUploadClick(`wheel-${label}`)} className="flex justify-between">
+                                      <span>{label.replace(/_/g, ' ')}</span>
+                                      <span className="text-muted-foreground text-xs">420x420px</span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuGroup>
+                                  <DropdownMenuLabel>Top Slot: Bet Types</DropdownMenuLabel>
+                                  {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
+                                    <DropdownMenuItem key={`upload-topslot-left-${item}`} onSelect={() => handleUploadClick(`topslot-left-${item}`)} className="flex justify-between">
+                                      <span>{item.replace(/_/g, ' ')}</span>
+                                      <span className="text-muted-foreground text-xs">160x80px</span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuGroup>
+                                  <DropdownMenuLabel>Top Slot: Multipliers</DropdownMenuLabel>
+                                  {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
+                                    <DropdownMenuItem key={`upload-topslot-right-${item}x`} onSelect={() => handleUploadClick(`topslot-right-${item}x`)} className="flex justify-between">
+                                      <span>{item}x</span>
+                                      <span className="text-muted-foreground text-xs">160x80px</span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                
+                                <DropdownMenuGroup>
+                                  <DropdownMenuLabel>Betting Chips</DropdownMenuLabel>
+                                  {BET_OPTIONS.map(option => (
+                                    <DropdownMenuItem key={`upload-chip-${option.id}`} onSelect={() => handleUploadClick(`chip-${option.id}`)} className="flex justify-between">
+                                      <span>{option.label}</span>
+                                      <span className="text-muted-foreground text-xs">128x128px</span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                
+                                <DropdownMenuGroup>
+                                  <DropdownMenuLabel>History Log</DropdownMenuLabel>
+                                  {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
+                                    <DropdownMenuItem key={`upload-history-${label}`} onSelect={() => handleUploadClick(`history-${label}`)} className="flex justify-between">
+                                      <span>{label.replace(/_/g, ' ')}</span>
+                                      <span className="text-muted-foreground text-xs">40x40px</span>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuGroup>
+
+                              </DropdownMenuContent>
                           </DropdownMenu>
                           <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                               <Download className="mr-2 h-3 w-3" />
