@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Sparkles, Play } from 'lucide-react';
-import { TopSlot, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/components/top-slot';
 
 interface BonusGameProps {
     betAmount: number;
@@ -90,7 +89,7 @@ const BonusWheel = ({ segments, rotation }: { segments: Segment[]; rotation: num
              <div
                 className="absolute w-full h-full rounded-full"
                 style={{
-                    transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.65, 0, 0.35, 1)`,
+                    transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.25, 0.1, 0.25, 1)`,
                     transform: `rotate(${rotation}deg)`,
                 }}
             >
@@ -171,8 +170,6 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
     const [spinHistory, setSpinHistory] = useState<(string | number)[]>([]);
     const [winnings, setWinnings] = useState(0);
     const [isCompleted, setIsCompleted] = useState(false);
-    const [topSlotResult, setTopSlotResult] = useState<{ left: string | null; right: number | null } | null>(null);
-    const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
 
     const handleSelectFlapper = (flapperId: Flapper) => {
         if (gameState !== 'picking') return;
@@ -184,15 +181,6 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
         if (!selectedFlapper || gameState !== 'ready_to_spin') return;
         setGameState('spinning');
         
-        // Start TopSlot "spin"
-        setIsTopSlotSpinning(true);
-        setTimeout(() => {
-            const leftResult = TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)];
-            const rightResult = TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)];
-            setTopSlotResult({ left: leftResult, right: rightResult });
-            setIsTopSlotSpinning(false);
-        }, 4000); // Spin for 4 seconds
-    
         let currentSegments = [...segments];
         let finalWinnings = 0;
         let finalMultiplier = 0;
@@ -243,7 +231,6 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                 selectedFlapper,
                 spinHistory,
                 finalSegments: segments.map(s => s.value),
-                topSlotResult,
             }
         });
     };
@@ -278,13 +265,6 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         CRAZY TIME
                     </h1>
                 </div>
-
-                {/* Top Slot - positioned absolutely */}
-                {(gameState === 'spinning' || gameState === 'result') && (
-                    <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20">
-                        <TopSlot result={topSlotResult} isSpinning={isTopSlotSpinning} />
-                    </div>
-                )}
                 
                 {/* Messages - positioned absolutely */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 text-center z-20 w-full px-4 mt-[-200px] sm:mt-[-150px] md:mt-[-100px]">

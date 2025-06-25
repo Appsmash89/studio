@@ -110,6 +110,7 @@ type GameLogEntry = {
     type: string;
     multiplier: number;
   };
+  topSlotResult?: { left: string | null; right: number | null } | null;
   isBonus: boolean;
   bonusWinnings?: number;
   bonusDetails?: {
@@ -121,7 +122,6 @@ type GameLogEntry = {
         selectedFlapper: 'green' | 'blue' | 'yellow' | null;
         spinHistory: (string | number)[];
         finalSegments: (string | number)[];
-        topSlotResult?: { left: string | null, right: number | null } | null;
     };
   };
   roundWinnings: number;
@@ -339,18 +339,6 @@ export default function Game() {
     setCountdown(0);
   }
 
-  const handleTestTopSlot = () => {
-      if (isTopSlotSpinning) {
-          const leftResult = TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)];
-          const rightResult = TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)];
-          setTopSlotResult({ left: leftResult, right: rightResult });
-          setIsTopSlotSpinning(false);
-      } else {
-          setTopSlotResult(null);
-          setIsTopSlotSpinning(true);
-      }
-  }
-
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     const winningLabel = winningSegment!.label;
     const betOnWinner = spinDataRef.current.bets[winningLabel] || 0;
@@ -371,6 +359,8 @@ export default function Game() {
         setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
     }
     
+    // The log for the spin that *triggered* the bonus is already created in handleSpin.
+    // This new log entry is specifically for the *outcome* of the bonus round.
     const newLogEntry: GameLogEntry = {
         spinId: winningSegment!.id,
         timestamp: new Date().toISOString(),
@@ -392,6 +382,21 @@ export default function Game() {
     setGameState('SPINNING');
     setAiMessage(null);
 
+    // --- Top Slot Logic ---
+    setIsTopSlotSpinning(true);
+    setTopSlotResult(null);
+
+    const finalTopSlotResult = {
+        left: TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
+        right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
+    };
+
+    setTimeout(() => {
+        setTopSlotResult(finalTopSlotResult);
+        setIsTopSlotSpinning(false);
+    }, 4000);
+
+    // --- Main Wheel Logic ---
     let winningSegmentIndex;
     if (forcedWinner) {
       const possibleIndices = SEGMENTS_CONFIG.reduce((acc, segment, index) => {
@@ -428,12 +433,9 @@ export default function Game() {
       const betOnWinner = currentBets[winningLabel] || 0;
 
       if (winningSegmentWithId.type === 'bonus') {
-          if (betOnWinner > 0) {
-              setWinningSegment(winningSegmentWithId);
-              setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
-              setGameState(`BONUS_${winningLabel}` as any);
-          } else {
-              try {
+          const isBonusWin = betOnWinner > 0;
+          if (!isBonusWin) {
+               try {
                   const encouragement = await getEncouragement({
                       gameEvent: 'loss',
                       betAmount: currentTotalBet,
@@ -444,21 +446,27 @@ export default function Game() {
                   console.error("AI encouragement error:", error);
                   setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
               }
-              const roundWinnings = 0;
-              const newLogEntry: GameLogEntry = {
-                  spinId: winningSegmentWithId.id,
-                  timestamp: new Date().toISOString(),
-                  bets: currentBets,
-                  totalBet: currentTotalBet,
-                  winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: 0 },
-                  isBonus: true,
-                  roundWinnings: roundWinnings,
-                  netResult: roundWinnings - currentTotalBet,
-              };
-              setGameLog(prev => [newLogEntry, ...prev]);
+          }
+          
+          const newLogEntry: GameLogEntry = {
+              spinId: winningSegmentWithId.id,
+              timestamp: new Date().toISOString(),
+              bets: currentBets,
+              totalBet: currentTotalBet,
+              winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: 0 },
+              topSlotResult: finalTopSlotResult,
+              isBonus: true,
+              roundWinnings: 0,
+              netResult: -currentTotalBet,
+          };
+          setGameLog(prev => [newLogEntry, ...prev]);
+          
+          setWinningSegment(winningSegmentWithId);
+          setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
 
-              setWinningSegment(winningSegmentWithId);
-              setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
+          if (isBonusWin) {
+              setGameState(`BONUS_${winningLabel}` as any);
+          } else {
               setGameState('RESULT');
           }
           return;
@@ -466,7 +474,11 @@ export default function Game() {
       
       let roundWinnings = 0;
       if (betOnWinner > 0) {
-        roundWinnings = betOnWinner * winningSegmentWithId.multiplier + betOnWinner;
+        let effectiveMultiplier = winningSegmentWithId.multiplier;
+        if (finalTopSlotResult.left === winningSegmentWithId.label) {
+            effectiveMultiplier = finalTopSlotResult.right;
+        }
+        roundWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
       }
       
       setBalance(prev => prev + roundWinnings);
@@ -491,6 +503,7 @@ export default function Game() {
           bets: currentBets,
           totalBet: currentTotalBet,
           winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: winningSegmentWithId.multiplier },
+          topSlotResult: finalTopSlotResult,
           isBonus: false,
           roundWinnings: roundWinnings,
           netResult: roundWinnings - currentTotalBet,
@@ -710,10 +723,6 @@ export default function Game() {
                           DEV TOOLS
                       </p>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={handleTestTopSlot}>
-                            <Play className="mr-2 h-3 w-3" />
-                            Test Top Slot
-                        </Button>
                         <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
                             <FastForward className="mr-2 h-3 w-3" />
                             Skip Timer
