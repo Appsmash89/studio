@@ -478,9 +478,9 @@ export default function Game() {
       let roundWinnings = 0;
       if (betOnWinner > 0) {
         let effectiveMultiplier = winningSegmentWithId.multiplier;
-        // Use the `topSlotResult` from state, as it's now finalized.
-        if (topSlotResult && topSlotResult.left === winningSegmentWithId.label && topSlotResult.right) {
-            effectiveMultiplier = topSlotResult.right;
+        // Use the `finalTopSlotResult` from the start of the spin to avoid stale state
+        if (finalTopSlotResult && finalTopSlotResult.left === winningSegmentWithId.label && finalTopSlotResult.right) {
+            effectiveMultiplier = finalTopSlotResult.right;
         }
         roundWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
       }
@@ -519,7 +519,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner, topSlotResult]);
+  }, [forcedWinner]);
 
   // Game Loop Timer
   useEffect(() => {
