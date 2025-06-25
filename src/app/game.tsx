@@ -348,6 +348,7 @@ export default function Game() {
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(false);
   const [textureRotation, setTextureRotation] = useState(0);
+  const [disableAi, setDisableAi] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -555,16 +556,20 @@ export default function Game() {
 
     setBalance(prev => prev + roundWinnings);
 
-    try {
-        const encouragement = await getEncouragement({
-            gameEvent: 'win',
-            betAmount: currentTotalBet,
-            winAmount: roundWinnings,
-        });
-        setAiMessage(encouragement);
-    } catch (error) {
-        console.error("AI encouragement error:", error);
+    if (disableAi) {
         setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
+    } else {
+        try {
+            const encouragement = await getEncouragement({
+                gameEvent: 'win',
+                betAmount: currentTotalBet,
+                winAmount: roundWinnings,
+            });
+            setAiMessage(encouragement);
+        } catch (error) {
+            console.error("AI encouragement error:", error);
+            setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
+        }
     }
     
     setGameLog(prevLog => {
@@ -583,7 +588,7 @@ export default function Game() {
     });
 
     setGameState('RESULT');
-  }, [winningSegment]);
+  }, [winningSegment, disableAi]);
 
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
@@ -651,17 +656,21 @@ export default function Game() {
       if (currentWinningSegment.type === 'bonus') {
           const isBonusWin = betOnWinner > 0;
           if (!isBonusWin) {
-               try {
-                  const encouragement = await getEncouragement({
-                      gameEvent: 'loss',
-                      betAmount: currentTotalBet,
-                      winAmount: 0,
-                  });
-                  setAiMessage(encouragement);
-              } catch (error) {
-                  console.error("AI encouragement error:", error);
-                  setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
-              }
+               if (disableAi) {
+                   setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
+               } else {
+                   try {
+                      const encouragement = await getEncouragement({
+                          gameEvent: 'loss',
+                          betAmount: currentTotalBet,
+                          winAmount: 0,
+                      });
+                      setAiMessage(encouragement);
+                  } catch (error) {
+                      console.error("AI encouragement error:", error);
+                      setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
+                  }
+               }
           }
           
           const newLogEntry: GameLogEntry = {
@@ -709,16 +718,20 @@ export default function Game() {
       setBalance(prev => prev + roundWinnings);
 
       if (currentTotalBet > 0) {
-        try {
-          const encouragement = await getEncouragement({
-            gameEvent: roundWinnings > currentTotalBet ? 'win' : 'loss',
-            betAmount: currentTotalBet,
-            winAmount: roundWinnings,
-          });
-          setAiMessage(encouragement);
-        } catch (error) {
-          console.error("AI encouragement error:", error);
-          setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
+        if (disableAi) {
+            setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
+        } else {
+            try {
+              const encouragement = await getEncouragement({
+                gameEvent: roundWinnings > currentTotalBet ? 'win' : 'loss',
+                betAmount: currentTotalBet,
+                winAmount: roundWinnings,
+              });
+              setAiMessage(encouragement);
+            } catch (error) {
+              console.error("AI encouragement error:", error);
+              setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
+            }
         }
       }
       
@@ -749,7 +762,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight, disableAi]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -1362,6 +1375,19 @@ export default function Game() {
                               Full Log
                           </Button>
                         </div>
+                    </div>
+                    <div className="flex items-center space-x-2 mb-2">
+                        <Checkbox 
+                          id="disable-ai" 
+                          checked={disableAi} 
+                          onCheckedChange={(checked) => setDisableAi(Boolean(checked))}
+                        />
+                        <label
+                          htmlFor="disable-ai"
+                          className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Disable AI Encouragement (avoids rate limits)
+                        </label>
                     </div>
                     <div className="flex items-center space-x-2 mb-2">
                         <Checkbox 
