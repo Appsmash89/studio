@@ -173,6 +173,8 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
     const angle = (index + 0.5) * SEGMENT_ANGLE;
     return polarToCartesian(center, center, radius * 0.7, angle);
   };
+  
+  const bulbs = Array.from({ length: NUM_SEGMENTS });
 
   return (
     <div className="relative w-[420px] h-[420px] flex items-center justify-center">
@@ -197,6 +199,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
             </filter>
           </defs>
           <g filter="url(#shadow)">
+            {/* Segments */}
             {segments.map((segment, index) => (
               <g key={index}>
                 <path 
@@ -220,6 +223,27 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                 </text>
               </g>
             ))}
+
+            {/* Rim and bulbs */}
+            <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
+            <g>
+                {bulbs.map((_, index) => {
+                    const angle = index * (360 / bulbs.length);
+                    const pos = polarToCartesian(center, center, radius, angle);
+                    return (
+                        <circle
+                            key={`bulb-${index}`}
+                            cx={pos.x}
+                            cy={pos.y}
+                            r="4"
+                            fill="hsl(43, 98%, 68%)"
+                            className="animate-bulb-blink"
+                            style={{ animationDelay: `${(index % 10) * 150}ms`}}
+                        />
+                    );
+                })}
+            </g>
+
           </g>
         </svg>
       </div>
