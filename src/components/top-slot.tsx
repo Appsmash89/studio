@@ -13,9 +13,10 @@ interface ReelProps {
     result: string | number | null;
     isSpinning: boolean;
     reelIndex: number;
+    customTextures: Record<string, string>;
 }
 
-const Reel = ({ items, result, isSpinning, reelIndex }: ReelProps) => {
+const Reel = ({ items, result, isSpinning, reelIndex, customTextures }: ReelProps) => {
     // Duplicate items to ensure the list is long enough for a seamless wrap-around illusion.
     const duplicatedItems = useMemo(() => Array.from({ length: 20 }).flatMap(() => items), [items]);
     const reelRef = useRef<HTMLDivElement>(null);
@@ -80,18 +81,33 @@ const Reel = ({ items, result, isSpinning, reelIndex }: ReelProps) => {
                 ref={reelRef}
                 className="flex flex-col"
             >
-                {duplicatedItems.map((item, i) => (
-                    <div key={i} className="h-20 flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
-                        {typeof item === 'string' ? item.replace('_', '\n') : `${item}x`}
-                    </div>
-                ))}
+                {duplicatedItems.map((item, i) => {
+                    const itemKey = String(item);
+                    const customTexture = customTextures[itemKey];
+                    const style: React.CSSProperties = {
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
+                    };
+
+                    if (customTexture) {
+                        style.backgroundImage = `url(${customTexture})`;
+                        style.backgroundSize = 'cover';
+                        style.backgroundPosition = 'center';
+                        style.color = 'transparent';
+                    }
+
+                    return (
+                        <div key={i} className="h-20 flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider" style={style}>
+                            {typeof item === 'string' ? item.replace('_', '\n') : `${item}x`}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
 };
 
 
-export const TopSlot = ({ result, isSpinning }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean }) => {
+export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, customTextures: Record<string, string> }) => {
     return (
         <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1">
             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
@@ -104,12 +120,14 @@ export const TopSlot = ({ result, isSpinning }: { result: { left: string | null;
                     result={result?.left ?? null} 
                     isSpinning={isSpinning}
                     reelIndex={1}
+                    customTextures={customTextures}
                 />
                 <Reel 
                     items={TOP_SLOT_RIGHT_REEL_ITEMS} 
                     result={result?.right ?? null} 
                     isSpinning={isSpinning}
                     reelIndex={0}
+                    customTextures={customTextures}
                 />
             </div>
             <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />

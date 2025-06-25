@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
@@ -220,7 +220,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: typeof SEGMEN
                 <text
                   x={getLabelPosition(index).x}
                   y={getLabelPosition(index).y}
-                  fill={segment.textColor}
+                  fill={textureUrl ? 'transparent' : segment.textColor}
                   textAnchor="middle"
                   dy=".3em"
                   className="text-lg font-bold uppercase tracking-wider"
@@ -923,7 +923,7 @@ export default function Game() {
             </div>
 
             <div className="my-4 z-20">
-              <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} />
+              <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} />
             </div>
             
             {/* Wheel and Stand Container */}
@@ -1006,7 +1006,7 @@ export default function Game() {
                   {BET_OPTIONS.map(option => {
                     const customTexture = customTextures[option.id];
                     const style: React.CSSProperties = {
-                      color: option.textColor,
+                      color: customTexture ? 'transparent' : option.textColor,
                       textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
                       fontFamily: "'Playfair Display', serif",
                     };
@@ -1121,6 +1121,19 @@ export default function Game() {
                                   }}
                                 >
                                   {option.label}
+                                </DropdownMenuItem>
+                              ))}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuLabel>Top Slot Multipliers</DropdownMenuLabel>
+                              {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].map(item => (
+                                <DropdownMenuItem
+                                  key={`upload-mult-${item}`}
+                                  onSelect={() => {
+                                    setTextureUploadTarget(String(item));
+                                    textureFileInputRef.current?.click();
+                                  }}
+                                >
+                                  {item}x
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuContent>
