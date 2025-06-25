@@ -19,7 +19,6 @@ import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
 import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
 import { TopSlot, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/components/top-slot';
-import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
@@ -392,8 +391,6 @@ export default function Game() {
   // Save BG image to localStorage whenever it changes
   useEffect(() => {
     try {
-      // Only save if it's not the default placeholder.
-      // When clearing, we'll set state to placeholder which will trigger removal here.
       if (!backgroundImage.startsWith('https://placehold.co')) {
         localStorage.setItem('spinriches_custom_bg_image', backgroundImage);
       } else {
@@ -407,6 +404,8 @@ export default function Game() {
   const handleClearTextures = () => {
     setCustomTextures({});
     setBackgroundImage('https://placehold.co/1920x1080.png');
+    localStorage.removeItem('spinriches_custom_textures');
+    localStorage.removeItem('spinriches_custom_bg_image');
     toast({ title: "Assets Cleared", description: "All custom assets have been removed and restored to default." });
     setIsClearTexturesAlertOpen(false);
   };
@@ -1502,16 +1501,3 @@ export default function Game() {
     </div>
   );
 }
-
-
-    
-
-
-
-
-
-    
-
-
-
-    
