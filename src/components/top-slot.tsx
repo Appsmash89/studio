@@ -14,9 +14,10 @@ interface ReelProps {
     isSpinning: boolean;
     reelIndex: number;
     customTextures: Record<string, string>;
+    type: 'left' | 'right';
 }
 
-const Reel = ({ items, result, isSpinning, reelIndex, customTextures }: ReelProps) => {
+const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type }: ReelProps) => {
     // Duplicate items to ensure the list is long enough for a seamless wrap-around illusion.
     const duplicatedItems = useMemo(() => Array.from({ length: 20 }).flatMap(() => items), [items]);
     const reelRef = useRef<HTMLDivElement>(null);
@@ -82,8 +83,10 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures }: ReelProp
                 className="flex flex-col"
             >
                 {duplicatedItems.map((item, i) => {
-                    const itemKey = String(item);
-                    const customTexture = customTextures[itemKey];
+                    const prefix = type === 'left' ? 'top-slot-left' : 'top-slot-right';
+                    const textureKey = `${prefix}-${item}`;
+                    const customTexture = customTextures[textureKey];
+                    
                     const style: React.CSSProperties = {
                         textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
                     };
@@ -110,7 +113,7 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures }: ReelProp
 export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, customTextures: Record<string, string> }) => {
     return (
         <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1">
-            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
+            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
@@ -121,6 +124,7 @@ export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left
                     isSpinning={isSpinning}
                     reelIndex={1}
                     customTextures={customTextures}
+                    type="left"
                 />
                 <Reel 
                     items={TOP_SLOT_RIGHT_REEL_ITEMS} 
@@ -128,9 +132,10 @@ export const TopSlot = ({ result, isSpinning, customTextures }: { result: { left
                     isSpinning={isSpinning}
                     reelIndex={0}
                     customTextures={customTextures}
+                    type="right"
                 />
             </div>
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
         </div>
     );
 };

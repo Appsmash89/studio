@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
@@ -96,7 +96,7 @@ const SEGMENTS_CONFIG = [
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 13
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 21
     { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' }, // 2
-].map(seg => ({ ...seg, textColor: textColorMap[seg.label]! }));
+].map((seg, index) => ({ ...seg, id: `segment-${index}`, textColor: textColorMap[seg.label]! }));
 
 
 const NUM_SEGMENTS = SEGMENTS_CONFIG.length;
@@ -151,7 +151,7 @@ const adjustHsl = (hsl: string, h: number, l: number) => {
   return `hsl(${hue + h}, ${saturation}%, ${lightness + l}%)`;
 }
 
-const Wheel = ({ segments, rotation, customTextures }: { segments: typeof SEGMENTS_CONFIG; rotation: number; customTextures: Record<string, string> }) => {
+const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string> }) => {
   const radius = 200;
   const center = 210;
 
@@ -208,12 +208,12 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: typeof SEGMEN
           <g filter="url(#shadow)">
             {/* Segments */}
             {segments.map((segment, index) => {
-              const textureUrl = customTextures[segment.label];
+              const textureUrl = customTextures[segment.id];
               return (
               <g key={index}>
                 <path 
                   d={getSegmentPath(index)} 
-                  fill={textureUrl ? `url(#pattern-${segment.label})` : segment.color} 
+                  fill={textureUrl ? `url(#pattern-${segment.id})` : segment.color} 
                   stroke="hsl(43, 78%, 58%)" 
                   strokeWidth="2" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
@@ -300,8 +300,8 @@ export default function Game() {
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
-  const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] & { id: number } | null>(null);
-  const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0] & { id: number })[]>([]);
+  const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
+  const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0])[]>([]);
   const spinIdCounter = useRef(0);
 
   const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
@@ -424,7 +424,8 @@ export default function Game() {
   }
 
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
-    const winningLabel = winningSegment!.label;
+    if (!winningSegment) return;
+    const winningLabel = winningSegment.label;
     const betOnWinner = spinDataRef.current.bets[winningLabel] || 0;
     const roundWinnings = betOnWinner + bonusWinnings;
     const currentTotalBet = spinDataRef.current.totalBet;
@@ -445,7 +446,7 @@ export default function Game() {
     
     setGameLog(prevLog => {
         const updatedLog = [...prevLog];
-        const spinLogIndex = updatedLog.findIndex(log => log.spinId === winningSegment!.id);
+        const spinLogIndex = updatedLog.findIndex(log => log.spinId === spinIdCounter.current);
         if (spinLogIndex > -1) {
             updatedLog[spinLogIndex] = {
                 ...updatedLog[spinLogIndex],
@@ -464,6 +465,8 @@ export default function Game() {
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
     setAiMessage(null);
+    spinIdCounter.current++;
+
 
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
@@ -504,7 +507,6 @@ export default function Game() {
     }
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
-    const winningSegmentWithId = { ...currentWinningSegment, id: ++spinIdCounter.current };
     
     const fullSpins = 7 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
@@ -516,14 +518,14 @@ export default function Game() {
     
     setTimeout(async () => {
       const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
-      const winningLabel = winningSegmentWithId.label;
+      const winningLabel = currentWinningSegment.label;
       const betOnWinner = currentBets[winningLabel] || 0;
 
       const rightIndex = finalTopSlotResult.right !== null
         ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
         : null;
 
-      if (winningSegmentWithId.type === 'bonus') {
+      if (currentWinningSegment.type === 'bonus') {
           const isBonusWin = betOnWinner > 0;
           if (!isBonusWin) {
                try {
@@ -540,15 +542,15 @@ export default function Game() {
           }
           
           const newLogEntry: GameLogEntry = {
-              spinId: winningSegmentWithId.id,
+              spinId: spinIdCounter.current,
               timestamp: new Date().toISOString(),
               bets: currentBets,
               totalBet: currentTotalBet,
               winningSegment: { 
-                label: winningSegmentWithId.label, 
-                type: winningSegmentWithId.type, 
+                label: currentWinningSegment.label, 
+                type: currentWinningSegment.type, 
                 multiplier: 0,
-                index: BET_OPTION_INDEX_MAP[winningSegmentWithId.label]!
+                index: BET_OPTION_INDEX_MAP[currentWinningSegment.label]!
               },
               topSlotResult: finalTopSlotResult ? {
                 ...finalTopSlotResult,
@@ -561,8 +563,8 @@ export default function Game() {
           };
           setGameLog(prev => [newLogEntry, ...prev]);
           
-          setWinningSegment(winningSegmentWithId);
-          setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
+          setWinningSegment(currentWinningSegment);
+          setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
 
           if (isBonusWin) {
               setGameState(`BONUS_${winningLabel}` as any);
@@ -574,8 +576,8 @@ export default function Game() {
       
       let roundWinnings = 0;
       if (betOnWinner > 0) {
-        let effectiveMultiplier = winningSegmentWithId.multiplier;
-        if (finalTopSlotResult && finalTopSlotResult.left === winningSegmentWithId.label && finalTopSlotResult.right) {
+        let effectiveMultiplier = currentWinningSegment.multiplier;
+        if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
             effectiveMultiplier = finalTopSlotResult.right;
         }
         roundWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
@@ -598,15 +600,15 @@ export default function Game() {
       }
       
       const newLogEntry: GameLogEntry = {
-          spinId: winningSegmentWithId.id,
+          spinId: spinIdCounter.current,
           timestamp: new Date().toISOString(),
           bets: currentBets,
           totalBet: currentTotalBet,
           winningSegment: { 
-            label: winningSegmentWithId.label, 
-            type: winningSegmentWithId.type, 
-            multiplier: winningSegmentWithId.multiplier,
-            index: BET_OPTION_INDEX_MAP[winningSegmentWithId.label]!
+            label: currentWinningSegment.label, 
+            type: currentWinningSegment.type, 
+            multiplier: currentWinningSegment.multiplier,
+            index: BET_OPTION_INDEX_MAP[currentWinningSegment.label]!
           },
           topSlotResult: finalTopSlotResult ? {
             ...finalTopSlotResult,
@@ -619,8 +621,8 @@ export default function Game() {
       };
       setGameLog(prev => [newLogEntry, ...prev]);
       
-      setWinningSegment(winningSegmentWithId);
-      setSpinHistory(prev => [winningSegmentWithId, ...prev].slice(0, 7));
+      setWinningSegment(currentWinningSegment);
+      setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
@@ -936,10 +938,10 @@ export default function Game() {
                  <div className="relative -mt-10 w-80 h-24 z-[-1]">
                     {/* Stand Post */}
                     <div
-                    className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-20"
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
                     style={{
                         background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                        clipPath: 'polygon(20% 0, 80% 0, 100% 100%, 0% 100%)',
+                        clipPath: 'polygon(33% 0, 67% 0, 100% 100%, 0% 100%)',
                         filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                     }}
                     >
@@ -1007,7 +1009,7 @@ export default function Game() {
               <CardContent className="p-0 flex flex-col gap-4">
                 <div className="grid grid-cols-4 gap-2">
                   {BET_OPTIONS.map(option => {
-                    const customTexture = customTextures[option.id];
+                    const customTexture = customTextures[`chip-${option.id}`];
                     const style: React.CSSProperties = {
                       color: customTexture ? 'transparent' : option.textColor,
                       textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
@@ -1113,32 +1115,66 @@ export default function Game() {
                                 Upload Texture
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuLabel>Bet/Bonus Options</DropdownMenuLabel>
-                              {BET_OPTIONS.map(option => (
-                                <DropdownMenuItem
-                                  key={`upload-${option.id}`}
-                                  onSelect={() => {
-                                    setTextureUploadTarget(option.id);
-                                    textureFileInputRef.current?.click();
-                                  }}
-                                >
-                                  {option.label}
-                                </DropdownMenuItem>
-                              ))}
+                            <DropdownMenuContent className="max-h-[400px] overflow-y-auto">
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
+                                {SEGMENTS_CONFIG.map((segment, index) => (
+                                  <DropdownMenuItem
+                                    key={segment.id}
+                                    onSelect={() => {
+                                      setTextureUploadTarget(segment.id);
+                                      textureFileInputRef.current?.click();
+                                    }}
+                                  >
+                                    Segment {index + 1}: {segment.label.replace('_', ' ')}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
                               <DropdownMenuSeparator />
-                              <DropdownMenuLabel>Top Slot Multipliers</DropdownMenuLabel>
-                              {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].map(item => (
-                                <DropdownMenuItem
-                                  key={`upload-mult-${item}`}
-                                  onSelect={() => {
-                                    setTextureUploadTarget(String(item));
-                                    textureFileInputRef.current?.click();
-                                  }}
-                                >
-                                  {item}x
-                                </DropdownMenuItem>
-                              ))}
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Betting Chips</DropdownMenuLabel>
+                                {BET_OPTIONS.map(option => (
+                                  <DropdownMenuItem
+                                    key={`upload-chip-${option.id}`}
+                                    onSelect={() => {
+                                      setTextureUploadTarget(`chip-${option.id}`);
+                                      textureFileInputRef.current?.click();
+                                    }}
+                                  >
+                                    {option.label} Chip
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Top Slot Symbols</DropdownMenuLabel>
+                                {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
+                                    <DropdownMenuItem
+                                      key={`upload-top-left-${item}`}
+                                      onSelect={() => {
+                                        setTextureUploadTarget(`top-slot-left-${item}`);
+                                        textureFileInputRef.current?.click();
+                                      }}
+                                    >
+                                      Symbol: {item.replace('_', ' ')}
+                                    </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuGroup>
+                                <DropdownMenuLabel>Top Slot Multipliers</DropdownMenuLabel>
+                                {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
+                                  <DropdownMenuItem
+                                    key={`upload-top-right-${item}`}
+                                    onSelect={() => {
+                                      setTextureUploadTarget(`top-slot-right-${String(item)}`);
+                                      textureFileInputRef.current?.click();
+                                    }}
+                                  >
+                                    Multiplier: {item}x
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuGroup>
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
