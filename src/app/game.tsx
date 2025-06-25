@@ -381,20 +381,23 @@ export default function Game() {
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
     setAiMessage(null);
+    setTopSlotResult(null); // Reset visual state immediately
 
     // --- Top Slot Logic ---
-    setIsTopSlotSpinning(true);
-    setTopSlotResult(null);
-
     const finalTopSlotResult = {
         left: TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
         right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
     };
 
+    // Delay the start of the Top Slot's visual spin
     setTimeout(() => {
-        setTopSlotResult(finalTopSlotResult);
-        setIsTopSlotSpinning(false);
-    }, 4000);
+        setIsTopSlotSpinning(true);
+        // After 4 seconds of spinning, show the result
+        setTimeout(() => {
+            setTopSlotResult(finalTopSlotResult);
+            setIsTopSlotSpinning(false);
+        }, 4000);
+    }, 1000); // 1-second delay
 
     // --- Main Wheel Logic ---
     let winningSegmentIndex;
