@@ -893,7 +893,33 @@ export default function Game() {
               <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} />
             </div>
             
-            <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
+            {/* Wheel and Stand Container */}
+            <div className="relative flex flex-col items-center">
+              <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
+
+              {/* Stand */}
+              <div className="relative -mt-10 w-96 h-40 z-[-1]">
+                {/* Stand Post */}
+                <div
+                  className="absolute bottom-10 left-1/2 -translate-x-1/2 h-32 w-20"
+                  style={{
+                    background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
+                    clipPath: 'polygon(20% 0, 80% 0, 100% 100%, 0% 100%)',
+                    filter: 'drop-shadow(0px -5px 10px rgba(0,0,0,0.3))'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
+                </div>
+                {/* Stand Base */}
+                <div
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-10 w-80 rounded-t-xl border-t-4 border-x-4 border-accent/80"
+                  style={{
+                    background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.9))',
+                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.7), inset 0 3px 4px hsl(var(--accent)/0.2)'
+                  }}
+                />
+              </div>
+            </div>
             
             <div className="h-20 flex items-center justify-center">
                 <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
