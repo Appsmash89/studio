@@ -901,10 +901,10 @@ export default function Game() {
               <div className="relative -mt-10 w-80 h-24 z-[-1]">
                 {/* Stand Post */}
                 <div
-                  className="absolute bottom-[28px] left-1/2 -translate-x-1/2 h-12 w-40"
+                  className="absolute bottom-[28px] left-1/2 -translate-x-1/2 h-10 w-40"
                   style={{
                     background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                    clipPath: 'polygon(35% 0, 65% 0, 100% 100%, 0% 100%)',
+                    clipPath: 'polygon(9% 0, 91% 0, 100% 100%, 0% 100%)',
                     filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                   }}
                 >
