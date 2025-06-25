@@ -28,6 +28,11 @@ const BET_OPTIONS = [
   { id: 'CRAZY_TIME', label: 'Crazy Time', type: 'bonus', color: 'hsl(0, 80%, 60%)', textColor: 'white' },
 ];
 
+const BET_OPTION_INDEX_MAP = BET_OPTIONS.reduce((acc, option, index) => {
+    acc[option.id] = index;
+    return acc;
+}, {} as Record<string, number>);
+
 const textColorMap = BET_OPTIONS.reduce((acc, option) => {
   acc[option.id] = option.textColor;
   return acc;
@@ -113,8 +118,9 @@ type GameLogEntry = {
     label: string;
     type: string;
     multiplier: number;
+    index: number;
   };
-  topSlotResult?: { left: string | null; right: number | null } | null;
+  topSlotResult?: { left: string | null; right: number | null; leftIndex: number | null; } | null;
   isBonus: boolean;
   bonusWinnings?: number;
   bonusDetails?: {
@@ -468,8 +474,16 @@ export default function Game() {
               timestamp: new Date().toISOString(),
               bets: currentBets,
               totalBet: currentTotalBet,
-              winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: 0 },
-              topSlotResult: finalTopSlotResult,
+              winningSegment: { 
+                label: winningSegmentWithId.label, 
+                type: winningSegmentWithId.type, 
+                multiplier: 0,
+                index: BET_OPTION_INDEX_MAP[winningSegmentWithId.label]!
+              },
+              topSlotResult: finalTopSlotResult ? {
+                ...finalTopSlotResult,
+                leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null
+              } : null,
               isBonus: true,
               roundWinnings: 0, // This will be updated in handleBonusComplete
               netResult: -currentTotalBet, // This will be updated in handleBonusComplete
@@ -517,8 +531,16 @@ export default function Game() {
           timestamp: new Date().toISOString(),
           bets: currentBets,
           totalBet: currentTotalBet,
-          winningSegment: { label: winningSegmentWithId.label, type: winningSegmentWithId.type, multiplier: winningSegmentWithId.multiplier },
-          topSlotResult: finalTopSlotResult,
+          winningSegment: { 
+            label: winningSegmentWithId.label, 
+            type: winningSegmentWithId.type, 
+            multiplier: winningSegmentWithId.multiplier,
+            index: BET_OPTION_INDEX_MAP[winningSegmentWithId.label]!
+          },
+          topSlotResult: finalTopSlotResult ? {
+            ...finalTopSlotResult,
+            leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null
+          } : null,
           isBonus: false,
           roundWinnings: roundWinnings,
           netResult: roundWinnings - currentTotalBet,
@@ -798,3 +820,5 @@ export default function Game() {
     </div>
   );
 }
+
+    
