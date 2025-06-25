@@ -18,30 +18,19 @@ interface ReelProps {
 
 const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps) => {
     const duplicatedItems = useMemo(() => [...items, ...items, ...items, ...items], [items]);
-    const anticipateTimeoutRef = useRef<NodeJS.Timeout>();
     const stopTimeoutRef = useRef<NodeJS.Timeout>();
     
-    const [animationClass, setAnimationClass] = useState('');
     const [style, setStyle] = useState<React.CSSProperties>({});
 
     useEffect(() => {
-        // Clear any pending timeouts on re-render
-        clearTimeout(anticipateTimeoutRef.current);
         clearTimeout(stopTimeoutRef.current);
 
         if (isSpinning) {
-            // Reset position before anticipating
-            setStyle({ transform: 'translateY(0)', transition: 'none' });
-            // 1. Anticipation: move back slightly
-            setAnimationClass('animate-reel-anticipate');
-
-            // 2. After anticipation, start the main spin
-            anticipateTimeoutRef.current = setTimeout(() => {
-                setAnimationClass(''); // remove anticipation class
-                setStyle({
-                    animation: `reel-spin ${spinDuration} linear infinite`,
-                });
-            }, 300); // Must match duration of 'reel-anticipate' animation
+            // Instantly start the main spin animation without anticipation
+            setStyle({
+                transform: 'translateY(0)', // Ensure we start from a clean slate
+                animation: `reel-spin ${spinDuration} linear infinite`,
+            });
 
         } else {
             // Stop spinning logic
@@ -52,8 +41,7 @@ const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps)
                     const targetIndex = items.length * 2 + (resultIndex >= 0 ? resultIndex : 0);
                     const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
 
-                    // 3. Stop animation and transition to the final position with overshoot
-                    setAnimationClass('');
+                    // Stop animation and transition to the final position with overshoot
                     setStyle({
                         animation: '',
                         transition: 'transform 2.5s cubic-bezier(0.34, 1.56, 0.64, 1)', // easeOutBack curve
@@ -64,17 +52,15 @@ const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps)
         }
 
         return () => {
-            clearTimeout(anticipateTimeoutRef.current);
             clearTimeout(stopTimeoutRef.current);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSpinning, result]);
+    }, [isSpinning, result, items, spinDuration, stopDelay]);
 
 
     return (
         <div className="w-1/2 h-full overflow-hidden">
             <div
-                className={cn("flex flex-col", animationClass)}
+                className="flex flex-col"
                 style={style}
             >
                 {duplicatedItems.map((item, i) => (
@@ -90,28 +76,28 @@ const Reel = ({ items, result, isSpinning, stopDelay, spinDuration }: ReelProps)
 
 export const TopSlot = ({ result, isSpinning }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean }) => {
     return (
-        <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 gap-1 z-20">
-            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
+        <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 z-20">
+            <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
                 
                 <Reel 
                     items={TOP_SLOT_LEFT_REEL_ITEMS} 
-                    result={isSpinning ? null : result?.left ?? null} 
+                    result={result?.left ?? null} 
                     isSpinning={isSpinning}
-                    spinDuration="0.6s"
+                    spinDuration="0.4s"
                     stopDelay={1000}
                 />
                 <Reel 
                     items={TOP_SLOT_RIGHT_REEL_ITEMS} 
-                    result={isSpinning ? null : result?.right ?? null} 
+                    result={result?.right ?? null} 
                     isSpinning={isSpinning}
-                    spinDuration="0.4s"
+                    spinDuration="0.2s"
                     stopDelay={0}
                 />
             </div>
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
         </div>
     );
 };

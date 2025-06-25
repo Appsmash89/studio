@@ -381,7 +381,6 @@ export default function Game() {
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
     setAiMessage(null);
-    setTopSlotResult(null); // Reset visual state immediately
 
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
@@ -389,15 +388,16 @@ export default function Game() {
         right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
     };
 
-    // Delay the start of the Top Slot's visual spin
+    // Start the Top Slot's visual spin immediately
+    setIsTopSlotSpinning(true);
+    
+    // After 4 seconds, set the final result and stop the reels.
+    // This ensures the top slot finishes before the main wheel.
     setTimeout(() => {
-        setIsTopSlotSpinning(true);
-        // After 2 seconds of spinning, show the result
-        setTimeout(() => {
-            setTopSlotResult(finalTopSlotResult);
-            setIsTopSlotSpinning(false);
-        }, 2000);
-    }, 1000); // 1-second delay
+        setTopSlotResult(finalTopSlotResult);
+        setIsTopSlotSpinning(false);
+    }, 4000);
+
 
     // --- Main Wheel Logic ---
     let winningSegmentIndex;
@@ -478,8 +478,9 @@ export default function Game() {
       let roundWinnings = 0;
       if (betOnWinner > 0) {
         let effectiveMultiplier = winningSegmentWithId.multiplier;
-        if (finalTopSlotResult.left === winningSegmentWithId.label) {
-            effectiveMultiplier = finalTopSlotResult.right;
+        // Use the `topSlotResult` from state, as it's now finalized.
+        if (topSlotResult && topSlotResult.left === winningSegmentWithId.label && topSlotResult.right) {
+            effectiveMultiplier = topSlotResult.right;
         }
         roundWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
       }
@@ -518,7 +519,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner]);
+  }, [forcedWinner, topSlotResult]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -540,6 +541,7 @@ export default function Game() {
         setBetHistory([]);
         setAiMessage(null);
         setWinningSegment(null);
+        // Do not reset top slot result here, let it persist for next spin reference
       }, RESULT_DISPLAY_SECONDS * 1000);
     }
 

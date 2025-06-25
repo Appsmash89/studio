@@ -96,10 +96,6 @@ export default {
         move: {
           '100%': { offsetDistance: '100%' }
         },
-        'reel-anticipate': {
-          '0%': { transform: 'translateY(0)' },
-          '100%': { transform: 'translateY(20px)' },
-        },
         'reel-spin': {
           '0%': { transform: 'translateY(0)' },
           '100%': { transform: 'translateY(-50%)' },
@@ -110,7 +106,6 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'move': 'move 2.5s ease-in-out forwards',
-        'reel-anticipate': 'reel-anticipate 0.3s ease-in-out forwards',
       },
     },
   },
