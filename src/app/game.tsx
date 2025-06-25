@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -149,7 +150,7 @@ const adjustHsl = (hsl: string, h: number, l: number) => {
   return `hsl(${hue + h}, ${saturation}%, ${lightness + l}%)`;
 }
 
-const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotation: number }) => {
+const Wheel = ({ segments, rotation, customTextures }: { segments: typeof SEGMENTS_CONFIG; rotation: number; customTextures: Record<string, string> }) => {
   const radius = 200;
   const center = 210;
 
@@ -197,14 +198,21 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            {Object.entries(customTextures).map(([id, url]) => (
+              <pattern key={`pattern-${id}`} id={`pattern-${id}`} patternUnits="userSpaceOnUse" width="420" height="420">
+                <image href={url} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
+              </pattern>
+            ))}
           </defs>
           <g filter="url(#shadow)">
             {/* Segments */}
-            {segments.map((segment, index) => (
+            {segments.map((segment, index) => {
+              const textureUrl = customTextures[segment.label];
+              return (
               <g key={index}>
                 <path 
                   d={getSegmentPath(index)} 
-                  fill={segment.color} 
+                  fill={textureUrl ? `url(#pattern-${segment.label})` : segment.color} 
                   stroke="hsl(43, 78%, 58%)" 
                   strokeWidth="2" 
                   filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
@@ -222,7 +230,7 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
                   {segment.label.replace('_', '\n')}
                 </text>
               </g>
-            ))}
+            )})}
 
             {/* Rim and bulbs */}
             <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
@@ -278,11 +286,14 @@ export default function Game() {
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bgFileInputRef = useRef<HTMLInputElement>(null);
+  const textureFileInputRef = useRef<HTMLInputElement>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [customTextures, setCustomTextures] = useState<Record<string, string>>({});
+  const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -372,7 +383,7 @@ export default function Game() {
     document.body.removeChild(downloadLink);
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBgImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -384,6 +395,24 @@ export default function Game() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleTextureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && textureUploadTarget) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          setCustomTextures(prev => ({ ...prev, [textureUploadTarget]: result }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    if (event.target) {
+        event.target.value = "";
+    }
+    setTextureUploadTarget(null);
   };
 
   const handleSkipCountdown = () => {
@@ -899,7 +928,7 @@ export default function Game() {
             
             {/* Wheel and Stand Container */}
             <div className="relative flex flex-col items-center">
-                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
+                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} />
                  {/* Stand */}
                  <div className="relative -mt-10 w-80 h-24 z-[-1]">
                     {/* Stand Post */}
@@ -974,16 +1003,27 @@ export default function Game() {
             <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
               <CardContent className="p-0 flex flex-col gap-4">
                 <div className="grid grid-cols-4 gap-2">
-                  {BET_OPTIONS.map(option => (
+                  {BET_OPTIONS.map(option => {
+                    const customTexture = customTextures[option.id];
+                    const style: React.CSSProperties = {
+                      color: option.textColor,
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
+                      fontFamily: "'Playfair Display', serif",
+                    };
+
+                    if (customTexture) {
+                        style.backgroundImage = `url(${customTexture})`;
+                        style.backgroundSize = 'cover';
+                        style.backgroundPosition = 'center';
+                    } else {
+                        style.background = `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`;
+                    }
+                    
+                    return (
                     <Button
                       key={option.id}
                       variant="secondary"
-                      style={{
-                        background: `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`,
-                        color: option.textColor,
-                        textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
-                        fontFamily: "'Playfair Display', serif",
-                      }}
+                      style={style}
                       className={cn(
                         "h-auto flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
                         "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
@@ -1001,7 +1041,7 @@ export default function Game() {
                         ${bets[option.id].toLocaleString()}
                       </span>
                     </Button>
-                  ))}
+                  )})}
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
@@ -1047,15 +1087,44 @@ export default function Game() {
                           </Button>
                           <input
                             type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageUpload}
+                            ref={bgFileInputRef}
+                            onChange={handleBgImageUpload}
                             accept="image/*"
                             className="hidden"
                           />
-                          <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                           <input
+                            type="file"
+                            ref={textureFileInputRef}
+                            onChange={handleTextureUpload}
+                            accept="image/*"
+                            className="hidden"
+                          />
+                          <Button variant="outline" size="sm" onClick={() => bgFileInputRef.current?.click()}>
                             <Upload className="mr-2 h-3 w-3" />
                             Upload BG
                           </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                               <Button variant="outline" size="sm">
+                                <UploadCloud className="mr-2 h-3 w-3" />
+                                Upload Texture
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuLabel>Bet/Bonus Options</DropdownMenuLabel>
+                              {BET_OPTIONS.map(option => (
+                                <DropdownMenuItem
+                                  key={`upload-${option.id}`}
+                                  onSelect={() => {
+                                    setTextureUploadTarget(option.id);
+                                    textureFileInputRef.current?.click();
+                                  }}
+                                >
+                                  {option.label}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                               <Download className="mr-2 h-3 w-3" />
                               Latest Spin
