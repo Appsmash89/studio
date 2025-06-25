@@ -43,7 +43,7 @@ const generatePath = (targetSlotIndex: number) => {
 };
 
 export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
-    const [gameState, setGameState] = useState<'ready' | 'dropping' | 'result'>('ready');
+    const [gameState, setGameState] = useState<'ready' | 'dropping' | 'doubling' | 'result'>('ready');
     const [multipliers, setMultipliers] = useState<(number | 'DOUBLE')[]>(INITIAL_SLOTS);
     const [winnings, setWinnings] = useState(0);
     const [finalMultiplier, setFinalMultiplier] = useState<number | null>(null);
@@ -53,45 +53,51 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
     const [activeSlot, setActiveSlot] = useState<number | null>(null);
     const [puckKey, setPuckKey] = useState(0);
 
-    const handleDrop = async () => {
-        setGameState('dropping');
-        
-        let currentMultipliers = [...multipliers];
-        let tempDropHistory: (number | 'DOUBLE')[] = [];
-        let finalWinnings = 0;
-        let winningMultiplier: number | null = null;
-        let isFinalDrop = false;
+    useEffect(() => {
+        if (gameState !== 'dropping' && gameState !== 'doubling') return;
 
-        while (!isFinalDrop) {
-            const dropIndex = Math.floor(Math.random() * currentMultipliers.length);
-            const result = currentMultipliers[dropIndex];
+        let timer: NodeJS.Timeout;
+
+        if (gameState === 'dropping') {
+            const dropIndex = Math.floor(Math.random() * multipliers.length);
+            const result = multipliers[dropIndex];
             
             setDropHistory(prev => [...prev, result]);
-            tempDropHistory.push(result);
-
             setAnimationPath(generatePath(dropIndex));
             setPuckKey(prev => prev + 1); // Remount the puck to restart animation
             setActiveSlot(dropIndex);
 
-            await new Promise(res => setTimeout(res, 2500)); // Wait for animation
-
-            if (result === 'DOUBLE') {
-                currentMultipliers = currentMultipliers.map(m =>
+            timer = setTimeout(() => {
+                setActiveSlot(null);
+                if (result === 'DOUBLE') {
+                    setGameState('doubling');
+                } else {
+                    const winningMultiplier = result as number;
+                    const finalWinnings = betAmount * winningMultiplier;
+                    setWinnings(finalWinnings);
+                    setFinalMultiplier(winningMultiplier);
+                    setGameState('result');
+                }
+            }, 2500); // Wait for animation
+        } else if (gameState === 'doubling') {
+            setMultipliers(prevMultipliers => 
+                prevMultipliers.map(m =>
                     typeof m === 'number' ? Math.min(m * 2, MAX_MULTIPLIER) : 'DOUBLE'
-                );
-                setMultipliers([...currentMultipliers]);
-                await new Promise(res => setTimeout(res, 1000)); // Pause to show "DOUBLE"
-            } else {
-                winningMultiplier = result;
-                finalWinnings = betAmount * result;
-                isFinalDrop = true;
-            }
-             setActiveSlot(null);
+                )
+            );
+
+            timer = setTimeout(() => {
+                setGameState('dropping'); // Re-drop the puck
+            }, 1500); // Pause to show new values and "DOUBLE" message
         }
 
-        setWinnings(finalWinnings);
-        setFinalMultiplier(winningMultiplier);
-        setGameState('result');
+        return () => clearTimeout(timer);
+    }, [gameState, betAmount, multipliers]);
+
+
+    const handleDrop = () => {
+        if (gameState !== 'ready') return;
+        setGameState('dropping');
     };
 
 
@@ -143,7 +149,12 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
                         {gameState === 'dropping' && (
                             <p className="text-xl font-bold text-accent animate-pulse">
                                Dropping...
-                               {dropHistory.length > 0 && ` Hit: ${dropHistory[dropHistory.length-1]}`}
+                            </p>
+                        )}
+                        
+                        {gameState === 'doubling' && (
+                            <p className="text-xl font-bold text-accent animate-pulse">
+                               DOUBLE! Re-dropping...
                             </p>
                         )}
 
