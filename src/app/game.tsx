@@ -341,14 +341,14 @@ export default function Game() {
   const textureFileInputRef = useRef<HTMLInputElement>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(false);
+  const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [customTextures, setCustomTextures] = useState<Record<string, string>>({});
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
-  const [hideText, setHideText] = useState(false);
+  const [hideText, setHideText] = useState(true);
   const [textureRotation, setTextureRotation] = useState(0);
-  const [disableAi, setDisableAi] = useState(false);
+  const [disableAi, setDisableAi] = useState(true);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
