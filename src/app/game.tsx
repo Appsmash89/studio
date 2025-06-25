@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -14,6 +14,7 @@ import { CoinFlipBonus } from '@/components/bonus/coin-flip-bonus';
 import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
 import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
+import { TopSlot, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/components/top-slot';
 
 
 const BET_OPTIONS = [
@@ -245,6 +246,9 @@ export default function Game() {
   const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0] & { id: number })[]>([]);
   const spinIdCounter = useRef(0);
 
+  const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
+  const [topSlotResult, setTopSlotResult] = useState<{ left: string | null; right: number | null } | null>(null);
+
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
   const spinDataRef = useRef({ bets, totalBet });
@@ -333,6 +337,18 @@ export default function Game() {
   const handleSkipCountdown = () => {
     if (gameState !== 'BETTING') return;
     setCountdown(0);
+  }
+
+  const handleTestTopSlot = () => {
+      if (isTopSlotSpinning) {
+          const leftResult = TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)];
+          const rightResult = TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)];
+          setTopSlotResult({ left: leftResult, right: rightResult });
+          setIsTopSlotSpinning(false);
+      } else {
+          setTopSlotResult(null);
+          setIsTopSlotSpinning(true);
+      }
   }
 
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
@@ -584,6 +600,10 @@ export default function Game() {
                     </>
                 )}
             </div>
+
+            <div className="my-4">
+              <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} />
+            </div>
             
             <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
             
@@ -690,6 +710,10 @@ export default function Game() {
                           DEV TOOLS
                       </p>
                       <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={handleTestTopSlot}>
+                            <Play className="mr-2 h-3 w-3" />
+                            Test Top Slot
+                        </Button>
                         <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
                             <FastForward className="mr-2 h-3 w-3" />
                             Skip Timer
