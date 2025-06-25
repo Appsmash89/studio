@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CoinFlipBonus } from '@/components/bonus/coin-flip-bonus';
 import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
@@ -284,6 +285,8 @@ export default function Game() {
   const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
+  const [forcedTopSlotLeft, setForcedTopSlotLeft] = useState<string | null>(null);
+  const [forcedTopSlotRight, setForcedTopSlotRight] = useState<number | null>(null);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
   const bgFileInputRef = useRef<HTMLInputElement>(null);
@@ -464,8 +467,8 @@ export default function Game() {
 
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
-        left: TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
-        right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
+        left: forcedTopSlotLeft ?? TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
+        right: forcedTopSlotRight ?? TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
     };
 
     // Set the final result first, so the animation knows where to go.
@@ -621,7 +624,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner]);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -1183,6 +1186,37 @@ export default function Game() {
                         </Button>
                       ))}
                     </div>
+
+                    <div className="mt-4">
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Force Top Slot Outcome:
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                            <Select onValueChange={(value) => setForcedTopSlotLeft(value === 'null' ? null : value)} value={forcedTopSlotLeft ?? 'null'} disabled={gameState !== 'BETTING' || isPaused}>
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="Left Reel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="null">Random</SelectItem>
+                                    {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
+                                        <SelectItem key={`force-left-${item}`} value={item}>{item.replace(/_/g, ' ')}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select onValueChange={(value) => setForcedTopSlotRight(value === 'null' ? null : Number(value))} value={forcedTopSlotRight?.toString() ?? 'null'} disabled={gameState !== 'BETTING' || isPaused}>
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder="Right Reel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="null">Random</SelectItem>
+                                    {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a, b) => a - b).map(item => (
+                                        <SelectItem key={`force-right-${item}`} value={String(item)}>{item}x</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
                     {showLegend && (
                       <Card className="mt-4 p-4 text-xs bg-background/70">
                         <CardHeader className="p-0 pb-2">
