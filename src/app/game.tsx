@@ -171,9 +171,10 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
     };
   };
 
-  const getLabelPosition = (index: number) => {
+  const getLabelPosition = (index: number, isBonus: boolean) => {
     const angle = (index + 0.5) * SEGMENT_ANGLE;
-    return polarToCartesian(center, center, radius * 0.75, angle);
+    const distance = isBonus ? radius * 0.72 : radius * 0.75;
+    return polarToCartesian(center, center, distance, angle);
   };
   
   const bulbs = Array.from({ length: NUM_SEGMENTS });
@@ -211,6 +212,8 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
             {/* Segments */}
             {segments.map((segment, index) => {
               const textureUrl = customTextures[`wheel-${segment.label}`];
+              const isBonus = segment.type === 'bonus';
+              const labelPos = getLabelPosition(index, isBonus);
               return (
               <g key={segment.id}>
                 <path 
@@ -218,20 +221,20 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                   fill={textureUrl ? `url(#pattern-wheel-${segment.label})` : segment.color} 
                   stroke="hsl(43, 78%, 58%)" 
                   strokeWidth="2" 
-                  filter={segment.type === 'bonus' ? 'url(#glow)' : undefined}
+                  filter={isBonus ? 'url(#glow)' : undefined}
                 />
                 <text
-                  x={getLabelPosition(index).x}
-                  y={getLabelPosition(index).y}
+                  x={labelPos.x}
+                  y={labelPos.y}
                   fill={textureUrl ? 'transparent' : segment.textColor}
                   textAnchor="middle"
                   dy=".3em"
                   className={cn(
                     "font-bold uppercase tracking-wider",
-                    segment.type === 'bonus' ? "text-xs leading-tight" : "text-base"
+                    isBonus ? "text-[11px] leading-tight" : "text-base"
                   )}
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
-                  transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
+                  transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${labelPos.x}, ${labelPos.y})`}
                 >
                   {segment.label.replace('_', '\n')}
                 </text>
@@ -951,7 +954,7 @@ export default function Game() {
                       className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
                       style={{
                           background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                          clipPath: 'polygon(40% 0, 60% 0, 85% 100%, 15% 100%)',
+                          clipPath: 'polygon(40% 0, 60% 0, 90% 100%, 10% 100%)',
                           filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
                       }}
                     >
@@ -1337,3 +1340,5 @@ export default function Game() {
   );
 }
 
+
+    
