@@ -5,8 +5,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, TestTube2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, TestTube2, BookCopy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -120,7 +120,12 @@ type GameLogEntry = {
     multiplier: number;
     index: number;
   };
-  topSlotResult?: { left: string | null; right: number | null; leftIndex: number | null; } | null;
+  topSlotResult?: { 
+    left: string | null; 
+    right: number | null; 
+    leftIndex: number | null; 
+    rightIndex: number | null;
+  } | null;
   isBonus: boolean;
   bonusWinnings?: number;
   bonusDetails?: {
@@ -249,6 +254,7 @@ export default function Game() {
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showLegend, setShowLegend] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -453,6 +459,10 @@ export default function Game() {
       const winningLabel = winningSegmentWithId.label;
       const betOnWinner = currentBets[winningLabel] || 0;
 
+      const rightIndex = finalTopSlotResult.right !== null
+        ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
+        : null;
+
       if (winningSegmentWithId.type === 'bonus') {
           const isBonusWin = betOnWinner > 0;
           if (!isBonusWin) {
@@ -482,7 +492,8 @@ export default function Game() {
               },
               topSlotResult: finalTopSlotResult ? {
                 ...finalTopSlotResult,
-                leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null
+                leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null,
+                rightIndex: rightIndex !== -1 ? rightIndex : null,
               } : null,
               isBonus: true,
               roundWinnings: 0, // This will be updated in handleBonusComplete
@@ -539,7 +550,8 @@ export default function Game() {
           },
           topSlotResult: finalTopSlotResult ? {
             ...finalTopSlotResult,
-            leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null
+            leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null,
+            rightIndex: rightIndex !== -1 ? rightIndex : null,
           } : null,
           isBonus: false,
           roundWinnings: roundWinnings,
@@ -759,7 +771,11 @@ export default function Game() {
                       <p className="text-xs text-muted-foreground font-semibold">
                           DEV TOOLS
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <Button variant="outline" size="sm" onClick={() => setShowLegend(s => !s)}>
+                            <BookCopy className="mr-2 h-3 w-3" />
+                            {showLegend ? 'Hide' : 'Show'} Legend
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => setIsTopSlotSpinning(s => !s)}>
                             <TestTube2 className="mr-2 h-3 w-3" />
                             Test Top Slot
@@ -806,6 +822,40 @@ export default function Game() {
                       </Button>
                     ))}
                   </div>
+                  {showLegend && (
+                    <Card className="mt-4 p-4 text-xs bg-background/70">
+                      <CardHeader className="p-0 pb-2">
+                        <CardTitle className="text-sm">Index Legend</CardTitle>
+                        <CardDescription className="text-xs">Categorized indexes used in the game log.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <h5 className="font-semibold mt-2">1. Main Wheel / Top Slot Bet Type</h5>
+                            <ul className="list-inside mt-1 space-y-1">
+                              {BET_OPTIONS.map((option, index) => (
+                                <li key={`legend-bet-${index}`} className="flex items-center gap-2">
+                                  <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                                  <span>{option.label}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <h5 className="font-semibold mt-2">2. Top Slot Multiplier</h5>
+                            <ul className="list-inside mt-1 space-y-1">
+                              {TOP_SLOT_RIGHT_REEL_ITEMS.map((item, index) => (
+                                <li key={`legend-mult-${index}`} className="flex items-center gap-2">
+                                  <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                                  <span>{item}x</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                   {forcedWinner && (
                     <p className="text-xs text-center text-accent mt-2 animate-pulse">
                       Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
