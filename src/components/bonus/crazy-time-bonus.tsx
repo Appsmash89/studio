@@ -51,7 +51,7 @@ const INITIAL_WHEEL_SEGMENTS: Segment[] = [
 
 const NUM_SEGMENTS = INITIAL_WHEEL_SEGMENTS.length;
 const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-const SPIN_DURATION_SECONDS = 12;
+const SPIN_DURATION_SECONDS = 17;
 const MAX_MULTIPLIER = 20000;
 
 const FLAPPERS: { id: Flapper, color: string, position: number }[] = [
