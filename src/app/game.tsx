@@ -520,6 +520,8 @@ export default function Game() {
     medium: 'text-foreground',
     high: 'text-accent',
   };
+
+  const isBonusActive = gameState.startsWith('BONUS_');
   
   return (
     <div className="relative flex flex-col items-center justify-between min-h-screen text-foreground p-4 overflow-hidden">
@@ -538,209 +540,209 @@ export default function Game() {
       {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} />}
 
-      <header className="w-full flex justify-between items-center absolute top-4 px-4">
-        <div className="flex items-center gap-4">
-          <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
-            <div className="flex items-center gap-2 text-xl font-bold">
-              <Wallet className="text-accent" />
-              <span>${balance.toLocaleString()}</span>
+      {!isBonusActive && (
+        <>
+          <header className="w-full flex justify-between items-center absolute top-4 px-4">
+            <div className="flex items-center gap-4">
+              <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
+                <div className="flex items-center gap-2 text-xl font-bold">
+                  <Wallet className="text-accent" />
+                  <span>${balance.toLocaleString()}</span>
+                </div>
+              </Card>
             </div>
-          </Card>
-        </div>
-      </header>
+          </header>
 
-      <main className="flex flex-col items-center justify-center gap-4 pt-20">
-        <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
-          Wheel of Fortune Casino – Free Spins
-        </h1>
-        
-        <div className="h-24 flex flex-col items-center justify-center text-center">
-            {gameState === 'BETTING' && (
-                <>
-                    <h2 className="text-xl font-bold uppercase tracking-wider text-accent mb-2">
-                        Place Your Bets
+          <main className="flex flex-col items-center justify-center gap-4 pt-20">
+            <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
+              Wheel of Fortune Casino – Free Spins
+            </h1>
+            
+            <div className="h-24 flex flex-col items-center justify-center text-center">
+                {gameState === 'BETTING' && (
+                    <>
+                        <h2 className="text-xl font-bold uppercase tracking-wider text-accent mb-2">
+                            Place Your Bets
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <p className="text-4xl font-headline">{countdown}</p>
+                        </div>
+                        <Progress value={(countdown / BETTING_TIME_SECONDS) * 100} className="w-64 mt-2" />
+                    </>
+                )}
+                {gameState === 'SPINNING' && (
+                    <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
+                        No More Bets!
                     </h2>
-                    <div className="flex items-center gap-2">
-                        <p className="text-4xl font-headline">{countdown}</p>
-                    </div>
-                    <Progress value={(countdown / BETTING_TIME_SECONDS) * 100} className="w-64 mt-2" />
-                </>
-            )}
-            {gameState === 'SPINNING' && (
-                <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
-                    No More Bets!
-                </h2>
-            )}
-            {gameState === 'RESULT' && winningSegment && (
-                <>
-                    <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
-                        Winner is...
-                    </h2>
-                    <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
-                </>
-            )}
-        </div>
-        
-        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
-        
-        <div className="h-20 flex items-center justify-center">
-            <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
-                <CardContent className="p-0 flex items-center gap-3">
-                    <p className="text-sm font-bold pr-3 border-r border-muted-foreground/50 self-stretch flex items-center text-muted-foreground">
-                        History
-                    </p>
-                    <div className="flex gap-1.5">
-                        {spinHistory.map((segment) => (
-                            <div
-                                key={segment.id}
-                                className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
-                                style={{
-                                    backgroundColor: segment.color,
-                                    color: segment.textColor,
-                                    textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
-                                }}
-                                title={segment.label.replace('_', ' ')}
-                            >
-                                <span className="text-center leading-tight">
-                                    {segment.label.replace('_', '\n')}
-                                </span>
-                            </div>
-                        ))}
-                        {[...Array(Math.max(0, 7 - spinHistory.length))].map((_, i) => (
-                            <div key={`placeholder-${i}`} className="w-10 h-10 rounded-md bg-background/30" />
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-
-        <div className="h-16 flex items-center justify-center text-center">
-            {aiMessage && gameState === 'RESULT' && (
-                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
+                )}
+                {gameState === 'RESULT' && winningSegment && (
+                    <>
+                        <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
+                            Winner is...
+                        </h2>
+                        <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
+                    </>
+                )}
+            </div>
+            
+            <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} />
+            
+            <div className="h-20 flex items-center justify-center">
+                <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
                     <CardContent className="p-0 flex items-center gap-3">
-                      <Sparkles className="text-accent w-5 h-5"/>
-                      <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
-                        {aiMessage.message}
-                      </p>
+                        <p className="text-sm font-bold pr-3 border-r border-muted-foreground/50 self-stretch flex items-center text-muted-foreground">
+                            History
+                        </p>
+                        <div className="flex gap-1.5">
+                            {spinHistory.map((segment) => (
+                                <div
+                                    key={segment.id}
+                                    className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
+                                    style={{
+                                        backgroundColor: segment.color,
+                                        color: segment.textColor,
+                                        textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
+                                    }}
+                                    title={segment.label.replace('_', ' ')}
+                                >
+                                    <span className="text-center leading-tight">
+                                        {segment.label.replace('_', '\n')}
+                                    </span>
+                                </div>
+                            ))}
+                            {[...Array(Math.max(0, 7 - spinHistory.length))].map((_, i) => (
+                                <div key={`placeholder-${i}`} className="w-10 h-10 rounded-md bg-background/30" />
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
-            )}
-        </div>
-      </main>
+            </div>
 
-      <footer className="w-full max-w-4xl">
-        <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
-          <CardContent className="p-0 flex flex-col gap-4">
-            <div className="grid grid-cols-4 gap-2">
-              {BET_OPTIONS.map(option => (
-                <Button
-                  key={option.id}
-                  variant="secondary"
-                  style={{
-                    background: `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`,
-                    color: option.textColor,
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
-                    fontFamily: "'Playfair Display', serif",
-                  }}
-                  className={cn(
-                    "h-auto flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
-                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
-                  )}
-                  onClick={() => handleBet(option.id)}
-                  disabled={gameState !== 'BETTING'}
-                >
-                  <span className={cn(
-                    "font-bold drop-shadow-md",
-                    option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center'
-                  )}>
-                    {option.label}
-                  </span>
-                  <span className="text-sm font-mono font-semibold text-white/90 drop-shadow-sm">
-                    ${bets[option.id].toLocaleString()}
-                  </span>
-                </Button>
-              ))}
+            <div className="h-16 flex items-center justify-center text-center">
+                {aiMessage && gameState === 'RESULT' && (
+                    <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
+                        <CardContent className="p-0 flex items-center gap-3">
+                          <Sparkles className="text-accent w-5 h-5"/>
+                          <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
+                            {aiMessage.message}
+                          </p>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
-                {CHIP_VALUES.map(chip => (
-                  <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING'}>
-                    ${chip}
-                  </Button>
-                ))}
-              </div>
-              <div className="flex-grow flex items-center justify-end gap-2">
-                <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0}><RotateCcw className="w-5 h-5"/></Button>
-                <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
-                 <Card className="bg-card/80">
-                    <CardContent className="p-2 text-center">
-                        <p className="text-sm text-muted-foreground">Total Bet</p>
-                        <p className="text-2xl font-bold text-accent">${totalBet.toLocaleString()}</p>
-                    </CardContent>
-                </Card>
-              </div>
-            </div>
-            <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
-              <div className="flex justify-between items-center mb-2">
-                  <p className="text-xs text-muted-foreground font-semibold">
-                      DEV TOOLS
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
-                        <FastForward className="mr-2 h-3 w-3" />
-                        Skip Timer
+          </main>
+
+          <footer className="w-full max-w-4xl">
+            <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
+              <CardContent className="p-0 flex flex-col gap-4">
+                <div className="grid grid-cols-4 gap-2">
+                  {BET_OPTIONS.map(option => (
+                    <Button
+                      key={option.id}
+                      variant="secondary"
+                      style={{
+                        background: `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`,
+                        color: option.textColor,
+                        textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
+                        fontFamily: "'Playfair Display', serif",
+                      }}
+                      className={cn(
+                        "h-auto flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
+                        "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
+                      )}
+                      onClick={() => handleBet(option.id)}
+                      disabled={gameState !== 'BETTING'}
+                    >
+                      <span className={cn(
+                        "font-bold drop-shadow-md",
+                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center'
+                      )}>
+                        {option.label}
+                      </span>
+                      <span className="text-sm font-mono font-semibold text-white/90 drop-shadow-sm">
+                        ${bets[option.id].toLocaleString()}
+                      </span>
                     </Button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                      <Upload className="mr-2 h-3 w-3" />
-                      Upload BG
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
-                        <Download className="mr-2 h-3 w-3" />
-                        Latest Spin
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
-                        <Download className="mr-2 h-3 w-3" />
-                        Full Log
-                    </Button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
+                    {CHIP_VALUES.map(chip => (
+                      <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING'}>
+                        ${chip}
+                      </Button>
+                    ))}
                   </div>
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">
-                Force Next Spin Outcome:
-              </p>
-              <div className="grid grid-cols-4 gap-2">
-                {BET_OPTIONS.map(option => (
-                  <Button
-                    key={`force-${option.id}`}
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setForcedWinner(option.id)}
-                    disabled={gameState !== 'BETTING'}
-                    className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
-                  >
-                    {option.label}
-                  </Button>
-                ))}
-              </div>
-              {forcedWinner && (
-                <p className="text-xs text-center text-accent mt-2 animate-pulse">
-                  Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </footer>
+                  <div className="flex-grow flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0}><RotateCcw className="w-5 h-5"/></Button>
+                    <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0}><XCircle className="w-5 h-5"/></Button>
+                     <Card className="bg-card/80">
+                        <CardContent className="p-2 text-center">
+                            <p className="text-sm text-muted-foreground">Total Bet</p>
+                            <p className="text-2xl font-bold text-accent">${totalBet.toLocaleString()}</p>
+                        </CardContent>
+                    </Card>
+                  </div>
+                </div>
+                <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                      <p className="text-xs text-muted-foreground font-semibold">
+                          DEV TOOLS
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING'}>
+                            <FastForward className="mr-2 h-3 w-3" />
+                            Skip Timer
+                        </Button>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                          <Upload className="mr-2 h-3 w-3" />
+                          Upload BG
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
+                            <Download className="mr-2 h-3 w-3" />
+                            Latest Spin
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
+                            <Download className="mr-2 h-3 w-3" />
+                            Full Log
+                        </Button>
+                      </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Force Next Spin Outcome:
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {BET_OPTIONS.map(option => (
+                      <Button
+                        key={`force-${option.id}`}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setForcedWinner(option.id)}
+                        disabled={gameState !== 'BETTING'}
+                        className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                  {forcedWinner && (
+                    <p className="text-xs text-center text-accent mt-2 animate-pulse">
+                      Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </footer>
+        </>
+      )}
     </div>
   );
 }
-
-    
-
-    

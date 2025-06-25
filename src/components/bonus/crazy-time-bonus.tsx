@@ -57,7 +57,7 @@ const TopSlot = ({ result }: { result: { left: string | null; right: number | nu
     const isSpinning = result === null;
 
     return (
-        <div className="absolute top-1/2 -translate-y-1/2 left-16 z-20 w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 gap-1">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 gap-1">
             <div className="absolute -left-5 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
@@ -323,19 +323,17 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
     }
 
     return (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 animate-in fade-in p-4 overflow-hidden">
-            <Card className="w-full h-full max-w-7xl max-h-[95vh] flex flex-col bg-transparent border-none text-white shadow-none">
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 animate-in fade-in p-4">
+            <Card className="relative w-full h-full max-w-7xl max-h-[95vh] flex flex-col bg-transparent border-none text-white shadow-none">
                 <CardHeader className="text-center">
                     <CardTitle className="text-4xl md:text-5xl font-headline text-accent" style={{ textShadow: '2px 2px 8px hsl(var(--primary))' }}>
                         CRAZY TIME
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="relative flex-grow p-0 flex items-center justify-center overflow-hidden">
-                    
-                    {/* Top Slot is positioned absolutely within this container */}
-                    {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
 
-                    {/* Messages are positioned absolutely */}
+                {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
+                
+                <CardContent className="relative flex-grow p-0 flex items-center justify-center">
                     <div className="absolute top-36 left-1/2 -translate-x-1/2 text-center z-10 w-full px-4">
                         <p className="text-2xl font-bold animate-pulse">{getMessage()}</p>
                         {spinHistory.length > 0 && (
@@ -343,10 +341,8 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         )}
                     </div>
                     
-                    {/* The Wheel is centered in the flex container */}
                     <BonusWheel segments={segments} rotation={rotation} />
                     
-                    {/* Controls are positioned absolutely at the bottom */}
                     <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col items-center gap-4">
                         {gameState === 'picking' && (
                             <div className="flex gap-4">
