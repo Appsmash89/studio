@@ -63,8 +63,8 @@ const TopSlot = ({ result }: { result: { left: string | null; right: number | nu
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
                 
-                <Reel items={TOP_SLOT_LEFT_REEL_ITEMS} result={isSpinning ? null : result.left} isSpinning={isSpinning} />
-                <Reel items={TOP_SLOT_RIGHT_REEL_ITEMS} result={isSpinning ? null : result.right} isSpinning={isSpinning} />
+                <Reel items={TOP_SLOT_LEFT_REEL_ITEMS} result={isSpinning ? null : result?.left ?? null} isSpinning={isSpinning} />
+                <Reel items={TOP_SLOT_RIGHT_REEL_ITEMS} result={isSpinning ? null : result?.right ?? null} isSpinning={isSpinning} />
             </div>
             <div className="absolute -right-5 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
         </div>
@@ -330,7 +330,7 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         CRAZY TIME
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow flex flex-col items-center justify-center gap-4 relative -mt-8">
+                <CardContent className="flex-grow relative -mt-8">
                     
                     {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
 
@@ -341,7 +341,9 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         )}
                     </div>
                     
-                    <BonusWheel segments={segments} rotation={rotation} />
+                    <div className="w-full h-full flex items-center justify-center">
+                      <BonusWheel segments={segments} rotation={rotation} />
+                    </div>
                     
                     <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col items-center gap-4">
                         {gameState === 'picking' && (
@@ -349,7 +351,7 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                                 {FLAPPERS.map(flapper => (
                                     <Button
                                         key={flapper.id}
-                                        onClick={() => handleSelectFlapper(flapper.id)}
+                                        onClick={() => handleSelectFlapper(flapper.id as Flapper)}
                                         style={{ backgroundColor: flapper.color, color: 'white', border: `3px solid ${flapper.color}` }}
                                         className="w-32 h-16 text-xl font-bold uppercase transition-transform hover:scale-105"
                                     >
@@ -379,5 +381,3 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
         </div>
     );
 }
-
-    
