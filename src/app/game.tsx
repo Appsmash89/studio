@@ -322,15 +322,19 @@ export default function Game() {
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
 
-  // Load textures from localStorage on initial client-side render
+  // Load assets from localStorage on initial client-side render
   useEffect(() => {
     try {
       const storedTextures = localStorage.getItem('spinriches_custom_textures');
       if (storedTextures) {
         setCustomTextures(JSON.parse(storedTextures));
       }
+      const storedBg = localStorage.getItem('spinriches_custom_bg_image');
+      if (storedBg) {
+        setBackgroundImage(storedBg);
+      }
     } catch (error) {
-      console.error("Failed to load textures from localStorage", error);
+      console.error("Failed to load assets from localStorage", error);
     }
   }, []);
 
@@ -342,10 +346,26 @@ export default function Game() {
       console.error("Failed to save textures to localStorage", error);
     }
   }, [customTextures]);
+  
+  // Save BG image to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      // Only save if it's not the default placeholder.
+      // When clearing, we'll set state to placeholder which will trigger removal here.
+      if (!backgroundImage.startsWith('https://placehold.co')) {
+        localStorage.setItem('spinriches_custom_bg_image', backgroundImage);
+      } else {
+        localStorage.removeItem('spinriches_custom_bg_image');
+      }
+    } catch (error) {
+      console.error("Failed to save background image to localStorage", error);
+    }
+  }, [backgroundImage]);
 
   const handleClearTextures = () => {
     setCustomTextures({});
-    toast({ title: "Textures Cleared", description: "All custom textures have been removed." });
+    setBackgroundImage('https://placehold.co/1920x1080.png');
+    toast({ title: "Assets Cleared", description: "All custom assets have been removed and restored to default." });
     setIsClearTexturesAlertOpen(false);
   };
 
@@ -450,8 +470,12 @@ export default function Game() {
   };
 
   const handleUploadClick = (target: string) => {
-    setTextureUploadTarget(target);
-    textureFileInputRef.current?.click();
+    if (target === 'background') {
+        bgFileInputRef.current?.click();
+    } else {
+        setTextureUploadTarget(target);
+        textureFileInputRef.current?.click();
+    }
   };
 
   const handleTextureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -917,6 +941,7 @@ export default function Game() {
   };
 
   const isBonusActive = gameState.startsWith('BONUS_');
+  const hasCustomAssets = Object.keys(customTextures).length > 0 || !backgroundImage.startsWith('https://placehold.co');
   
   return (
     <div className="relative flex flex-col items-center justify-between min-h-screen text-foreground p-4 overflow-hidden">
@@ -935,7 +960,7 @@ export default function Game() {
             <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    This action will permanently remove all uploaded custom textures and restore the default appearance. This cannot be undone.
+                    This action will permanently remove all uploaded custom assets (background and textures) and restore the default appearance. This cannot be undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1202,21 +1227,24 @@ export default function Game() {
                             accept="image/*"
                             className="hidden"
                           />
-                          <Button variant="outline" size="sm" onClick={() => bgFileInputRef.current?.click()}>
-                            <Upload className="mr-2 h-3 w-3" />
-                            Upload BG
-                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                <Button variant="outline" size="sm">
                                 <UploadCloud className="mr-2 h-3 w-3" />
-                                Upload Textures
+                                Upload Assets
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="max-h-[500px] overflow-y-auto w-64">
-                                <DropdownMenuLabel>Upload textures for specific components.</DropdownMenuLabel>
+                                <DropdownMenuLabel>Upload custom image assets.</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>General</DropdownMenuLabel>
+                                    <DropdownMenuItem onSelect={() => handleUploadClick('background')} className="flex justify-between">
+                                        <span>Background Image</span>
+                                        <span className="text-muted-foreground text-xs">1920x1080px</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                   <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
                                   {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
@@ -1273,9 +1301,9 @@ export default function Game() {
 
                               </DropdownMenuContent>
                           </DropdownMenu>
-                           <Button variant="outline" size="sm" onClick={() => setIsClearTexturesAlertOpen(true)} disabled={Object.keys(customTextures).length === 0}>
+                           <Button variant="outline" size="sm" onClick={() => setIsClearTexturesAlertOpen(true)} disabled={!hasCustomAssets}>
                               <Trash2 className="mr-2 h-3 w-3" />
-                              Clear Textures
+                              Clear Assets
                           </Button>
                           <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                               <Download className="mr-2 h-3 w-3" />
@@ -1405,4 +1433,5 @@ export default function Game() {
 
 
     
+
 
