@@ -4,15 +4,16 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud, RefreshCw } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud, RefreshCw, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { CoinFlipBonus } from '@/components/bonus/coin-flip-bonus';
 import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
@@ -305,6 +306,7 @@ export default function Game() {
   const [isPaused, setIsPaused] = useState(false);
   const [customTextures, setCustomTextures] = useState<Record<string, string>>({});
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
+  const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -319,6 +321,33 @@ export default function Game() {
 
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
+
+  // Load textures from localStorage on initial client-side render
+  useEffect(() => {
+    try {
+      const storedTextures = localStorage.getItem('spinriches_custom_textures');
+      if (storedTextures) {
+        setCustomTextures(JSON.parse(storedTextures));
+      }
+    } catch (error) {
+      console.error("Failed to load textures from localStorage", error);
+    }
+  }, []);
+
+  // Save textures to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('spinriches_custom_textures', JSON.stringify(customTextures));
+    } catch (error) {
+      console.error("Failed to save textures to localStorage", error);
+    }
+  }, [customTextures]);
+
+  const handleClearTextures = () => {
+    setCustomTextures({});
+    toast({ title: "Textures Cleared", description: "All custom textures have been removed." });
+    setIsClearTexturesAlertOpen(false);
+  };
 
   const startNewRound = useCallback(() => {
     setGameState('BETTING');
@@ -901,6 +930,21 @@ export default function Game() {
       />
       <div className="absolute inset-0 bg-background/80 z-[-1]"></div>
       
+      <AlertDialog open={isClearTexturesAlertOpen} onOpenChange={setIsClearTexturesAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action will permanently remove all uploaded custom textures and restore the default appearance. This cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearTextures} className={buttonVariants({ variant: "destructive" })}>Confirm & Clear</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {gameState === 'BONUS_COIN_FLIP' && <CoinFlipBonus betAmount={bets['COIN_FLIP']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
@@ -1229,6 +1273,10 @@ export default function Game() {
 
                               </DropdownMenuContent>
                           </DropdownMenu>
+                           <Button variant="outline" size="sm" onClick={() => setIsClearTexturesAlertOpen(true)} disabled={Object.keys(customTextures).length === 0}>
+                              <Trash2 className="mr-2 h-3 w-3" />
+                              Clear Textures
+                          </Button>
                           <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                               <Download className="mr-2 h-3 w-3" />
                               Latest Spin
@@ -1357,3 +1405,4 @@ export default function Game() {
 
 
     
+
