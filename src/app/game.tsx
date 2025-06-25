@@ -96,6 +96,7 @@ const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 const SPIN_DURATION_SECONDS = 8;
 const BETTING_TIME_SECONDS = 15;
 const RESULT_DISPLAY_SECONDS = 5;
+const TOP_SLOT_ANIMATION_DURATION_MS = 3500;
 
 const CHIP_VALUES = [1, 5, 10, 25, 100];
 const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
@@ -395,12 +396,16 @@ export default function Game() {
         right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
     };
 
+    // Set the final result first, so the animation knows where to go.
+    setTopSlotResult(finalTopSlotResult);
+    // Then, trigger the animation.
     setIsTopSlotSpinning(true);
     
+    // After the animation is done, set spinning to false.
+    // This allows the component to reset its animation state without visual glitches.
     setTimeout(() => {
-        setTopSlotResult(finalTopSlotResult);
         setIsTopSlotSpinning(false);
-    }, 4000);
+    }, TOP_SLOT_ANIMATION_DURATION_MS);
 
 
     // --- Main Wheel Logic ---
