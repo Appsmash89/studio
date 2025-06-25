@@ -155,6 +155,7 @@ const adjustHsl = (hsl: string, h: number, l: number) => {
 const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string> }) => {
   const radius = 200;
   const center = 210;
+  const fullWheelTexture = customTextures['wheel-full'];
 
   const getSegmentPath = (index: number) => {
     const startAngle = index * SEGMENT_ANGLE;
@@ -203,6 +204,11 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+             {fullWheelTexture && (
+                <pattern id="pattern-wheel-full" patternUnits="userSpaceOnUse" width="420" height="420">
+                    <image href={fullWheelTexture} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
+                </pattern>
+            )}
             {uniqueLabelsWithTextures.map(label => (
               <pattern key={`pattern-wheel-${label}`} id={`pattern-wheel-${label}`} patternUnits="userSpaceOnUse" width="420" height="420">
                 <image href={customTextures[`wheel-${label}`]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
@@ -210,37 +216,68 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
             ))}
           </defs>
           <g filter="url(#shadow)">
-            {/* Segments */}
-            {segments.map((segment, index) => {
-              const textureUrl = customTextures[`wheel-${segment.label}`];
-              const isBonus = segment.type === 'bonus';
-              const labelPos = getLabelPosition(index, isBonus);
-              return (
-              <g key={segment.id}>
-                <path 
-                  d={getSegmentPath(index)} 
-                  fill={textureUrl ? `url(#pattern-wheel-${segment.label})` : segment.color} 
-                  stroke="hsl(43, 78%, 58%)" 
-                  strokeWidth="2" 
-                  filter={isBonus ? 'url(#glow)' : undefined}
-                />
-                <text
-                  x={labelPos.x}
-                  y={labelPos.y}
-                  fill={textureUrl ? 'transparent' : segment.textColor}
-                  textAnchor="middle"
-                  dy=".3em"
-                  className={cn(
-                    "font-bold uppercase tracking-wider",
-                    isBonus ? "text-[11px] leading-tight" : "text-base"
-                  )}
-                  style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
-                  transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${labelPos.x}, ${labelPos.y})`}
-                >
-                  {segment.label.replace('_', '\n')}
-                </text>
-              </g>
-            )})}
+            {/* Wheel Body */}
+            {fullWheelTexture ? (
+                <>
+                    <circle cx={center} cy={center} r={radius} fill="url(#pattern-wheel-full)" stroke="hsl(43, 78%, 58%)" strokeWidth="2" />
+                    {/* Render labels on top of full texture */}
+                    {segments.map((segment, index) => {
+                        const isBonus = segment.type === 'bonus';
+                        const labelPos = getLabelPosition(index, isBonus);
+                        return (
+                            <text
+                                key={segment.id}
+                                x={labelPos.x}
+                                y={labelPos.y}
+                                fill={segment.textColor}
+                                textAnchor="middle"
+                                dy=".3em"
+                                className={cn(
+                                    "font-bold uppercase tracking-wider",
+                                    isBonus ? "text-[11px] leading-tight" : "text-base"
+                                )}
+                                style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
+                                transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${labelPos.x}, ${labelPos.y})`}
+                            >
+                                {segment.label.replace('_', '\n')}
+                            </text>
+                        );
+                    })}
+                </>
+            ) : (
+                /* Original logic for individual segments */
+                segments.map((segment, index) => {
+                    const textureUrl = customTextures[`wheel-${segment.label}`];
+                    const isBonus = segment.type === 'bonus';
+                    const labelPos = getLabelPosition(index, isBonus);
+                    return (
+                        <g key={segment.id}>
+                            <path 
+                            d={getSegmentPath(index)} 
+                            fill={textureUrl ? `url(#pattern-wheel-${segment.label})` : segment.color} 
+                            stroke="hsl(43, 78%, 58%)" 
+                            strokeWidth="2" 
+                            filter={isBonus ? 'url(#glow)' : undefined}
+                            />
+                            <text
+                            x={labelPos.x}
+                            y={labelPos.y}
+                            fill={textureUrl ? 'transparent' : segment.textColor}
+                            textAnchor="middle"
+                            dy=".3em"
+                            className={cn(
+                                "font-bold uppercase tracking-wider",
+                                isBonus ? "text-[11px] leading-tight" : "text-base"
+                            )}
+                            style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
+                            transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${labelPos.x}, ${labelPos.y})`}
+                            >
+                            {segment.label.replace('_', '\n')}
+                            </text>
+                        </g>
+                    );
+                })
+            )}
 
             {/* Rim and bulbs */}
             <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
@@ -1247,9 +1284,13 @@ export default function Game() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                   <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
+                                    <DropdownMenuItem key={`upload-wheel-full`} onSelect={() => handleUploadClick(`wheel-full`)} className="flex justify-between">
+                                        <span>Full Wheel Texture</span>
+                                        <span className="text-muted-foreground text-xs">420x420px</span>
+                                    </DropdownMenuItem>
                                   {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
                                     <DropdownMenuItem key={`upload-wheel-${label}`} onSelect={() => handleUploadClick(`wheel-${label}`)} className="flex justify-between">
-                                      <span>{label.replace(/_/g, ' ')}</span>
+                                      <span>{label.replace(/_/g, ' ')} (Segment)</span>
                                       <span className="text-muted-foreground text-xs">420x420px</span>
                                     </DropdownMenuItem>
                                   ))}
@@ -1433,5 +1474,6 @@ export default function Game() {
 
 
     
+
 
 
