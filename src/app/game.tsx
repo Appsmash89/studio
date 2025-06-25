@@ -120,6 +120,7 @@ type GameLogEntry = {
         selectedFlapper: 'green' | 'blue' | 'yellow' | null;
         spinHistory: (string | number)[];
         finalSegments: (string | number)[];
+        topSlotResult?: { left: string | null, right: number | null } | null;
     };
   };
   roundWinnings: number;
@@ -739,5 +740,7 @@ export default function Game() {
     </div>
   );
 }
+
+    
 
     

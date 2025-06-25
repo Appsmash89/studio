@@ -53,19 +53,8 @@ const Reel = ({ items, result, isSpinning }: { items: (string | number)[], resul
 };
 
 
-const TopSlot = () => {
-    const [isSpinning, setIsSpinning] = useState(true);
-    const [result, setResult] = useState<{ left: string | null; right: number | null }>({ left: null, right: null });
-
-    useEffect(() => {
-        const leftResult = TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)];
-        const rightResult = TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)];
-        
-        setTimeout(() => {
-            setResult({ left: leftResult, right: rightResult });
-            setIsSpinning(false);
-        }, 4000); // Spin for 4 seconds
-    }, []);
+const TopSlot = ({ result }: { result: { left: string | null; right: number | null } | null }) => {
+    const isSpinning = result === null;
 
     return (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 gap-1">
@@ -74,8 +63,8 @@ const TopSlot = () => {
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
                 
-                <Reel items={TOP_SLOT_LEFT_REEL_ITEMS} result={result.left} isSpinning={isSpinning} />
-                <Reel items={TOP_SLOT_RIGHT_REEL_ITEMS} result={result.right} isSpinning={isSpinning} />
+                <Reel items={TOP_SLOT_LEFT_REEL_ITEMS} result={isSpinning ? null : result.left} isSpinning={isSpinning} />
+                <Reel items={TOP_SLOT_RIGHT_REEL_ITEMS} result={isSpinning ? null : result.right} isSpinning={isSpinning} />
             </div>
             <div className="absolute -right-5 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg" style={{ clipPath: 'polygon(0 0, 100% 50%, 0 100%)' }} />
         </div>
@@ -239,6 +228,7 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
     const [spinHistory, setSpinHistory] = useState<(string | number)[]>([]);
     const [winnings, setWinnings] = useState(0);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [topSlotResult, setTopSlotResult] = useState<{ left: string | null; right: number | null } | null>(null);
 
     const handleSelectFlapper = (flapperId: Flapper) => {
         if (gameState !== 'picking') return;
@@ -249,6 +239,13 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
     const handleSpin = async () => {
         if (!selectedFlapper || gameState !== 'ready_to_spin') return;
         setGameState('spinning');
+        
+        // Start TopSlot "spin"
+        setTimeout(() => {
+            const leftResult = TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)];
+            const rightResult = TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)];
+            setTopSlotResult({ left: leftResult, right: rightResult });
+        }, 4000); // Spin for 4 seconds
     
         let currentSegments = [...segments];
         let finalWinnings = 0;
@@ -300,6 +297,7 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                 selectedFlapper,
                 spinHistory,
                 finalSegments: segments.map(s => s.value),
+                topSlotResult,
             }
         });
     };
@@ -334,7 +332,7 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                 </CardHeader>
                 <CardContent className="flex-grow flex flex-col items-center justify-center gap-4 relative -mt-8">
                     
-                    {(gameState === 'spinning' || gameState === 'result') && <TopSlot />}
+                    {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
 
                     <div className="absolute top-4 left-4 right-4 text-center z-10">
                         <p className="text-2xl font-bold animate-pulse">{getMessage()}</p>
@@ -381,3 +379,5 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
         </div>
     );
 }
+
+    
