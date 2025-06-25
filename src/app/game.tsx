@@ -7,7 +7,7 @@ import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-enco
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud } from 'lucide-react';
+import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
@@ -320,6 +320,18 @@ export default function Game() {
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
 
+  const startNewRound = useCallback(() => {
+    setGameState('BETTING');
+    setCountdown(BETTING_TIME_SECONDS);
+    setBets(initialBetsState);
+    setBetHistory([]);
+    setAiMessage(null);
+    setWinningSegment(null);
+    setForcedWinner(null);
+    setForcedTopSlotLeft(null);
+    setForcedTopSlotRight(null);
+  }, []);
+
   useEffect(() => {
     // Set initial random result for Top Slot on component mount
     setTopSlotResult({
@@ -435,6 +447,10 @@ export default function Game() {
     if (gameState !== 'BETTING') return;
     setCountdown(0);
   }
+
+  const handleCloseRound = () => {
+    startNewRound();
+  };
 
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     if (!winningSegment) return;
@@ -658,17 +674,12 @@ export default function Game() {
       }
     } else if (gameState === 'RESULT') {
       timer = setTimeout(() => {
-        setGameState('BETTING');
-        setCountdown(BETTING_TIME_SECONDS);
-        setBets(initialBetsState);
-        setBetHistory([]);
-        setAiMessage(null);
-        setWinningSegment(null);
+        startNewRound();
       }, RESULT_DISPLAY_SECONDS * 1000);
     }
 
     return () => clearTimeout(timer);
-  }, [gameState, countdown, handleSpin, isPaused]);
+  }, [gameState, countdown, handleSpin, isPaused, startNewRound]);
   
   const generateHourOfData = () => {
     const NUM_SPINS_IN_HOUR = 120; // Approximate
@@ -910,7 +921,7 @@ export default function Game() {
 
           <main className="flex flex-col items-center justify-center gap-4 pt-20">
             <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
-              Wheel of Fortune Casino – Free Spins
+              SpinRiches
             </h1>
             
             <div className="h-24 flex flex-col items-center justify-center text-center">
@@ -1124,6 +1135,10 @@ export default function Game() {
                           <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING' || isPaused}>
                               <FastForward className="mr-2 h-3 w-3" />
                               Skip Timer
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={handleCloseRound} disabled={isPaused}>
+                            <RefreshCw className="mr-2 h-3 w-3" />
+                            Close Round
                           </Button>
                           <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
                               {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
