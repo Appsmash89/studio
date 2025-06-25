@@ -256,7 +256,7 @@ export default function Game() {
   const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showLegend, setShowLegend] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(isGenerating);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
@@ -1089,6 +1089,8 @@ export default function Game() {
     </div>
   );
 }
+
+    
 
     
 
