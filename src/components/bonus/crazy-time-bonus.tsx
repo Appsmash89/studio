@@ -330,18 +330,18 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         CRAZY TIME
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-grow relative -mt-8">
+                <CardContent className="relative flex-grow -mt-8">
                     
                     {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
 
-                    <div className="absolute top-4 left-4 right-4 text-center z-10">
+                    <div className="absolute top-48 left-1/2 -translate-x-1/2 text-center z-10 w-full px-4">
                         <p className="text-2xl font-bold animate-pulse">{getMessage()}</p>
                         {spinHistory.length > 0 && (
                             <p className="text-sm text-muted-foreground">History: {spinHistory.join(' -> ')}</p>
                         )}
                     </div>
                     
-                    <div className="w-full h-full flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
                       <BonusWheel segments={segments} rotation={rotation} />
                     </div>
                     
