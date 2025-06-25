@@ -84,10 +84,10 @@ const SEGMENTS_CONFIG = [
     { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
     { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
     { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
 ].map(seg => ({ ...seg, textColor: textColorMap[seg.label]! }));
 
 
