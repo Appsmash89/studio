@@ -10,6 +10,7 @@ import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Pl
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { Progress } from "@/components/ui/progress"
+import { Checkbox } from '@/components/ui/checkbox';
 import { CoinFlipBonus } from '@/components/bonus/coin-flip-bonus';
 import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
@@ -255,7 +256,8 @@ export default function Game() {
   const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showLegend, setShowLegend] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(isGenerating);
+  const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(false);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -691,7 +693,9 @@ export default function Game() {
 
     for (let i = 0; i < NUM_SPINS_IN_HOUR; i++) {
         const spinId = Date.now() + i;
-        const { bets: currentBets, totalBet: currentTotalBet } = simulateRandomBets();
+        const { bets: currentBets, totalBet: currentTotalBet } = skipBetsInDataGen
+            ? { bets: { ...initialBetsState }, totalBet: 0 }
+            : simulateRandomBets();
 
         const topSlotResult = {
             left: TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
@@ -1007,6 +1011,19 @@ export default function Game() {
                         </Button>
                       </div>
                   </div>
+                  <div className="flex items-center space-x-2 mb-2">
+                      <Checkbox 
+                        id="skip-bets" 
+                        checked={skipBetsInDataGen} 
+                        onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))} 
+                      />
+                      <label
+                        htmlFor="skip-bets"
+                        className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Skip random bet placement in simulation data
+                      </label>
+                  </div>
                   <p className="text-xs text-muted-foreground mb-1">
                     Force Next Spin Outcome:
                   </p>
@@ -1072,6 +1089,8 @@ export default function Game() {
     </div>
   );
 }
+
+    
 
     
 
