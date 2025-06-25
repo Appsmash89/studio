@@ -16,7 +16,7 @@ interface ReelProps {
 }
 
 const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps) => {
-    const duplicatedItems = useMemo(() => [...items, ...items, ...items, ...items], [items]);
+    const duplicatedItems = useMemo(() => Array.from({ length: 20 }).flatMap(() => items), [items]);
     const reelRef = useRef<HTMLDivElement>(null);
     const currentOffset = useRef(0);
     const prevSpinningRef = useRef(isSpinning);
@@ -27,8 +27,8 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
             const resultIndex = items.findIndex(item => String(item) === String(result));
             if (resultIndex === -1) return;
             
-            // Land on the second set of items to ensure seamless looping is possible
-            const targetIndex = items.length + resultIndex;
+            // Land on a set of items in the middle of the duplicated list to avoid edge cases
+            const targetIndex = (items.length * 10) + resultIndex;
             const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
 
             reelRef.current.style.transition = 'none'; // Snap to position without animation
@@ -50,18 +50,15 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
             const matrix = new DOMMatrixReadOnly(currentTransform);
             const currentY = matrix.m42;
 
-            reelRef.current.style.transition = `transform ${spinDuration}s cubic-bezier(0.5, 0, 0.5, 1)`;
+            reelRef.current.style.transition = `transform ${spinDuration}s cubic-bezier(0.3, 0, 0.7, 1)`;
             
-            const spinRevolutions = 2 + reelIndex; // Reduced revolutions for realistic blur
+            const spinRevolutions = 8 + reelIndex * 2;
             const singleRevolutionHeight = items.length * REEL_ITEM_HEIGHT;
-
-            const completedRevolutions = Math.abs(Math.floor(currentY / singleRevolutionHeight));
             
-            const startOfNextRevolutionY = (completedRevolutions + 1) * singleRevolutionHeight;
-            const finalOffset = startOfNextRevolutionY + (singleRevolutionHeight * spinRevolutions);
+            const finalOffset = currentY - (singleRevolutionHeight * spinRevolutions);
             
-            reelRef.current.style.transform = `translateY(-${finalOffset}px)`;
-            currentOffset.current = -finalOffset;
+            reelRef.current.style.transform = `translateY(${finalOffset}px)`;
+            currentOffset.current = finalOffset;
 
         } else if (!isSpinning && wasSpinning) {
             // STOP SPINNING
@@ -77,7 +74,8 @@ const Reel = ({ items, result, isSpinning, spinDuration, reelIndex }: ReelProps)
             const singleRevolutionHeight = items.length * REEL_ITEM_HEIGHT;
             const completedRevolutions = Math.abs(Math.floor(currentY / singleRevolutionHeight));
             
-            const targetIndex = (completedRevolutions + 1) * items.length + resultIndex;
+            const targetRevolutionIndex = completedRevolutions + 1;
+            const targetIndex = (targetRevolutionIndex * items.length) + resultIndex;
             const finalOffset = targetIndex * REEL_ITEM_HEIGHT;
 
             currentOffset.current = -finalOffset;
@@ -132,3 +130,4 @@ export const TopSlot = ({ result, isSpinning }: { result: { left: string | null;
         </div>
     );
 };
+
