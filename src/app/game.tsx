@@ -3,7 +3,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -269,9 +268,6 @@ const Wheel = ({ segments, rotation }: { segments: typeof SEGMENTS_CONFIG; rotat
 
 
 export default function Game() {
-  const searchParams = useSearchParams();
-  const isAdmin = searchParams.get('admin') === 'true';
-
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState<{[key: string]: number}>(initialBetsState);
   const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
@@ -1026,7 +1022,7 @@ export default function Game() {
                     </Card>
                   </div>
                 </div>
-                {isAdmin && (
+                
                   <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-xs text-muted-foreground font-semibold">
@@ -1145,7 +1141,7 @@ export default function Game() {
                       </p>
                     )}
                   </div>
-                )}
+                
               </CardContent>
             </Card>
           </footer>
