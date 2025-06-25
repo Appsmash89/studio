@@ -380,28 +380,6 @@ export default function Game() {
     }
   }, []);
 
-  // Save textures to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem('spinriches_custom_textures', JSON.stringify(customTextures));
-    } catch (error) {
-      console.error("Failed to save textures to localStorage", error);
-    }
-  }, [customTextures]);
-  
-  // Save BG image to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      if (!backgroundImage.startsWith('https://placehold.co')) {
-        localStorage.setItem('spinriches_custom_bg_image', backgroundImage);
-      } else {
-        localStorage.removeItem('spinriches_custom_bg_image');
-      }
-    } catch (error) {
-      console.error("Failed to save background image to localStorage", error);
-    }
-  }, [backgroundImage]);
-
   const handleClearTextures = () => {
     setCustomTextures({});
     setBackgroundImage('https://placehold.co/1920x1080.png');
@@ -505,6 +483,11 @@ export default function Game() {
         const result = e.target?.result;
         if (typeof result === 'string') {
           setBackgroundImage(result);
+          try {
+            localStorage.setItem('spinriches_custom_bg_image', result);
+          } catch (error) {
+            console.error("Failed to save background image to localStorage", error);
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -527,7 +510,15 @@ export default function Game() {
       reader.onload = (e) => {
         const result = e.target?.result;
         if (typeof result === 'string') {
-          setCustomTextures(prev => ({ ...prev, [textureUploadTarget]: result }));
+          setCustomTextures(prev => {
+              const newTextures = { ...prev, [textureUploadTarget]: result };
+              try {
+                  localStorage.setItem('spinriches_custom_textures', JSON.stringify(newTextures));
+              } catch (error) {
+                  console.error("Failed to save textures to localStorage", error);
+              }
+              return newTextures;
+          });
         }
       };
       reader.readAsDataURL(file);
