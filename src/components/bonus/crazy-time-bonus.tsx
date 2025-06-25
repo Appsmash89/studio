@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Sparkles, Play } from 'lucide-react';
 
@@ -30,6 +29,8 @@ const Reel = ({ items, result, isSpinning }: { items: (string | number)[], resul
             const targetIndex = items.length + resultIndex;
             const targetOffset = targetIndex * REEL_ITEM_HEIGHT;
             reelRef.current.style.transform = `translateY(-${targetOffset}px)`;
+        } else if (isSpinning && reelRef.current) {
+            reelRef.current.style.transform = 'translateY(0)';
         }
     }, [isSpinning, result, items]);
 
@@ -57,7 +58,7 @@ const TopSlot = ({ result }: { result: { left: string | null; right: number | nu
     const isSpinning = result === null;
 
     return (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 gap-1">
+        <div className="w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1 gap-1">
             <div className="absolute -left-5 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg" style={{ clipPath: 'polygon(100% 0, 0 50%, 100% 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
@@ -324,58 +325,67 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
 
     return (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 animate-in fade-in p-4">
-            <Card className="relative w-full h-full max-w-7xl max-h-[95vh] flex flex-col bg-transparent border-none text-white shadow-none">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-4xl md:text-5xl font-headline text-accent" style={{ textShadow: '2px 2px 8px hsl(var(--primary))' }}>
+            <div className="relative w-full h-full max-w-7xl max-h-[95vh] text-white">
+
+                {/* Header */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 pt-4 text-center">
+                    <h1 className="text-4xl md:text-5xl font-headline text-accent" style={{ textShadow: '2px 2px 8px hsl(var(--primary))' }}>
                         CRAZY TIME
-                    </CardTitle>
-                </CardHeader>
+                    </h1>
+                </div>
 
-                {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
+                {/* Top Slot - positioned absolutely */}
+                {(gameState === 'spinning' || gameState === 'result') && (
+                    <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20">
+                        <TopSlot result={topSlotResult} />
+                    </div>
+                )}
                 
-                <CardContent className="relative flex-grow p-0 flex items-center justify-center">
-                    <div className="absolute top-36 left-1/2 -translate-x-1/2 text-center z-10 w-full px-4">
-                        <p className="text-2xl font-bold animate-pulse">{getMessage()}</p>
-                        {spinHistory.length > 0 && (
-                            <p className="text-sm text-muted-foreground">History: {spinHistory.join(' -> ')}</p>
-                        )}
-                    </div>
-                    
+                {/* Messages - positioned absolutely */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20 w-full px-4 mt-[-150px] sm:mt-[-100px]">
+                    <p className="text-2xl font-bold animate-pulse">{getMessage()}</p>
+                    {spinHistory.length > 0 && (
+                        <p className="text-sm text-muted-foreground">History: {spinHistory.join(' -> ')}</p>
+                    )}
+                </div>
+                
+                {/* Wheel container - centered */}
+                <div className="absolute inset-0 flex items-center justify-center z-10">
                     <BonusWheel segments={segments} rotation={rotation} />
-                    
-                    <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col items-center gap-4">
-                        {gameState === 'picking' && (
-                            <div className="flex gap-4">
-                                {FLAPPERS.map(flapper => (
-                                    <Button
-                                        key={flapper.id}
-                                        onClick={() => handleSelectFlapper(flapper.id as Flapper)}
-                                        style={{ backgroundColor: flapper.color, color: 'white', border: `3px solid ${flapper.color}` }}
-                                        className="w-32 h-16 text-xl font-bold uppercase transition-transform hover:scale-105"
-                                    >
-                                        {flapper.id}
-                                    </Button>
-                                ))}
-                            </div>
-                        )}
+                </div>
 
-                        {gameState === 'ready_to_spin' && (
-                            <Button onClick={handleSpin} className="w-48 h-20 bg-red-600 hover:bg-red-700 text-white text-3xl font-bold rounded-full animate-pulse">
-                                <Play className="w-10 h-10 mr-2" />
-                                SPIN
-                            </Button>
-                        )}
+                {/* Footer / Controls - positioned absolutely */}
+                <div className="absolute bottom-4 left-4 right-4 z-30 flex flex-col items-center gap-4">
+                    {gameState === 'picking' && (
+                        <div className="flex gap-4">
+                            {FLAPPERS.map(flapper => (
+                                <Button
+                                    key={flapper.id}
+                                    onClick={() => handleSelectFlapper(flapper.id as Flapper)}
+                                    style={{ backgroundColor: flapper.color, color: 'white', border: `3px solid ${flapper.color}` }}
+                                    className="w-32 h-16 text-xl font-bold uppercase transition-transform hover:scale-105"
+                                >
+                                    {flapper.id}
+                                </Button>
+                            ))}
+                        </div>
+                    )}
 
-                        {gameState === 'result' && (
-                             <div className="text-center animate-in fade-in zoom-in-50 bg-black/50 p-4 rounded-lg">
-                                <p className="text-4xl font-bold text-accent my-1">You Won ${winnings.toLocaleString()}!</p>
-                                <Button onClick={handleComplete} disabled={isCompleted} className="mt-4">Continue</Button>
-                            </div>
-                        )}
-                    </div>
+                    {gameState === 'ready_to_spin' && (
+                        <Button onClick={handleSpin} className="w-48 h-20 bg-red-600 hover:bg-red-700 text-white text-3xl font-bold rounded-full animate-pulse">
+                            <Play className="w-10 h-10 mr-2" />
+                            SPIN
+                        </Button>
+                    )}
 
-                </CardContent>
-            </Card>
+                    {gameState === 'result' && (
+                         <div className="text-center animate-in fade-in zoom-in-50 bg-black/50 p-4 rounded-lg">
+                            <p className="text-4xl font-bold text-accent my-1">You Won ${winnings.toLocaleString()}!</p>
+                            <Button onClick={handleComplete} disabled={isCompleted} className="mt-4">Continue</Button>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
