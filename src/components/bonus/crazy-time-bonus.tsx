@@ -330,10 +330,12 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         CRAZY TIME
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="relative flex-grow p-0">
+                <CardContent className="relative flex-grow p-0 flex items-center justify-center overflow-hidden">
                     
+                    {/* Top Slot is positioned absolutely within this container */}
                     {(gameState === 'spinning' || gameState === 'result') && <TopSlot result={topSlotResult} />}
 
+                    {/* Messages are positioned absolutely */}
                     <div className="absolute top-36 left-1/2 -translate-x-1/2 text-center z-10 w-full px-4">
                         <p className="text-2xl font-bold animate-pulse">{getMessage()}</p>
                         {spinHistory.length > 0 && (
@@ -341,10 +343,10 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                         )}
                     </div>
                     
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BonusWheel segments={segments} rotation={rotation} />
-                    </div>
+                    {/* The Wheel is centered in the flex container */}
+                    <BonusWheel segments={segments} rotation={rotation} />
                     
+                    {/* Controls are positioned absolutely at the bottom */}
                     <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col items-center gap-4">
                         {gameState === 'picking' && (
                             <div className="flex gap-4">
