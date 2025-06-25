@@ -173,7 +173,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
 
   const getLabelPosition = (index: number) => {
     const angle = (index + 0.5) * SEGMENT_ANGLE;
-    return polarToCartesian(center, center, radius * 0.85, angle);
+    return polarToCartesian(center, center, radius * 0.75, angle);
   };
   
   const bulbs = Array.from({ length: NUM_SEGMENTS });
@@ -228,7 +228,7 @@ const Wheel = ({ segments, rotation, customTextures }: { segments: (typeof SEGME
                   dy=".3em"
                   className={cn(
                     "font-bold uppercase tracking-wider",
-                    segment.type === 'bonus' ? "text-sm leading-tight" : "text-lg"
+                    segment.type === 'bonus' ? "text-xs leading-tight" : "text-base"
                   )}
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
                   transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${getLabelPosition(index).x}, ${getLabelPosition(index).y})`}
