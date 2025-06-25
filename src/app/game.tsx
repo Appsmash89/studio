@@ -21,6 +21,7 @@ import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
 import { TopSlot, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/components/top-slot';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 
 const BET_OPTIONS = [
@@ -1029,38 +1030,7 @@ export default function Game() {
             </div>
           </header>
 
-          <main className="flex flex-col items-center justify-center gap-4 pt-20">
-            <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
-              SpinRiches
-            </h1>
-            
-            <div className="h-24 flex flex-col items-center justify-center text-center">
-                {gameState === 'BETTING' && (
-                    <>
-                        <h2 className="text-xl font-bold uppercase tracking-wider text-accent mb-2">
-                           {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
-                        </h2>
-                        <div className="flex items-center gap-2">
-                            <p className="text-4xl font-headline">{countdown}</p>
-                        </div>
-                        <Progress value={(countdown / BETTING_TIME_SECONDS) * 100} className="w-64 mt-2" />
-                    </>
-                )}
-                {gameState === 'SPINNING' && (
-                    <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
-                        No More Bets!
-                    </h2>
-                )}
-                {gameState === 'RESULT' && winningSegment && (
-                    <>
-                        <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
-                            {isPaused ? 'GAME PAUSED' : 'Winner is...'}
-                        </h2>
-                        <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
-                    </>
-                )}
-            </div>
-
+          <main className="flex flex-col items-center justify-center gap-4 pt-8">
             <div className="my-4 z-20">
               <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
             </div>
@@ -1146,6 +1116,33 @@ export default function Game() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+            
+            <div className="h-24 flex flex-col items-center justify-center text-center">
+                {gameState === 'BETTING' && (
+                    <>
+                        <h2 className="text-xl font-bold uppercase tracking-wider text-accent mb-2">
+                           {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <p className="text-4xl font-headline">{countdown}</p>
+                        </div>
+                        <Progress value={(countdown / BETTING_TIME_SECONDS) * 100} className="w-64 mt-2" />
+                    </>
+                )}
+                {gameState === 'SPINNING' && (
+                    <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
+                        No More Bets!
+                    </h2>
+                )}
+                {gameState === 'RESULT' && winningSegment && (
+                    <>
+                        <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
+                            {isPaused ? 'GAME PAUSED' : 'Winner is...'}
+                        </h2>
+                        <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
+                    </>
+                )}
             </div>
 
             <div className="h-16 flex items-center justify-center text-center">
@@ -1382,16 +1379,16 @@ export default function Game() {
                     </div>
                     <div className="flex flex-col space-y-1 mb-2">
                         <Label htmlFor="texture-rotation" className="text-xs font-medium text-muted-foreground">
-                          Wheel Texture Rotation ({textureRotation}°)
+                          Wheel Texture Rotation (°)
                         </Label>
-                        <Slider
+                        <Input
                             id="texture-rotation"
-                            min={0}
-                            max={360}
-                            step={1}
-                            value={[textureRotation]}
-                            onValueChange={(value) => setTextureRotation(value[0])}
+                            type="number"
+                            step="0.1"
+                            value={textureRotation}
+                            onChange={(e) => setTextureRotation(parseFloat(e.target.value) || 0)}
                             disabled={!customTextures['wheel-full']}
+                            className="h-8"
                         />
                     </div>
                      <div className="flex items-center space-x-2 mb-2">
@@ -1515,3 +1512,6 @@ export default function Game() {
 
     
 
+
+
+    
