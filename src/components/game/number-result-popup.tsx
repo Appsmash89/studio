@@ -50,35 +50,7 @@ export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl
             )}
             style={containerStyle}
         >
-            {/* If no custom texture, provide a fallback visual */}
-            {!customTextureUrl && (
-                <div className='contents'>
-                    <p className="text-2xl font-bold text-foreground">The winner is</p>
-                    <p
-                        className="text-8xl font-headline text-accent"
-                        style={{ textShadow: '3px 3px 6px rgba(0,0,0,0.5)' }}
-                    >
-                        {winningSegment.label}
-                    </p>
-                    {totalWinnings > 0 && (
-                        <div className="mt-4">
-                            <p className="text-xl font-semibold">You won</p>
-                            <p className="text-4xl font-bold text-accent">${totalWinnings.toLocaleString()}</p>
-                        </div>
-                    )}
-                </div>
-            )}
-            
-            {/* If there IS a texture, you can still overlay text if desired */}
-            {customTextureUrl && (
-                 <div className='contents'>
-                    <p
-                        className="text-8xl font-headline text-accent opacity-0" // Example: hide default text when texture is present
-                    >
-                        {winningSegment.label}
-                    </p>
-                 </div>
-            )}
+            {/* This component is now purely for displaying a texture. */}
         </div>
     );
 }

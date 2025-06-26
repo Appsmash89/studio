@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -30,14 +29,6 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
             case 'SPINNING':
                  return <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">No More Bets!</h2>
             case 'RESULT':
-                 if (winningSegment) {
-                     return (
-                        <div className="text-center">
-                            <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-1">Winner is...</h2>
-                            <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
-                        </div>
-                     )
-                 }
                  return null;
             default:
                 return null;
