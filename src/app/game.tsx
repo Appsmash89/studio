@@ -22,330 +22,22 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-
-const BET_OPTIONS = [
-  { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
-  { id: '2', label: '2', type: 'number', color: 'hsl(210, 80%, 55%)', textColor: 'white' },
-  { id: '5', label: '5', type: 'number', color: 'hsl(140, 60%, 50%)', textColor: 'white' },
-  { id: '10', label: '10', type: 'number', color: 'hsl(280, 80%, 65%)', textColor: 'white' },
-  { id: 'COIN_FLIP', label: 'Coin Flip', type: 'bonus', color: 'hsl(45, 90%, 60%)', textColor: 'hsl(var(--background))' },
-  { id: 'PACHINKO', label: 'Pachinko', type: 'bonus', color: 'hsl(320, 70%, 60%)', textColor: 'white' },
-  { id: 'CASH_HUNT', label: 'Cash Hunt', type: 'bonus', color: 'hsl(100, 60%, 60%)', textColor: 'hsl(var(--background))' },
-  { id: 'CRAZY_TIME', label: 'Crazy Time', type: 'bonus', color: 'hsl(0, 80%, 60%)', textColor: 'white' },
-];
-
-const BET_OPTION_INDEX_MAP = BET_OPTIONS.reduce((acc, option, index) => {
-    acc[option.id] = index;
-    return acc;
-}, {} as Record<string, number>);
-
-const textColorMap = BET_OPTIONS.reduce((acc, option) => {
-  acc[option.id] = option.textColor;
-  return acc;
-}, {} as Record<string, string>);
-
-const SEGMENTS_CONFIG = [
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "COIN_FLIP", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "10", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "CASH_HUNT", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "1", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "5", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "COIN_FLIP", "type": "bonus", "multiplier": 0, "color": "hsl(320, 70%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "10", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "PACHINKO", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "1", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "COIN_FLIP", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "10", "type": "bonus", "multiplier": 0, "color": "hsl(100, 60%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "5", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "1", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "CASH_HUNT", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "5", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "1", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "COIN_FLIP", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "10", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "bonus", "multiplier": 0, "color": "hsl(0, 80%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "CRAZY_TIME", "type": "bonus", "multiplier": 0, "color": "hsl(320, 70%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "PACHINKO", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "1", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "5", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "bonus", "multiplier": 0, "color": "hsl(100, 60%, 60%)" }
-].map((seg, index) => {
-    const betOption = BET_OPTIONS.find(bo => bo.id === seg.label);
-    if (!betOption) {
-        // Fallback for labels that don't have a direct match in BET_OPTIONS (e.g. if a '1' is a bonus)
-        // This is a simple heuristic. A more robust solution might require a mapping.
-        const isBonus = seg.type === 'bonus';
-        const numericValue = parseInt(seg.label, 10);
-        
-        let type = seg.type;
-        let multiplier = seg.multiplier;
-        
-        if (!isNaN(numericValue)) {
-            type = 'number';
-            multiplier = numericValue;
-        } else {
-            type = 'bonus';
-            multiplier = 0;
-        }
-
-        return { ...seg, type, multiplier, id: `segment-${index}`, textColor: textColorMap[seg.label] || 'white' };
-    }
-    return { ...seg, type: betOption.type, multiplier: betOption.type === 'bonus' ? 0 : parseInt(betOption.label, 10), id: `segment-${index}`, textColor: betOption.textColor };
-});
-
-
-const NUM_SEGMENTS = SEGMENTS_CONFIG.length;
-const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-const SPIN_DURATION_SECONDS = 8;
-const BETTING_TIME_SECONDS = 15;
-const RESULT_DISPLAY_SECONDS = 5;
-const TOP_SLOT_ANIMATION_DURATION_MS = 3500;
-
-// Rebalanced to reduce the probability of '1' appearing.
-export const TOP_SLOT_LEFT_REEL_ITEMS = [ '1', '5', '2', '10', 'COIN_FLIP', '2', '1', 'PACHINKO', '5', '2', 'CASH_HUNT', '10', '1', '5', '2', 'COIN_FLIP', '1', '10', '2', '5', 'PACHINKO', '2', 'CRAZY_TIME', '5', '1', ];
-
-const CHIP_VALUES = [1, 5, 10, 25, 100];
-const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
-
-type GameLogEntry = {
-  spinId: number;
-  timestamp: string;
-  bets: { [key: string]: number };
-  totalBet: number;
-  winningSegment: {
-    label: string;
-    type: string;
-    multiplier: number;
-    index: number;
-  };
-  topSlotResult?: { 
-    left: string | null; 
-    right: number | null; 
-    leftIndex: number | null; 
-    rightIndex: number | null;
-  } | null;
-  isBonus: boolean;
-  bonusWinnings?: number;
-  bonusDetails?: {
-    coinFlipMultipliers?: { red: number; blue: number };
-    cashHuntMultipliers?: number[];
-    pachinkoDropHistory?: (number | 'DOUBLE')[];
-    pachinkoFinalMultipliers?: (number | 'DOUBLE')[];
-    crazyTimeDetails?: {
-        selectedFlapper: 'green' | 'blue' | 'yellow' | null;
-        spinHistory: (string | number)[];
-        finalSegments: (string | number)[];
-    };
-  };
-  roundWinnings: number;
-  netResult: number;
-};
-
-const adjustHsl = (hsl: string, h: number, l: number) => {
-  const [hue, saturation, lightness] = hsl.match(/\d+/g)!.map(Number);
-  return `hsl(${hue + h}, ${saturation}%, ${lightness + l}%)`;
-}
-
-const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; textureRotation: number; }) => {
-  const radius = 200;
-  const center = 210;
-  const fullWheelTexture = customTextures['wheel-full'];
-
-  const getSegmentPath = (index: number) => {
-    const startAngle = index * SEGMENT_ANGLE;
-    const endAngle = (index + 1) * SEGMENT_ANGLE;
-    const start = polarToCartesian(center, center, radius, endAngle);
-    const end = polarToCartesian(center, center, radius, startAngle);
-    return `M ${center},${center} L ${start.x},${start.y} A ${radius},${radius} 0 0 0 ${end.x},${end.y} Z`;
-  };
-  
-  const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
-    return {
-      x: centerX + radius * Math.cos(angleInRadians),
-      y: centerY + radius * Math.sin(angleInRadians),
-    };
-  };
-
-  const getLabelPosition = (index: number, isBonus: boolean) => {
-    const angle = (index + 0.5) * SEGMENT_ANGLE;
-    const distance = isBonus ? radius * 0.72 : radius * 0.75;
-    return polarToCartesian(center, center, distance, angle);
-  };
-  
-  const bulbs = Array.from({ length: NUM_SEGMENTS });
-  const uniqueLabelsWithTextures = [...new Set(segments.map(s => s.label))].filter(label => customTextures[`wheel-${label}`]);
-
-
-  return (
-    <div className="relative w-[420px] h-[420px] flex items-center justify-center">
-      <div
-        className="absolute w-full h-full rounded-full"
-        style={{
-          transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.25, 0.1, 0.25, 1)`,
-          transform: `rotate(${rotation}deg)`,
-        }}
-      >
-        <svg viewBox="0 0 420 420">
-          <defs>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="rgba(0,0,0,0.5)" />
-            </filter>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-             {fullWheelTexture && (
-                <pattern id="pattern-wheel-full" patternUnits="userSpaceOnUse" width="420" height="420" patternTransform={`rotate(${textureRotation} 210 210)`}>
-                    <image href={fullWheelTexture} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
-                </pattern>
-            )}
-            {uniqueLabelsWithTextures.map(label => (
-              <pattern key={`pattern-wheel-${label}`} id={`pattern-wheel-${label}`} patternUnits="userSpaceOnUse" width="420" height="420">
-                <image href={customTextures[`wheel-${label}`]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
-              </pattern>
-            ))}
-          </defs>
-          <g filter="url(#shadow)">
-            {/* Wheel Body */}
-            {fullWheelTexture ? (
-                <>
-                    <circle cx={center} cy={center} r={radius} fill="url(#pattern-wheel-full)" stroke="hsl(43, 78%, 58%)" strokeWidth="2" />
-                    {/* Render labels on top of full texture */}
-                    {segments.map((segment, index) => {
-                        const isBonus = segment.type === 'bonus';
-                        const labelPos = getLabelPosition(index, isBonus);
-                        return (
-                            <text
-                                key={segment.id}
-                                x={labelPos.x}
-                                y={labelPos.y}
-                                fill={hideText ? 'transparent' : segment.textColor}
-                                textAnchor="middle"
-                                dy=".3em"
-                                className={cn(
-                                    "font-bold uppercase tracking-wider",
-                                    isBonus ? "text-[11px] leading-tight" : "text-base"
-                                )}
-                                style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
-                                transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${labelPos.x}, ${labelPos.y})`}
-                            >
-                                {segment.label.replace('_', '\n')}
-                            </text>
-                        );
-                    })}
-                </>
-            ) : (
-                /* Original logic for individual segments */
-                segments.map((segment, index) => {
-                    const textureUrl = customTextures[`wheel-${segment.label}`];
-                    const isBonus = segment.type === 'bonus';
-                    const labelPos = getLabelPosition(index, isBonus);
-                    return (
-                        <g key={segment.id}>
-                            <path 
-                            d={getSegmentPath(index)} 
-                            fill={textureUrl ? `url(#pattern-wheel-${segment.label})` : segment.color} 
-                            stroke="hsl(43, 78%, 58%)" 
-                            strokeWidth={2}
-                            filter={isBonus ? 'url(#glow)' : undefined}
-                            />
-                            <text
-                            x={labelPos.x}
-                            y={labelPos.y}
-                            fill={hideText || textureUrl ? 'transparent' : segment.textColor}
-                            textAnchor="middle"
-                            dy=".3em"
-                            className={cn(
-                                "font-bold uppercase tracking-wider",
-                                isBonus ? "text-[11px] leading-tight" : "text-base"
-                            )}
-                            style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.4))' }}
-                            transform={`rotate(${ (index + 0.5) * SEGMENT_ANGLE + 90 }, ${labelPos.x}, ${labelPos.y})`}
-                            >
-                            {segment.label.replace('_', '\n')}
-                            </text>
-                        </g>
-                    );
-                })
-            )}
-
-            {/* Rim and bulbs */}
-            <circle cx={center} cy={center} r={radius} fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
-            <g>
-                {bulbs.map((_, index) => {
-                    const angle = index * (360 / bulbs.length);
-                    const pos = polarToCartesian(center, center, radius, angle);
-                    return (
-                        <circle
-                            key={`bulb-${index}`}
-                            cx={pos.x}
-                            cy={pos.y}
-                            r="4"
-                            fill="hsl(43, 98%, 68%)"
-                            className="animate-bulb-blink"
-                            style={{ animationDelay: `${(index % 10) * 150}ms`}}
-                        />
-                    );
-                })}
-            </g>
-
-          </g>
-        </svg>
-      </div>
-       <div 
-         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-4 border-background flex items-center justify-center shadow-lg"
-         style={{ background: 'radial-gradient(circle, hsl(43, 98%, 68%) 60%, hsl(43, 88%, 48%))' }}
-       >
-       </div>
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[15px]"
-        style={{
-          clipPath: 'polygon(50% 100%, 0 0, 100% 0)',
-          width: '30px',
-          height: '40px',
-          backgroundColor: 'hsl(var(--accent))',
-          filter: 'drop-shadow(0px 3px 3px rgba(0,0,0,0.5))',
-        }}
-      />
-    </div>
-  );
-};
-
+import { 
+    BET_OPTIONS,
+    BET_OPTION_INDEX_MAP,
+    SEGMENTS_CONFIG,
+    NUM_SEGMENTS,
+    SPIN_DURATION_SECONDS,
+    BETTING_TIME_SECONDS,
+    RESULT_DISPLAY_SECONDS,
+    TOP_SLOT_ANIMATION_DURATION_MS,
+    TOP_SLOT_LEFT_REEL_ITEMS,
+    CHIP_VALUES,
+    initialBetsState,
+    adjustHsl,
+    type GameLogEntry
+} from '@/config/game-config';
+import { Wheel } from '@/components/game/wheel';
 
 export default function Game() {
   const { user, signOut } = useAuth();
@@ -651,6 +343,7 @@ export default function Game() {
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
+    const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
     const fullSpins = 7 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
     
@@ -786,14 +479,12 @@ export default function Game() {
     }
     let timer: NodeJS.Timeout;
 
-    if (gameState === 'BETTING') {
-      if (countdown <= 0) {
-        handleSpin();
-      } else {
+    if (gameState === 'BETTING' && countdown > 0) {
         timer = setTimeout(() => {
           setCountdown(c => c - 1);
         }, 1000);
-      }
+    } else if (gameState === 'BETTING' && countdown <= 0) {
+        handleSpin();
     } else if (gameState === 'RESULT') {
       timer = setTimeout(() => {
         startNewRound();
@@ -1025,10 +716,10 @@ export default function Game() {
       <div className="absolute inset-0 bg-background/80 z-[-1]"></div>
       
       {gameState === 'BETTING' && !isPaused && (() => {
-          const radius = 40;
+          const radius = 32;
           const circumference = 2 * Math.PI * radius;
           const progressPercentage = Math.max(0, countdown) / BETTING_TIME_SECONDS;
-          const strokeDashoffset = circumference - (progressPercentage * circumference);
+          const strokeDashoffset = circumference * (1 - progressPercentage);
 
           const getTimerColor = () => {
               if (countdown <= 4) return 'text-red-500';
@@ -1038,39 +729,35 @@ export default function Game() {
 
           return (
               <div className="fixed top-20 left-4 z-50">
-                  <div className="relative h-24 w-24">
-                      <svg className="w-full h-full" viewBox="0 0 100 100">
-                          {/* Background circle */}
+                  <div className="relative h-20 w-20">
+                      <svg className="w-full h-full" viewBox="0 0 70 70">
                           <circle
                               className="stroke-current text-foreground/20"
-                              strokeWidth="8"
-                              stroke="currentColor"
+                              strokeWidth="5"
                               fill="transparent"
                               r={radius}
-                              cx="50"
-                              cy="50"
+                              cx="35"
+                              cy="35"
                           />
-                          {/* Progress circle */}
                           <circle
                               className={cn(
                                   "stroke-current",
                                   getTimerColor()
                               )}
-                              strokeWidth="8"
+                              strokeWidth="5"
                               strokeDasharray={circumference}
                               strokeDashoffset={strokeDashoffset}
                               strokeLinecap="round"
-                              stroke="currentColor"
                               fill="transparent"
                               r={radius}
-                              cx="50"
-                              cy="50"
-                              transform="rotate(-90 50 50)"
+                              cx="35"
+                              cy="35"
+                              transform="rotate(-90 35 35)"
                               style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease-in-out' }}
                           />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-3xl font-headline text-foreground">{Math.max(0, countdown)}</span>
+                          <span className="text-2xl font-headline text-foreground">{Math.max(0, countdown)}</span>
                       </div>
                   </div>
               </div>
