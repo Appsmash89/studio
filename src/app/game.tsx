@@ -799,11 +799,11 @@ export default function Game() {
                             </div>
                         </div>
                     </div>
+                    <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
                 </div>
                 
                 {/* --- Right Column --- */}
                 <div className="flex flex-col items-center justify-start gap-4 w-full">
-                    <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
                     <GameStatusDisplay
                         gameState={gameState}
                         isPaused={isPaused}
