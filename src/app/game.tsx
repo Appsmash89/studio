@@ -344,7 +344,7 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-    const fullSpins = 6 * 360;
+    const fullSpins = 4 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
     
     setRotation(prev => {
@@ -894,5 +894,3 @@ export default function Game() {
     </div>
   );
 }
-
-    
