@@ -699,7 +699,7 @@ export default function Game() {
   const hasCustomAssets = Object.keys(customTextures).length > 0 || !backgroundImage.startsWith('https://placehold.co');
   
   return (
-    <div className="relative flex flex-col h-screen text-foreground overflow-hidden">
+    <div className="relative flex flex-col min-h-screen text-foreground">
       <Image
         alt="Carnival background"
         src={backgroundImage}
@@ -780,7 +780,7 @@ export default function Game() {
       {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} />}
 
       {!isBonusActive && (
-        <div className="flex flex-col flex-grow h-full">
+        <div className="flex flex-col flex-grow">
           <GameHeader
             balance={balance}
             user={user}
@@ -897,3 +897,5 @@ export default function Game() {
     </div>
   );
 }
+
+    
