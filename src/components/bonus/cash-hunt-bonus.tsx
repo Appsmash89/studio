@@ -94,7 +94,10 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                         </div>
                     )}
                    
-                    <div className="w-full flex-grow overflow-y-auto pr-2">
+                    <div className="w-full flex-grow overflow-y-auto pr-2 relative isolate overflow-hidden rounded-md">
+                        {gameState === 'picking' && (
+                            <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-cash-hunt-glow -skew-x-[20deg] pointer-events-none z-10" />
+                        )}
                         <div className="grid grid-cols-12 gap-1.5 sm:gap-2">
                             {symbols.map((symbol, index) => (
                                 <button
