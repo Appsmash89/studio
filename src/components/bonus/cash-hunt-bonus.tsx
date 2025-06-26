@@ -95,9 +95,6 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                     )}
                    
                     <div className="w-full flex-grow overflow-y-auto pr-2 relative isolate overflow-hidden rounded-md">
-                        {gameState === 'picking' && (
-                            <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-cash-hunt-glow -skew-x-[20deg] pointer-events-none z-10" />
-                        )}
                         <div className="grid grid-cols-12 gap-1.5 sm:gap-2">
                             {symbols.map((symbol, index) => (
                                 <button
@@ -108,10 +105,12 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                                         'aspect-square rounded-md flex items-center justify-center transition-all duration-300',
                                         'text-foreground bg-primary/20 hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed',
                                         'transform hover:scale-110 disabled:transform-none',
-                                        gameState === 'revealed' && 'bg-background/20',
-                                        selectedIndex === index && 'bg-accent text-accent-foreground scale-110 ring-4 ring-accent-foreground',
+                                        gameState === 'picking' && 'animate-tile-glow',
+                                        gameState === 'revealed' && 'bg-background/20 !animate-none',
+                                        selectedIndex === index && 'bg-accent text-accent-foreground scale-110 ring-4 ring-accent-foreground !animate-none',
                                         gameState === 'revealed' && selectedIndex !== index && 'opacity-50'
                                     )}
+                                    style={gameState === 'picking' ? { animationDelay: `${index * 25}ms` } : {}}
                                 >
                                     <div className="flex flex-col items-center justify-center text-center">
                                         {gameState === 'revealed' ? (

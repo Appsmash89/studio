@@ -97,9 +97,13 @@ export default {
             '0%, 100%': { fill: 'hsl(43, 98%, 68%)' },
             '50%': { fill: 'hsl(50, 100%, 80%)' },
         },
-        'cash-hunt-glow': {
-          '0%': { transform: 'translateX(-150%)' },
-          '100%': { transform: 'translateX(250%)' },
+        'tile-glow': {
+          '0%, 100%': {
+            boxShadow: '0 0 0px 0px hsl(var(--accent) / 0)',
+          },
+          '50%': {
+            boxShadow: '0 0 8px 2px hsl(var(--accent) / 0.6)',
+          },
         },
       },
       animation: {
@@ -107,7 +111,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
-        'cash-hunt-glow': 'cash-hunt-glow 4s linear infinite',
+        'tile-glow': 'tile-glow 3s ease-in-out infinite',
       },
     },
   },
