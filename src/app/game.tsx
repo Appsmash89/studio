@@ -349,7 +349,7 @@ export default function Game() {
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(true);
-  const [textureRotation, setTextureRotation] = useState(0);
+  const [textureRotation, setTextureRotation] = useState(3.4);
   const [disableAi, setDisableAi] = useState(true);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
@@ -1015,7 +1015,7 @@ export default function Game() {
           };
 
           return (
-              <div className="fixed top-4 left-4 z-50">
+              <div className="fixed top-20 left-4 z-50">
                   <div className="relative h-24 w-24">
                       <svg className="w-full h-full" viewBox="0 0 100 100">
                           {/* Background circle */}
