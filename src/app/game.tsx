@@ -350,7 +350,7 @@ export default function Game() {
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(true);
-  const [textureRotation, setTextureRotation] = useState(0);
+  const [textureRotation, setTextureRotation] = useState(3.4);
   const [disableAi, setDisableAi] = useState(true);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
