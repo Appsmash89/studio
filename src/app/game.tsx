@@ -347,7 +347,7 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-    const fullSpins = 3 * 360;
+    const fullSpins = 5 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
     
     setRotation(prev => {
@@ -736,7 +736,7 @@ export default function Game() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearAllAssets} className={buttonVariants({ variant: "destructive" })}>Confirm & Clear</AlertDialogAction>
+                <AlertDialogAction onClick={handleClearAllAssets} className={buttonVariants({ variant: "destructive" })}>Confirm &amp; Clear</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -755,77 +755,79 @@ export default function Game() {
       )}
 
       {!isBonusActive && (
-        <div className="flex flex-col flex-grow">
-          <GameHeader
-            balance={balance}
-            user={user}
-            signOut={signOut}
-          />
-          
-          <main className="flex-grow flex flex-col items-center justify-center gap-4 px-4 py-8">
-            <div className="flex flex-col items-center justify-center gap-6">
-                <div className="my-4 z-20">
-                    <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
-                </div>
-                
-                <div className="relative flex flex-col items-center">
-                    <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={spinDuration} />
-                    <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
-                        <div
-                        className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
-                        style={{
-                            background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                            clipPath: 'polygon(40% 0, 60% 0, 90% 100%, 10% 100%)',
-                            filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
-                        }}
-                        >
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
-                        </div>
-                        
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[250px] h-8">
+        <div className="flex-grow flex flex-col p-4 gap-4">
+          {/* 16:9 Frame */}
+          <div className="w-full max-w-7xl mx-auto aspect-video bg-black/25 rounded-2xl shadow-2xl border border-white/10 flex flex-col relative overflow-hidden">
+              <GameHeader
+                balance={balance}
+                user={user}
+                signOut={signOut}
+              />
+              
+              <main className="flex-grow flex flex-col items-center justify-center gap-2 p-2 overflow-hidden">
+                <div className="flex-grow flex flex-col items-center justify-center gap-2">
+                    <div className="my-2 z-20">
+                        <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
+                    </div>
+                    
+                    <div className="relative flex flex-col items-center">
+                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={spinDuration} />
+                        <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                             <div
-                                className="absolute bottom-0 left-0 w-full h-[85%] rounded-b-lg"
-                                style={{
-                                    background: 'linear-gradient(to top, hsl(var(--primary)/0.7), hsl(var(--primary)/0.9))',
-                                    boxShadow: '0 10px 15px -5px rgba(0,0,0,0.7)',
-                                }}
-                            />
-                            <div
-                                className="absolute top-0 left-0 w-full h-4 rounded-[100%_/_100%]"
-                                style={{
-                                    background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.8))',
-                                    border: '2px solid hsl(var(--accent)/0.3)',
-                                    boxShadow: 'inset 0 2px 4px hsl(var(--accent)/0.2)',
-                                }}
-                            />
+                            className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
+                            style={{
+                                background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
+                                clipPath: 'polygon(40% 0, 60% 0, 90% 100%, 10% 100%)',
+                                filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
+                            }}
+                            >
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
+                            </div>
+                            
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[250px] h-8">
+                                <div
+                                    className="absolute bottom-0 left-0 w-full h-[85%] rounded-b-lg"
+                                    style={{
+                                        background: 'linear-gradient(to top, hsl(var(--primary)/0.7), hsl(var(--primary)/0.9))',
+                                        boxShadow: '0 10px 15px -5px rgba(0,0,0,0.7)',
+                                    }}
+                                ></div>
+                                <div
+                                    className="absolute top-0 left-0 w-full h-4 rounded-[100%_/_100%]"
+                                    style={{
+                                        background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.8))',
+                                        border: '2px solid hsl(var(--accent)/0.3)',
+                                        boxShadow: 'inset 0 2px 4px hsl(var(--accent)/0.2)',
+                                    }}
+                                ></div>
+                            </div>
                         </div>
                     </div>
+
+                    <GameStatusDisplay
+                      gameState={gameState}
+                      isPaused={isPaused}
+                      winningSegment={winningSegment}
+                    />
                 </div>
+                
+                <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
+              </main>
 
-                <GameStatusDisplay
-                  gameState={gameState}
-                  isPaused={isPaused}
-                  winningSegment={winningSegment}
-                />
-            </div>
-            
-            <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
-
-            <BettingInterface
-              bets={bets}
-              handleBet={handleBet}
-              gameState={gameState}
-              isPaused={isPaused}
-              selectedChip={selectedChip}
-              setSelectedChip={setSelectedChip}
-              handleUndoBet={handleUndoBet}
-              handleClearBets={handleClearBets}
-              totalBet={totalBet}
-              customTextures={customTextures}
-              hideText={hideText}
-            />
-
-          </main>
+              <BettingInterface
+                bets={bets}
+                handleBet={handleBet}
+                gameState={gameState}
+                isPaused={isPaused}
+                selectedChip={selectedChip}
+                setSelectedChip={setSelectedChip}
+                handleUndoBet={handleUndoBet}
+                handleClearBets={handleClearBets}
+                totalBet={totalBet}
+                customTextures={customTextures}
+                hideText={hideText}
+              />
+          </div>
 
           <DevTools
             showLegend={showLegend}
