@@ -33,6 +33,7 @@ import {
     TOP_SLOT_LEFT_REEL_ITEMS,
     TOP_SLOT_RIGHT_REEL_ITEMS,
     initialBetsState,
+    SPIN_DURATION_SECONDS,
 } from '@/config/game-config';
 import { cn } from '@/lib/utils';
 import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, CustomTextures, TopSlotResult } from '@/types/game';
@@ -45,7 +46,6 @@ export default function Game() {
   const [betHistory, setBetHistory] = useState<BetHistory>([]);
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
-  const [spinDuration, setSpinDuration] = useState(14);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
   const [forcedTopSlotLeft, setForcedTopSlotLeft] = useState<string | null>(null);
@@ -303,9 +303,6 @@ export default function Game() {
     setGameState('SPINNING');
     spinIdCounter.current++;
 
-    const newSpinDuration = Math.random() * 2 + 13; // Random float between 13 and 15
-    setSpinDuration(newSpinDuration);
-
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
         left: forcedTopSlotLeft ?? TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
@@ -437,7 +434,7 @@ export default function Game() {
       
       setGameState('NUMBER_RESULT');
 
-    }, newSpinDuration * 1000);
+    }, SPIN_DURATION_SECONDS * 1000);
   }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
 
   // Game Loop Timer
@@ -594,7 +591,7 @@ export default function Game() {
                         <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
                     </div>
                     <div className="relative flex flex-col items-center">
-                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={spinDuration} />
+                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={SPIN_DURATION_SECONDS} />
                         <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                             <div
                             className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
