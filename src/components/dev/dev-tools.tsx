@@ -153,6 +153,10 @@ export const DevTools: React.FC<DevToolsProps> = ({
                                     <span>Background Image</span>
                                     <span className="text-muted-foreground text-xs">1920x1080px</span>
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => handleUploadClick('topslot-background')} className="flex justify-between">
+                                    <span>Top Slot Background</span>
+                                    <span className="text-muted-foreground text-xs">320x96px</span>
+                                </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
                              <DropdownMenuGroup>

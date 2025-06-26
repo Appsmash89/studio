@@ -115,8 +115,23 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type, hide
 
 
 export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, customTextures: Record<string, string>, hideText: boolean }) => {
+    const backgroundTexture = customTextures['topslot-background'];
+    
+    const containerStyle: React.CSSProperties = {};
+    if (backgroundTexture) {
+        containerStyle.backgroundImage = `url(${backgroundTexture})`;
+        containerStyle.backgroundSize = 'cover';
+        containerStyle.backgroundPosition = 'center';
+    }
+
     return (
-        <div className="relative w-80 h-24 bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1">
+        <div 
+            className={cn(
+                "relative w-80 h-24 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1",
+                !backgroundTexture && "bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900"
+            )}
+            style={containerStyle}
+        >
             <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0% 0%, 100% 50%, 0% 100%)' }} />
             <div className="w-full h-full flex gap-1 bg-black/50 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
