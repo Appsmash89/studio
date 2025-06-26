@@ -47,60 +47,60 @@ const textColorMap = BET_OPTIONS.reduce((acc, option) => {
 }, {} as Record<string, string>);
 
 const SEGMENTS_CONFIG = [
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 1
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 1
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 2
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 1
-    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' }, // 1
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 2
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 3
-    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' }, // 1
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 3
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 4
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 2
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 5
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 4
-    { label: 'PACHINKO', type: 'bonus', multiplier: 0, color: 'hsl(320, 70%, 60%)' }, // 1
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 6
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 5
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 7
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 3
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 8
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 6
-    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' }, // 2
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 9
-    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' }, // 2
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 7
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 10
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 4
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 11
-    { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' }, // 1
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 8
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 12
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 5
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 13
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 9
-    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' }, // 3
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 14
-    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' }, // 3
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 10
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 15
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 6
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 16
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 11
-    { label: 'CRAZY_TIME', type: 'bonus', multiplier: 0, color: 'hsl(0, 80%, 60%)' }, // 1
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 17
-    { label: 'PACHINKO', type: 'bonus', multiplier: 0, color: 'hsl(320, 70%, 60%)' }, // 2
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 12
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 18
-    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' }, // 4
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 19
-    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' }, // 7
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 20
-    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' }, // 4
-    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' }, // 13
-    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' }, // 21
-    { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' }, // 2
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'PACHINKO', type: 'bonus', multiplier: 0, color: 'hsl(320, 70%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'CASH_HUNT', type: 'bonus', multiplier: 0, color: 'hsl(100, 60%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: 'COIN_FLIP', type: 'bonus', multiplier: 0, color: 'hsl(45, 90%, 60%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '10', type: 'number', multiplier: 10, color: 'hsl(280, 80%, 65%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: 'CRAZY_TIME', type: 'bonus', multiplier: 0, color: 'hsl(0, 80%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
+    { label: 'PACHINKO', type: 'bonus', multiplier: 0, color: 'hsl(320, 70%, 60%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '5', type: 'number', multiplier: 5, color: 'hsl(140, 60%, 50%)' },
+    { label: '1', type: 'number', multiplier: 1, color: 'hsl(220, 15%, 85%)' },
+    { label: '2', type: 'number', multiplier: 2, color: 'hsl(210, 80%, 55%)' },
 ].map((seg, index) => ({ ...seg, id: `segment-${index}`, textColor: textColorMap[seg.label]! }));
 
 
