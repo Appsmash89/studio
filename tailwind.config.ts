@@ -113,7 +113,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
-        'tile-glow': 'tile-glow 4s ease-in-out infinite',
+        'tile-glow': 'tile-glow 2s ease-in-out infinite',
       },
     },
   },
