@@ -42,7 +42,7 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
       <div
         className="absolute w-full h-full rounded-full"
         style={{
-          transition: `transform ${spinDuration}s cubic-bezier(0.25, 0.1, 0.25, 1)`,
+          transition: `transform ${spinDuration}s cubic-bezier(0.25, 1, 0.5, 1)`,
           transform: `rotate(${rotation}deg)`,
         }}
       >
@@ -174,3 +174,5 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
     </div>
   );
 };
+
+    
