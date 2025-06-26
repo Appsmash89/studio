@@ -35,8 +35,6 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     customTextures,
     hideText,
 }) => {
-    const numberBets = BET_OPTIONS.filter(o => o.type === 'number');
-    const bonusBets = BET_OPTIONS.filter(o => o.type === 'bonus');
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
@@ -87,11 +85,8 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     return (
         <Card className="w-full p-4 bg-transparent border-none shadow-none">
             <CardContent className="p-0 flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-2">
-                    {numberBets.map(renderBetButton)}
-                </div>
-                 <div className="grid grid-cols-4 gap-2">
-                    {bonusBets.map(renderBetButton)}
+                <div className="grid grid-cols-2 grid-rows-4 gap-2">
+                    {BET_OPTIONS.map(renderBetButton)}
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
