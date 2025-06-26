@@ -47,60 +47,82 @@ const textColorMap = BET_OPTIONS.reduce((acc, option) => {
 
 const SEGMENTS_CONFIG = [
   { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "COIN_FLIP", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
+  { "label": "COIN_FLIP", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
   { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "2", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "1", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
+  { "label": "10", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "CASH_HUNT", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
+  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "1", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "5", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "COIN_FLIP", "type": "bonus", "multiplier": 0, "color": "hsl(320, 70%, 60%)" },
+  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "5", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "10", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "PACHINKO", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "1", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
+  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "5", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
+  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "COIN_FLIP", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "10", "type": "bonus", "multiplier": 0, "color": "hsl(100, 60%, 60%)" },
+  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "5", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "1", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "CASH_HUNT", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
+  { "label": "5", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "1", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
   { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "COIN_FLIP", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "2", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
   { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "10", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "CASH_HUNT", "type": "bonus", "multiplier": 0, "color": "hsl(100, 60%, 60%)" },
+  { "label": "10", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "bonus", "multiplier": 0, "color": "hsl(0, 80%, 60%)" },
   { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "CRAZY_TIME", "type": "bonus", "multiplier": 0, "color": "hsl(320, 70%, 60%)" },
+  { "label": "1", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
+  { "label": "2", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "5", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
   { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "2", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
+  { "label": "PACHINKO", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
+  { "label": "1", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
+  { "label": "5", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
   { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "COIN_FLIP", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "10", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "PACHINKO", "type": "bonus", "multiplier": 0, "color": "hsl(320, 70%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "COIN_FLIP", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "10", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "CASH_HUNT", "type": "bonus", "multiplier": 0, "color": "hsl(100, 60%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "COIN_FLIP", "type": "bonus", "multiplier": 0, "color": "hsl(45, 90%, 60%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "10", "type": "number", "multiplier": 10, "color": "hsl(280, 80%, 65%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "CRAZY_TIME", "type": "bonus", "multiplier": 0, "color": "hsl(0, 80%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-  { "label": "PACHINKO", "type": "bonus", "multiplier": 0, "color": "hsl(320, 70%, 60%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "5", "type": "number", "multiplier": 5, "color": "hsl(140, 60%, 50%)" },
-  { "label": "1", "type": "number", "multiplier": 1, "color": "hsl(220, 15%, 85%)" },
-  { "label": "2", "type": "number", "multiplier": 2, "color": "hsl(210, 80%, 55%)" },
-].map((seg, index) => ({ ...seg, id: `segment-${index}`, textColor: textColorMap[seg.label]! }));
+  { "label": "2", "type": "bonus", "multiplier": 0, "color": "hsl(100, 60%, 60%)" }
+].map((seg, index) => {
+    const betOption = BET_OPTIONS.find(bo => bo.id === seg.label);
+    if (!betOption) {
+        // Fallback for labels that don't have a direct match in BET_OPTIONS (e.g. if a '1' is a bonus)
+        // This is a simple heuristic. A more robust solution might require a mapping.
+        const isBonus = seg.type === 'bonus';
+        const numericValue = parseInt(seg.label, 10);
+        
+        let type = seg.type;
+        let multiplier = seg.multiplier;
+        
+        if (!isNaN(numericValue)) {
+            type = 'number';
+            multiplier = numericValue;
+        } else {
+            type = 'bonus';
+            multiplier = 0;
+        }
+
+        return { ...seg, type, multiplier, id: `segment-${index}`, textColor: textColorMap[seg.label] || 'white' };
+    }
+    return { ...seg, type: betOption.type, multiplier: betOption.type === 'bonus' ? 0 : parseInt(betOption.label, 10), id: `segment-${index}`, textColor: betOption.textColor };
+});
 
 
 const NUM_SEGMENTS = SEGMENTS_CONFIG.length;
@@ -1244,7 +1266,7 @@ export default function Game() {
 
                 <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
                     <CardContent className="p-0 flex flex-col gap-4">
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 grid-rows-4 gap-2">
                         {BET_OPTIONS.map(option => {
                             const customTexture = customTextures[`chip-${option.id}`];
                             const style: React.CSSProperties = {
