@@ -107,7 +107,7 @@ export const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 
 export const SPIN_DURATION_SECONDS = 14;
 export const BETTING_TIME_SECONDS = 15;
-export const RESULT_DISPLAY_SECONDS = 5;
+export const RESULT_DISPLAY_SECONDS = 1;
 export const TOP_SLOT_ANIMATION_DURATION_MS = 3500;
 
 // Rebalanced to reduce the probability of '1' appearing.
