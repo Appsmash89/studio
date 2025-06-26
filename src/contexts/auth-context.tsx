@@ -15,8 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isGuest: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithGitHub: () => Promise<void>;
+  signInAsGuest: () => void;
   signOut: () => Promise<void>;
   error: string | null;
 }
@@ -25,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -34,6 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsGuest(false);
+      }
       setUser(user);
       setLoading(false);
     });
@@ -71,7 +77,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInAsGuest = () => {
+    setIsGuest(true);
+    setUser(null);
+  };
+
   const signOut = async () => {
+    setIsGuest(false);
     if (!auth) return;
     try {
       await firebaseSignOut(auth);
@@ -87,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signInWithGoogle, signInWithGitHub, signOut, error: firebaseError }}
+      value={{ user, loading, isGuest, signInWithGoogle, signInWithGitHub, signOut, signInAsGuest, error: firebaseError }}
     >
       {children}
     </AuthContext.Provider>

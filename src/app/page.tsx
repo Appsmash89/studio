@@ -43,7 +43,7 @@ function FirebaseErrorScreen({ message }: { message: string }) {
 
 
 export default function Home() {
-  const { user, loading, error } = useAuth();
+  const { user, loading, error, isGuest } = useAuth();
 
   if (error) {
     return <FirebaseErrorScreen message={error} />;
@@ -53,7 +53,7 @@ export default function Home() {
     return <LoadingScreen message="Authenticating..." />;
   }
 
-  if (!user) {
+  if (!user && !isGuest) {
     return <Login />;
   }
 

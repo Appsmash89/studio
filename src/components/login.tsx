@@ -12,7 +12,7 @@ import {
 import { Icons } from '@/components/icons';
 
 export default function Login() {
-  const { signInWithGoogle, signInWithGitHub } = useAuth();
+  const { signInWithGoogle, signInWithGitHub, signInAsGuest } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -37,6 +37,19 @@ export default function Login() {
           <Button onClick={signInWithGitHub} variant="outline">
             <Icons.gitHub className="mr-2 h-5 w-5" />
             Sign in with GitHub
+          </Button>
+           <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                Or
+                </span>
+            </div>
+          </div>
+          <Button onClick={signInAsGuest} variant="secondary">
+            Play as Guest
           </Button>
         </CardContent>
       </Card>
