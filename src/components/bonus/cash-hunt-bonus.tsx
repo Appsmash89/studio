@@ -110,7 +110,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                                         selectedIndex === index && 'bg-accent text-accent-foreground scale-110 ring-4 ring-accent-foreground !animate-none',
                                         gameState === 'revealed' && selectedIndex !== index && 'opacity-50'
                                     )}
-                                    style={gameState === 'picking' ? { animationDelay: `${index * 25}ms` } : {}}
+                                    style={gameState === 'picking' ? { animationDelay: `${index * 75}ms` } : {}}
                                 >
                                     <div className="flex flex-col items-center justify-center text-center">
                                         {gameState === 'revealed' ? (

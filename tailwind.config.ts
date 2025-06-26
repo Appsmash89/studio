@@ -99,10 +99,12 @@ export default {
         },
         'tile-glow': {
           '0%, 100%': {
-            boxShadow: '0 0 0px 0px hsl(var(--accent) / 0)',
+            transform: 'scale(1)',
+            boxShadow: '0 0 4px 0px hsl(var(--accent) / 0.3)',
           },
           '50%': {
-            boxShadow: '0 0 8px 2px hsl(var(--accent) / 0.6)',
+            transform: 'scale(1.05)',
+            boxShadow: '0 0 10px 3px hsl(var(--accent) / 0.7)',
           },
         },
       },
@@ -111,7 +113,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
-        'tile-glow': 'tile-glow 3s ease-in-out infinite',
+        'tile-glow': 'tile-glow 4s ease-in-out infinite',
       },
     },
   },
