@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { Download, FastForward, RotateCcw, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud, RefreshCw, Trash2 } from 'lucide-react';
-import { BET_OPTIONS, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/config/game-config';
+import { BET_OPTIONS, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS, SEGMENTS_CONFIG } from '@/config/game-config';
 import type { GameLogEntry } from '@/config/game-config';
 
 interface DevToolsProps {
