@@ -22,7 +22,6 @@ import { Wheel } from '@/components/game/wheel';
 import { DevTools } from '@/components/dev/dev-tools';
 
 import { 
-    BET_OPTIONS,
     BET_OPTION_INDEX_MAP,
     SEGMENTS_CONFIG,
     NUM_SEGMENTS,
@@ -281,6 +280,9 @@ export default function Game() {
     setGameState('SPINNING');
     spinIdCounter.current++;
 
+    const newSpinDuration = Math.random() * 2 + 13; // Random float between 13 and 15
+    setSpinDuration(newSpinDuration);
+
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
         left: forcedTopSlotLeft ?? TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
@@ -412,8 +414,8 @@ export default function Game() {
       setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
       setGameState('RESULT');
 
-    }, spinDuration * 1000);
-  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight, spinDuration]);
+    }, newSpinDuration * 1000);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
 
   // Game Loop Timer
   useEffect(() => {
