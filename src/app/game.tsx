@@ -12,6 +12,7 @@ import { CoinFlipBonus } from '@/components/bonus/coin-flip-bonus';
 import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
 import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
+import { NumberResultPopup } from '@/components/game/number-result-popup';
 
 import { GameHeader } from '@/components/game/game-header';
 import { GameHistory } from '@/components/game/game-history';
@@ -25,7 +26,6 @@ import {
     BET_OPTION_INDEX_MAP,
     SEGMENTS_CONFIG,
     NUM_SEGMENTS,
-    SPIN_DURATION_SECONDS,
     BETTING_TIME_SECONDS,
     RESULT_DISPLAY_SECONDS,
     TOP_SLOT_ANIMATION_DURATION_MS,
@@ -44,7 +44,7 @@ export default function Game() {
   const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
-  const [spinDuration, setSpinDuration] = useState(SPIN_DURATION_SECONDS);
+  const [spinDuration, setSpinDuration] = useState(14);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
   const [forcedTopSlotLeft, setForcedTopSlotLeft] = useState<string | null>(null);
@@ -63,9 +63,10 @@ export default function Game() {
   const [hideText, setHideText] = useState(true);
   const [textureRotation, setTextureRotation] = useState(3.4);
 
-  const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
+  const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'NUMBER_RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
+  const [roundWinnings, setRoundWinnings] = useState(0);
   const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0])[]>([]);
   const spinIdCounter = useRef(0);
 
@@ -108,6 +109,7 @@ export default function Game() {
     setBets(initialBetsState);
     setBetHistory([]);
     setWinningSegment(null);
+    setRoundWinnings(0);
     setForcedWinner(null);
     setForcedTopSlotLeft(null);
     setForcedTopSlotRight(null);
@@ -276,6 +278,10 @@ export default function Game() {
     setGameState('RESULT');
   }, [winningSegment]);
 
+  const handleNumberResultComplete = useCallback(() => {
+    setGameState('RESULT');
+  }, []);
+
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
     spinIdCounter.current++;
@@ -340,6 +346,9 @@ export default function Game() {
       const rightIndex = finalTopSlotResult.right !== null
         ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
         : null;
+      
+      setWinningSegment(currentWinningSegment);
+      setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
 
       if (currentWinningSegment.type === 'bonus') {
           const isBonusWin = betOnWinner > 0;
@@ -366,9 +375,6 @@ export default function Game() {
           };
           setGameLog(prev => [newLogEntry, ...prev]);
           
-          setWinningSegment(currentWinningSegment);
-          setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
-
           if (isBonusWin) {
               setGameState(`BONUS_${winningLabel}` as any);
           } else {
@@ -377,16 +383,18 @@ export default function Game() {
           return;
       }
       
-      let roundWinnings = 0;
+      // It's a number win
+      let calculatedWinnings = 0;
       if (betOnWinner > 0) {
         let effectiveMultiplier = currentWinningSegment.multiplier;
         if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
             effectiveMultiplier = finalTopSlotResult.right;
         }
-        roundWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
+        calculatedWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
       }
       
-      setBalance(prev => prev + roundWinnings);
+      setRoundWinnings(calculatedWinnings);
+      setBalance(prev => prev + calculatedWinnings);
       
       const newLogEntry: GameLogEntry = {
           spinId: spinIdCounter.current,
@@ -405,14 +413,12 @@ export default function Game() {
             rightIndex: rightIndex !== -1 ? rightIndex : null,
           } : null,
           isBonus: false,
-          roundWinnings: roundWinnings,
-          netResult: roundWinnings - currentTotalBet,
+          roundWinnings: calculatedWinnings,
+          netResult: calculatedWinnings - currentTotalBet,
       };
       setGameLog(prev => [newLogEntry, ...prev]);
       
-      setWinningSegment(currentWinningSegment);
-      setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
-      setGameState('RESULT');
+      setGameState('NUMBER_RESULT');
 
     }, newSpinDuration * 1000);
   }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
@@ -722,6 +728,14 @@ export default function Game() {
       {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} />}
+      {gameState === 'NUMBER_RESULT' && winningSegment && (
+        <NumberResultPopup
+            winningSegment={winningSegment}
+            totalWinnings={roundWinnings}
+            onComplete={handleNumberResultComplete}
+            customTextureUrl={customTextures['result-popup-background']}
+        />
+      )}
 
       {!isBonusActive && (
         <div className="flex flex-col flex-grow">

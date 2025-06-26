@@ -21,6 +21,9 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
         if (isPaused) {
             return <h2 className="text-xl font-bold uppercase tracking-wider text-accent animate-pulse">GAME PAUSED</h2>
         }
+        if (gameState === 'NUMBER_RESULT') {
+            return null;
+        }
         switch(gameState) {
             case 'BETTING':
                 return <h2 className="text-xl font-bold uppercase tracking-wider text-accent">Place Your Bets</h2>
