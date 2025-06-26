@@ -5,27 +5,32 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Star, Heart, Spade, Club, Diamond, Gift, Cake, Bird, Shuffle } from 'lucide-react';
+import { Star, Heart, Spade, Club, Diamond, Gift, Cake, Bird } from 'lucide-react';
 
 interface BonusGameProps {
     betAmount: number;
     onComplete: (winnings: number, details?: any) => void;
 }
 
-// Generate 108 multipliers with a specific distribution
+const shuffleArray = <T,>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+};
+
 const generateMultipliers = (): number[] => {
     const multipliers = [
-        // High-tier
         100, 75, 50, 50,
-        // Mid-tier
         ...Array(10).fill(25),
         ...Array(14).fill(20),
         ...Array(20).fill(15),
-        // Low-tier
         ...Array(20).fill(10),
         ...Array(20).fill(7),
         ...Array(20).fill(5),
-    ]; // Total = 4 + 10 + 14 + 20 + 20 + 20 + 20 = 108
+    ];
     return multipliers;
 };
 
@@ -36,33 +41,84 @@ const getRandomIcon = () => {
     return <Icon className="w-6 h-6" />;
 };
 
+type GridItem = {
+    id: number;
+    displayMultiplier: number;
+    finalMultiplier: number;
+    symbol: JSX.Element;
+    isFlipped: boolean;
+    introAnimated: boolean;
+};
 
 export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
-    const [gameState, setGameState] = useState<'picking' | 'revealed'>('picking');
-    const [multipliers, setMultipliers] = useState<number[]>([]);
-    const [symbols, setSymbols] = useState<JSX.Element[]>([]);
+    const [gameState, setGameState] = useState<'intro' | 'shuffling' | 'picking' | 'revealed'>('intro');
+    const [gridItems, setGridItems] = useState<GridItem[]>([]);
     const [winnings, setWinnings] = useState(0);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [isCompleted, setIsCompleted] = useState(false);
     const [activeColumn, setActiveColumn] = useState<number | null>(null);
+
     const animationTimeoutRef = useRef<NodeJS.Timeout>();
-
-    const shuffleBoard = () => {
-        // Shuffle multipliers
-        const shuffledMultipliers = [...generateMultipliers()].sort(() => Math.random() - 0.5);
-        setMultipliers(shuffledMultipliers);
-
-        // Assign random symbols
-        const newSymbols = Array.from({ length: 108 }, () => getRandomIcon());
-        setSymbols(newSymbols);
-    };
+    const shuffleIntervalRef = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
-        shuffleBoard();
+        const finalMultipliers = shuffleArray(generateMultipliers());
+        const initialMultipliers = shuffleArray(generateMultipliers());
+        const symbols = Array.from({ length: 108 }, () => getRandomIcon());
+
+        const initialGrid = Array.from({ length: 108 }, (_, i) => ({
+            id: i,
+            displayMultiplier: initialMultipliers[i],
+            finalMultiplier: finalMultipliers[i],
+            symbol: symbols[i],
+            isFlipped: false,
+            introAnimated: false,
+        }));
+        setGridItems(initialGrid);
+
+        const slideInTimer = setTimeout(() => {
+            setGridItems(prev => prev.map(item => ({ ...item, introAnimated: true })));
+        }, 100);
+
+        const flipTimer = setTimeout(() => {
+            setGridItems(prev => prev.map(item => ({ ...item, isFlipped: true })));
+        }, 2000);
+
+        const startShuffleTimer = setTimeout(() => {
+            setGameState('shuffling');
+        }, 2600);
+
+        return () => {
+            clearTimeout(slideInTimer);
+            clearTimeout(flipTimer);
+            clearTimeout(startShuffleTimer);
+        };
     }, []);
 
     useEffect(() => {
-        // Stop animation if not in picking state
+        if (gameState !== 'shuffling') {
+            if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+            return;
+        }
+
+        let shuffleCount = 0;
+        const maxShuffles = 8;
+
+        shuffleIntervalRef.current = setInterval(() => {
+            setGridItems(prev => shuffleArray(prev));
+            shuffleCount++;
+            if (shuffleCount >= maxShuffles) {
+                clearInterval(shuffleIntervalRef.current);
+                setGameState('picking');
+            }
+        }, 180);
+
+        return () => {
+            if (shuffleIntervalRef.current) clearInterval(shuffleIntervalRef.current);
+        };
+    }, [gameState]);
+
+    useEffect(() => {
         if (gameState !== 'picking') {
             if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
             setActiveColumn(null);
@@ -75,24 +131,20 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                 if (gameState !== 'picking') return;
                 setActiveColumn(currentColumn);
                 currentColumn++;
-
-                if (currentColumn < 12) { // There are 12 columns
-                    animationTimeoutRef.current = setTimeout(animateColumn, 80); // Speed of ripple
+                if (currentColumn < 12) {
+                    animationTimeoutRef.current = setTimeout(animateColumn, 80);
                 } else {
-                    // Reached the end. Turn off highlight, then pause and restart.
                     animationTimeoutRef.current = setTimeout(() => {
                         setActiveColumn(null);
-                        const randomPause = 1500 + Math.random() * 500; // 1.5 to 2 seconds
+                        const randomPause = 1500 + Math.random() * 500;
                         animationTimeoutRef.current = setTimeout(startColumnAnimation, randomPause);
-                    }, 80); // Duration for the last column highlight
+                    }, 80);
                 }
             };
             animateColumn();
         };
-
         startColumnAnimation();
 
-        // Cleanup function to clear timeout on unmount or when gameState changes
         return () => {
             if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
         };
@@ -101,8 +153,8 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
     const handleSelect = (index: number) => {
         if (gameState !== 'picking') return;
 
-        const selectedMultiplier = multipliers[index];
-        const finalWinnings = betAmount * selectedMultiplier;
+        const selectedItem = gridItems[index];
+        const finalWinnings = betAmount * selectedItem.finalMultiplier;
 
         setSelectedIndex(index);
         setWinnings(finalWinnings);
@@ -112,7 +164,17 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
     const handleComplete = () => {
         if (isCompleted) return;
         setIsCompleted(true);
-        onComplete(winnings, { cashHuntMultipliers: multipliers });
+        const finalMultipliersInOrder = gridItems.map(item => item.finalMultiplier);
+        onComplete(winnings, { cashHuntMultipliers: finalMultipliersInOrder });
+    };
+
+    const getMessage = () => {
+        switch (gameState) {
+            case 'intro': return 'Get ready...';
+            case 'shuffling': return 'Shuffling!';
+            case 'picking': return 'Pick a symbol to reveal your multiplier!';
+            default: return '';
+        }
     };
 
     return (
@@ -120,45 +182,56 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
             <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
                 <CardHeader className="flex-row items-center justify-between">
                     <CardTitle className="text-accent">Cash Hunt Bonus!</CardTitle>
-                     {gameState === 'picking' && <Button onClick={shuffleBoard} variant="outline" size="sm"><Shuffle className="mr-2 h-4 w-4"/>Shuffle Symbols</Button>}
+                    {gameState !== 'revealed' && <p className="text-lg font-semibold text-center animate-pulse">{getMessage()}</p>}
                 </CardHeader>
                 <CardContent className="flex-grow flex flex-col items-center gap-4 overflow-hidden">
-                    {gameState === 'picking' ? (
-                         <p className="text-lg font-semibold text-center">Pick a symbol to reveal your multiplier!</p>
-                    ) : (
+                    {gameState === 'revealed' && selectedIndex !== null && (
                         <div className="text-center animate-in fade-in zoom-in-50">
-                            <p className="text-xl font-semibold">You picked a {multipliers[selectedIndex!]}x multiplier!</p>
+                            <p className="text-xl font-semibold">You picked a {gridItems[selectedIndex].finalMultiplier}x multiplier!</p>
                             <p className="text-4xl font-bold text-accent my-2">You Won ${winnings.toLocaleString()}!</p>
                             <Button onClick={handleComplete} disabled={isCompleted} className="mt-2">Continue</Button>
                         </div>
                     )}
-                   
-                    <div className="w-full flex-grow overflow-y-auto pr-2 relative isolate overflow-hidden rounded-md">
+                    
+                    <div className={cn("w-full flex-grow overflow-y-auto pr-2 relative rounded-md [perspective:1000px]", gameState === 'shuffling' && 'blur-[2px] opacity-80 transition-all duration-200')}>
                         <div className="grid grid-cols-12 gap-1.5 sm:gap-2">
-                            {symbols.map((symbol, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleSelect(index)}
-                                    disabled={gameState === 'revealed'}
-                                    className={cn(
-                                        'aspect-square rounded-md flex items-center justify-center transition-all duration-300',
-                                        'text-foreground bg-primary/20 hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed',
-                                        'transform hover:scale-110 disabled:transform-none',
-                                        gameState === 'picking' && (index % 12) === activeColumn && 'bg-accent/30 scale-105',
-                                        gameState === 'revealed' && 'bg-background/20',
-                                        selectedIndex === index && 'bg-accent text-accent-foreground scale-110 ring-4 ring-accent-foreground',
-                                        gameState === 'revealed' && selectedIndex !== index && 'opacity-50'
-                                    )}
-                                >
-                                    <div className="flex flex-col items-center justify-center text-center">
-                                        {gameState === 'revealed' ? (
-                                            <span className="text-lg font-bold">{multipliers[index]}x</span>
-                                        ) : (
-                                            symbol
-                                        )}
+                            {gridItems.map((item, index) => {
+                                const isEvenRow = Math.floor(item.id / 12) % 2 === 0;
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className="aspect-square transition-transform duration-700"
+                                        style={{
+                                            transform: item.introAnimated ? 'translateX(0)' : (isEvenRow ? 'translateX(-150%)' : 'translateX(150%)'),
+                                        }}
+                                    >
+                                        <button
+                                            onClick={() => handleSelect(index)}
+                                            disabled={gameState !== 'picking'}
+                                            className={cn(
+                                                'relative w-full h-full rounded-md transition-all duration-300 [transform-style:preserve-3d]',
+                                                item.isFlipped && 'animate-cash-hunt-flip',
+                                                gameState === 'picking' && (index % 12) === activeColumn && 'scale-105',
+                                                gameState === 'revealed' && selectedIndex !== index && 'opacity-50',
+                                                selectedIndex === index && 'scale-110 ring-4 ring-accent-foreground z-10 [transform:rotateY(180deg)]',
+                                            )}
+                                        >
+                                            <div className="absolute w-full h-full flex items-center justify-center rounded-md bg-green-600 text-white font-bold [backface-visibility:hidden]">
+                                                {item.displayMultiplier}x
+                                            </div>
+                                            
+                                            <div className={cn(
+                                                "absolute w-full h-full flex items-center justify-center rounded-md bg-primary/20 [backface-visibility:hidden] [transform:rotateY(180deg)]",
+                                                gameState === 'picking' && (index % 12) === activeColumn && 'bg-accent/30',
+                                                selectedIndex === index && 'bg-accent text-accent-foreground'
+                                            )}>
+                                                {item.symbol}
+                                            </div>
+                                        </button>
                                     </div>
-                                </button>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </CardContent>
