@@ -32,7 +32,8 @@ import {
     TOP_SLOT_LEFT_REEL_ITEMS,
     CHIP_VALUES,
     initialBetsState,
-    type GameLogEntry
+    type GameLogEntry,
+    BET_OPTIONS
 } from '@/config/game-config';
 import { cn } from '@/lib/utils';
 
@@ -94,13 +95,29 @@ export default function Game() {
     }
   }, []);
 
-  const handleClearTextures = () => {
+  const handleClearAllAssets = () => {
     setCustomTextures({});
     setBackgroundImage('https://placehold.co/1920x1080.png');
     localStorage.removeItem('spinriches_custom_textures');
     localStorage.removeItem('spinriches_custom_bg_image');
     toast({ title: "Assets Cleared", description: "All custom assets have been removed and restored to default." });
     setIsClearTexturesAlertOpen(false);
+  };
+  
+  const handleClearBackgroundImage = () => {
+    setBackgroundImage('https://placehold.co/1920x1080.png');
+    localStorage.removeItem('spinriches_custom_bg_image');
+    toast({ title: "Asset Cleared", description: "The custom background image has been removed." });
+  };
+
+  const handleClearSingleTexture = (key: string) => {
+    const newTextures = { ...customTextures };
+    delete newTextures[key];
+    setCustomTextures(newTextures);
+    localStorage.setItem('spinriches_custom_textures', JSON.stringify(newTextures));
+    const toTitleCase = (str: string) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    const friendlyName = toTitleCase(key.replace(/-/g, ' ').replace(/_/g, ' '));
+    toast({ title: "Asset Cleared", description: `The custom texture for "${friendlyName}" has been removed.` });
   };
 
   const startNewRound = useCallback(() => {
@@ -719,7 +736,7 @@ export default function Game() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearTextures} className={buttonVariants({ variant: "destructive" })}>Confirm & Clear</AlertDialogAction>
+                <AlertDialogAction onClick={handleClearAllAssets} className={buttonVariants({ variant: "destructive" })}>Confirm & Clear</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -844,6 +861,9 @@ export default function Game() {
             setForcedTopSlotLeft={setForcedTopSlotLeft}
             forcedTopSlotRight={forcedTopSlotRight}
             setForcedTopSlotRight={setForcedTopSlotRight}
+            backgroundImage={backgroundImage}
+            handleClearBackgroundImage={handleClearBackgroundImage}
+            handleClearSingleTexture={handleClearSingleTexture}
           />
         </div>
       )}

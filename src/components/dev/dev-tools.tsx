@@ -48,6 +48,9 @@ interface DevToolsProps {
     setForcedTopSlotLeft: React.Dispatch<React.SetStateAction<string | null>>;
     forcedTopSlotRight: number | null;
     setForcedTopSlotRight: React.Dispatch<React.SetStateAction<number | null>>;
+    backgroundImage: string;
+    handleClearBackgroundImage: () => void;
+    handleClearSingleTexture: (key: string) => void;
 }
 
 
@@ -85,7 +88,12 @@ export const DevTools: React.FC<DevToolsProps> = ({
     setForcedTopSlotLeft,
     forcedTopSlotRight,
     setForcedTopSlotRight,
+    backgroundImage,
+    handleClearBackgroundImage,
+    handleClearSingleTexture,
 }) => {
+    const toTitleCase = (str: string) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+
     return (
         <footer className="w-full shrink-0 p-4 pt-0">
             <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
@@ -210,10 +218,38 @@ export const DevTools: React.FC<DevToolsProps> = ({
 
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button variant="outline" size="sm" onClick={() => setIsClearTexturesAlertOpen(true)} disabled={!hasCustomAssets}>
-                            <Trash2 className="mr-2 h-3 w-3" />
-                            Clear Assets
-                        </Button>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" disabled={!hasCustomAssets}>
+                                    <Trash2 className="mr-2 h-3 w-3" />
+                                    Clear Asset
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Clear a specific asset</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                
+                                {!backgroundImage.startsWith('https://placehold.co') && (
+                                <DropdownMenuItem onSelect={handleClearBackgroundImage}>
+                                    Background Image
+                                </DropdownMenuItem>
+                                )}
+
+                                {Object.keys(customTextures).sort().map(key => (
+                                <DropdownMenuItem key={key} onSelect={() => handleClearSingleTexture(key)}>
+                                    {toTitleCase(key.replace(/-/g, ' ').replace(/_/g, ' '))}
+                                </DropdownMenuItem>
+                                ))}
+
+                                {hasCustomAssets && <DropdownMenuSeparator />}
+                                
+                                <DropdownMenuItem onSelect={() => setIsClearTexturesAlertOpen(true)} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
+                                    Clear All Assets...
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                         <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                             <Download className="mr-2 h-3 w-3" />
                             Latest Spin
