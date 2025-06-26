@@ -765,7 +765,7 @@ export default function Game() {
     let timer: NodeJS.Timeout;
 
     if (gameState === 'BETTING') {
-      if (countdown < 0) {
+      if (countdown <= 0) {
         handleSpin();
       } else {
         timer = setTimeout(() => {
@@ -991,7 +991,7 @@ export default function Game() {
   const hasCustomAssets = Object.keys(customTextures).length > 0 || !backgroundImage.startsWith('https://placehold.co');
   
   return (
-    <div className="relative flex flex-col items-center justify-between min-h-screen text-foreground p-4 overflow-hidden">
+    <div className="relative flex flex-col h-screen text-foreground overflow-hidden">
       <Image
         alt="Carnival background"
         src={backgroundImage}
@@ -1076,8 +1076,8 @@ export default function Game() {
       {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} />}
 
       {!isBonusActive && (
-        <>
-          <header className="w-full flex justify-between items-center absolute top-4 px-4">
+        <div className="flex flex-col flex-grow h-full">
+          <header className="w-full flex justify-between items-center px-4 py-2 shrink-0">
             <div className="flex items-center gap-4">
               <Card className="p-2 px-4 bg-card/50 backdrop-blur-sm border-accent/30">
                 <div className="flex items-center gap-2 text-xl font-bold">
@@ -1122,481 +1122,479 @@ export default function Game() {
             )}
           </header>
 
-          <main className="flex flex-col items-center justify-center gap-4 pt-8">
-            <div className="my-4 z-20">
-              <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
-            </div>
-            
-            {/* Wheel and Stand Container */}
-            <div className="relative flex flex-col items-center">
-                <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} />
-                 {/* Stand */}
-                 <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
-                    {/* Stand Post */}
-                    <div
-                      className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
-                      style={{
-                          background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
-                          clipPath: 'polygon(40% 0, 60% 0, 90% 100%, 10% 100%)',
-                          filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
-                    </div>
-                    
-                    {/* Stand Base */}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[250px] h-8">
-                        {/* Cylinder side */}
+          <main className="flex-grow flex items-center justify-center gap-8 px-4 overflow-hidden">
+            {/* Left Column: Wheel and Game elements */}
+            <div className="flex flex-col items-center justify-center gap-6">
+                <div className="my-4 z-20">
+                    <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
+                </div>
+                
+                <div className="relative flex flex-col items-center">
+                    <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} />
+                    <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                         <div
-                            className="absolute bottom-0 left-0 w-full h-[85%] rounded-b-lg"
-                            style={{
-                                background: 'linear-gradient(to top, hsl(var(--primary)/0.7), hsl(var(--primary)/0.9))',
-                                boxShadow: '0 10px 15px -5px rgba(0,0,0,0.7)',
-                            }}
-                        />
-                        {/* Cylinder top face */}
-                        <div
-                            className="absolute top-0 left-0 w-full h-4 rounded-[100%_/_100%]"
-                            style={{
-                                background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.8))',
-                                border: '2px solid hsl(var(--accent)/0.3)',
-                                boxShadow: 'inset 0 2px 4px hsl(var(--accent)/0.2)',
-                            }}
-                        />
+                        className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
+                        style={{
+                            background: 'linear-gradient(to right, hsl(var(--secondary) / 0.8), hsl(var(--secondary)), hsl(var(--secondary) / 0.8))',
+                            clipPath: 'polygon(40% 0, 60% 0, 90% 100%, 10% 100%)',
+                            filter: 'drop-shadow(0px -3px 8px rgba(0,0,0,0.4))'
+                        }}
+                        >
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10"></div>
+                        </div>
+                        
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[250px] h-8">
+                            <div
+                                className="absolute bottom-0 left-0 w-full h-[85%] rounded-b-lg"
+                                style={{
+                                    background: 'linear-gradient(to top, hsl(var(--primary)/0.7), hsl(var(--primary)/0.9))',
+                                    boxShadow: '0 10px 15px -5px rgba(0,0,0,0.7)',
+                                }}
+                            />
+                            <div
+                                className="absolute top-0 left-0 w-full h-4 rounded-[100%_/_100%]"
+                                style={{
+                                    background: 'linear-gradient(to top, hsl(var(--primary)), hsl(var(--primary)/0.8))',
+                                    border: '2px solid hsl(var(--accent)/0.3)',
+                                    boxShadow: 'inset 0 2px 4px hsl(var(--accent)/0.2)',
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
+
+                <div className="h-20 flex items-center justify-center">
+                    <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
+                        <CardContent className="p-0 flex items-center gap-3">
+                            <p className="text-sm font-bold pr-3 border-r border-muted-foreground/50 self-stretch flex items-center text-muted-foreground">
+                                History
+                            </p>
+                            <div className="flex gap-1.5">
+                                {spinHistory.map((segment, index) => {
+                                    const customTexture = customTextures[`history-${segment.label}`];
+                                    const style: React.CSSProperties = {
+                                        backgroundColor: segment.color,
+                                        color: segment.textColor,
+                                        textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
+                                    };
+
+                                    if (customTexture) {
+                                        style.backgroundImage = `url(${customTexture})`;
+                                        style.backgroundSize = 'cover';
+                                        style.backgroundPosition = 'center';
+                                        style.color = 'transparent';
+                                    }
+
+                                    return (
+                                        <div
+                                            key={`${segment.id}-${index}`}
+                                            className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
+                                            style={style}
+                                            title={segment.label.replace('_', ' ')}
+                                        >
+                                            <span className="text-center leading-tight">
+                                                {segment.label.replace('_', '\n')}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                                {[...Array(Math.max(0, 7 - spinHistory.length))].map((_, i) => (
+                                    <div key={`placeholder-${i}`} className="w-10 h-10 rounded-md bg-background/30" />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-            
-            <div className="h-20 flex items-center justify-center">
-                <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
-                    <CardContent className="p-0 flex items-center gap-3">
-                        <p className="text-sm font-bold pr-3 border-r border-muted-foreground/50 self-stretch flex items-center text-muted-foreground">
-                            History
-                        </p>
-                        <div className="flex gap-1.5">
-                            {spinHistory.map((segment, index) => {
-                                const customTexture = customTextures[`history-${segment.label}`];
-                                const style: React.CSSProperties = {
-                                    backgroundColor: segment.color,
-                                    color: segment.textColor,
-                                    textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
-                                };
 
-                                if (customTexture) {
-                                    style.backgroundImage = `url(${customTexture})`;
-                                    style.backgroundSize = 'cover';
-                                    style.backgroundPosition = 'center';
-                                    style.color = 'transparent';
-                                }
+            {/* Right Column: Betting and Info */}
+            <div className="flex flex-col justify-center gap-4 w-full max-w-lg">
+                <div className="h-32 flex flex-col items-center justify-center text-center gap-4">
+                    <div className="flex-grow flex items-center justify-center">
+                        {gameState === 'BETTING' && (
+                        <h2 className="text-xl font-bold uppercase tracking-wider text-accent">
+                            {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
+                        </h2>
+                        )}
+                        {gameState === 'SPINNING' && (
+                            <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
+                                No More Bets!
+                            </h2>
+                        )}
+                        {gameState === 'RESULT' && winningSegment && (
+                            <>
+                                <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
+                                    {isPaused ? 'GAME PAUSED' : 'Winner is...'}
+                                </h2>
+                                <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
+                            </>
+                        )}
+                    </div>
+                    {aiMessage && gameState === 'RESULT' && (
+                        <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500 flex-shrink-0", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
+                            <CardContent className="p-0 flex items-center gap-3">
+                            <Sparkles className="text-accent w-5 h-5"/>
+                            <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
+                                {aiMessage.message}
+                            </p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
 
-                                return (
-                                    <div
-                                        key={`${segment.id}-${index}`}
-                                        className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
-                                        style={style}
-                                        title={segment.label.replace('_', ' ')}
-                                    >
-                                        <span className="text-center leading-tight">
-                                            {segment.label.replace('_', '\n')}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                            {[...Array(Math.max(0, 7 - spinHistory.length))].map((_, i) => (
-                                <div key={`placeholder-${i}`} className="w-10 h-10 rounded-md bg-background/30" />
+                <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
+                    <CardContent className="p-0 flex flex-col gap-4">
+                        <div className="grid grid-cols-4 gap-2">
+                        {BET_OPTIONS.map(option => {
+                            const customTexture = customTextures[`chip-${option.id}`];
+                            const style: React.CSSProperties = {
+                            color: option.textColor,
+                            textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
+                            fontFamily: "'Playfair Display', serif",
+                            };
+
+                            if (customTexture) {
+                                style.backgroundImage = `url(${customTexture})`;
+                                style.backgroundSize = 'cover';
+                                style.backgroundPosition = 'center';
+                                style.color = 'transparent';
+                            } else {
+                                style.background = `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`;
+                            }
+                            
+                            return (
+                            <Button
+                                key={option.id}
+                                variant="secondary"
+                                style={style}
+                                className={cn(
+                                "aspect-[255/128] h-auto w-full flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
+                                "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
+                                )}
+                                onClick={() => handleBet(option.id)}
+                                disabled={gameState !== 'BETTING' || isPaused}
+                            >
+                                <span className={cn(
+                                "font-bold drop-shadow-md",
+                                option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
+                                (customTexture && hideText) && 'text-transparent'
+                                )}>
+                                {option.label}
+                                </span>
+                                <span className={cn(
+                                "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
+                                (customTexture && hideText) && 'text-transparent'
+                                )}>
+                                ${bets[option.id].toLocaleString()}
+                                </span>
+                            </Button>
+                            )})}
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
+                            {CHIP_VALUES.map(chip => (
+                            <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING' || isPaused}>
+                                ${chip}
+                            </Button>
                             ))}
+                        </div>
+                        <div className="flex-grow flex items-center justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0 || isPaused}><RotateCcw className="w-5 h-5"/></Button>
+                            <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0 || isPaused}><XCircle className="w-5 h-5"/></Button>
+                            <Card className="bg-card/80">
+                                <CardContent className="p-2 text-center">
+                                    <p className="text-sm text-muted-foreground">Total Bet</p>
+                                    <p className="text-2xl font-bold text-accent">${totalBet.toLocaleString()}</p>
+                                </CardContent>
+                            </Card>
+                        </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
-            
-            <div className="h-40 flex flex-col items-center justify-center text-center">
-                {gameState === 'BETTING' && (
-                  <h2 className="text-xl font-bold uppercase tracking-wider text-accent">
-                      {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
-                  </h2>
-                )}
-                {gameState === 'SPINNING' && (
-                    <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
-                        No More Bets!
-                    </h2>
-                )}
-                {gameState === 'RESULT' && winningSegment && (
-                    <>
-                        <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
-                            {isPaused ? 'GAME PAUSED' : 'Winner is...'}
-                        </h2>
-                        <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
-                    </>
-                )}
-            </div>
-
-            <div className="h-16 flex items-center justify-center text-center">
-                {aiMessage && gameState === 'RESULT' && (
-                    <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
-                        <CardContent className="p-0 flex items-center gap-3">
-                          <Sparkles className="text-accent w-5 h-5"/>
-                          <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
-                            {aiMessage.message}
-                          </p>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
           </main>
 
-          <footer className="w-full max-w-4xl">
-            <Card className="w-full p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
-              <CardContent className="p-0 flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-2">
-                  {BET_OPTIONS.map(option => {
-                    const customTexture = customTextures[`chip-${option.id}`];
-                    const style: React.CSSProperties = {
-                      color: option.textColor,
-                      textShadow: '1px 1px 2px rgba(0,0,0,0.4)',
-                      fontFamily: "'Playfair Display', serif",
-                    };
-
-                    if (customTexture) {
-                        style.backgroundImage = `url(${customTexture})`;
-                        style.backgroundSize = 'cover';
-                        style.backgroundPosition = 'center';
-                        style.color = 'transparent';
-                    } else {
-                        style.background = `linear-gradient(145deg, ${option.color}, ${adjustHsl(option.color, -10, -20)})`;
-                    }
-                    
-                    return (
-                    <Button
-                      key={option.id}
-                      variant="secondary"
-                      style={style}
-                      className={cn(
-                        "h-auto flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
-                        "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
-                      )}
-                      onClick={() => handleBet(option.id)}
-                      disabled={gameState !== 'BETTING' || isPaused}
-                    >
-                      <span className={cn(
-                        "font-bold drop-shadow-md",
-                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
-                        (customTexture && hideText) && 'text-transparent'
-                      )}>
-                        {option.label}
-                      </span>
-                      <span className={cn(
-                        "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
-                         (customTexture && hideText) && 'text-transparent'
-                      )}>
-                        ${bets[option.id].toLocaleString()}
-                      </span>
-                    </Button>
-                  )})}
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 p-1 rounded-md bg-background/50">
-                    {CHIP_VALUES.map(chip => (
-                      <Button key={chip} size="sm" variant={selectedChip === chip ? 'default' : 'ghost'} className="rounded-full w-10 h-10 text-xs" onClick={() => setSelectedChip(chip)} disabled={gameState !== 'BETTING' || isPaused}>
-                        ${chip}
-                      </Button>
-                    ))}
-                  </div>
-                  <div className="flex-grow flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={gameState !== 'BETTING' || betHistory.length === 0 || isPaused}><RotateCcw className="w-5 h-5"/></Button>
-                    <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={gameState !== 'BETTING' || totalBet === 0 || isPaused}><XCircle className="w-5 h-5"/></Button>
-                     <Card className="bg-card/80">
-                        <CardContent className="p-2 text-center">
-                            <p className="text-sm text-muted-foreground">Total Bet</p>
-                            <p className="text-2xl font-bold text-accent">${totalBet.toLocaleString()}</p>
-                        </CardContent>
-                    </Card>
-                  </div>
-                </div>
-                
-                  <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
-                    <div className="flex justify-between items-center mb-2">
-                        <p className="text-xs text-muted-foreground font-semibold">
-                            DEV TOOLS
-                        </p>
-                        <div className="flex items-center gap-2 flex-wrap justify-end">
-                          <Button variant="outline" size="sm" onClick={() => setShowLegend(s => !s)}>
-                              <BookCopy className="mr-2 h-3 w-3" />
-                              {showLegend ? 'Hide' : 'Show'} Legend
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setIsTopSlotSpinning(s => !s)}>
-                              <TestTube2 className="mr-2 h-3 w-3" />
-                              Test Top Slot
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING' || isPaused}>
-                              <FastForward className="mr-2 h-3 w-3" />
-                              Skip Timer
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleCloseRound} disabled={isPaused}>
-                            <RefreshCw className="mr-2 h-3 w-3" />
-                            Close Round
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
-                              {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
-                              {isPaused ? 'Resume' : 'Pause'}
-                          </Button>
-                          <input
-                            type="file"
-                            ref={bgFileInputRef}
-                            onChange={handleBgImageUpload}
-                            accept="image/*"
-                            className="hidden"
-                          />
-                           <input
-                            type="file"
-                            ref={textureFileInputRef}
-                            onChange={handleTextureUpload}
-                            accept="image/*"
-                            className="hidden"
-                          />
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                               <Button variant="outline" size="sm">
-                                <UploadCloud className="mr-2 h-3 w-3" />
-                                Upload Assets
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="max-h-[500px] overflow-y-auto w-64">
-                                <DropdownMenuLabel>Upload custom image assets.</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuLabel>General</DropdownMenuLabel>
-                                    <DropdownMenuItem onSelect={() => handleUploadClick('background')} className="flex justify-between">
-                                        <span>Background Image</span>
-                                        <span className="text-muted-foreground text-xs">1920x1080px</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                  <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
-                                    <DropdownMenuItem key={`upload-wheel-full`} onSelect={() => handleUploadClick(`wheel-full`)} className="flex justify-between">
-                                        <span>Full Wheel Texture</span>
-                                        <span className="text-muted-foreground text-xs">420x420px</span>
-                                    </DropdownMenuItem>
-                                  {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
-                                    <DropdownMenuItem key={`upload-wheel-${label}`} onSelect={() => handleUploadClick(`wheel-${label}`)} className="flex justify-between">
-                                      <span>{label.replace(/_/g, ' ')} (Segment)</span>
-                                      <span className="text-muted-foreground text-xs">420x420px</span>
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-
-                                <DropdownMenuGroup>
-                                  <DropdownMenuLabel>Top Slot: Bet Types</DropdownMenuLabel>
-                                  {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
-                                    <DropdownMenuItem key={`upload-topslot-left-${item}`} onSelect={() => handleUploadClick(`topslot-left-${item}`)} className="flex justify-between">
-                                      <span>{item.replace(/_/g, ' ')}</span>
-                                      <span className="text-muted-foreground text-xs">160x80px</span>
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-
-                                <DropdownMenuGroup>
-                                  <DropdownMenuLabel>Top Slot: Multipliers</DropdownMenuLabel>
-                                  {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
-                                    <DropdownMenuItem key={`upload-topslot-right-${item}x`} onSelect={() => handleUploadClick(`topslot-right-${item}x`)} className="flex justify-between">
-                                      <span>{item}x</span>
-                                      <span className="text-muted-foreground text-xs">160x80px</span>
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-                                
-                                <DropdownMenuGroup>
-                                  <DropdownMenuLabel>Betting Chips</DropdownMenuLabel>
-                                  {BET_OPTIONS.map(option => (
-                                    <DropdownMenuItem key={`upload-chip-${option.id}`} onSelect={() => handleUploadClick(`chip-${option.id}`)} className="flex justify-between">
-                                      <span>{option.label}</span>
-                                      <span className="text-muted-foreground text-xs">128x128px</span>
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-                                
-                                <DropdownMenuGroup>
-                                  <DropdownMenuLabel>History Log</DropdownMenuLabel>
-                                  {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
-                                    <DropdownMenuItem key={`upload-history-${label}`} onSelect={() => handleUploadClick(`history-${label}`)} className="flex justify-between">
-                                      <span>{label.replace(/_/g, ' ')}</span>
-                                      <span className="text-muted-foreground text-xs">40x40px</span>
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuGroup>
-
-                              </DropdownMenuContent>
-                          </DropdownMenu>
-                           <Button variant="outline" size="sm" onClick={() => setIsClearTexturesAlertOpen(true)} disabled={!hasCustomAssets}>
-                              <Trash2 className="mr-2 h-3 w-3" />
-                              Clear Assets
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
-                              <Download className="mr-2 h-3 w-3" />
-                              Latest Spin
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleGenerateAndDownload} disabled={isGenerating}>
-                              <FileClock className="mr-2 h-3 w-3" />
-                              {isGenerating ? 'Generating...' : 'Generate Hour Log'}
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
-                              <Download className="mr-2 h-3 w-3" />
-                              Full Log
-                          </Button>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-2 mb-2">
-                        <Checkbox 
-                          id="disable-ai" 
-                          checked={disableAi} 
-                          onCheckedChange={(checked) => setDisableAi(Boolean(checked))}
-                        />
-                        <label
-                          htmlFor="disable-ai"
-                          className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          Disable AI Encouragement (avoids rate limits)
-                        </label>
-                    </div>
-                    <div className="flex items-center space-x-2 mb-2">
-                        <Checkbox 
-                          id="hide-text" 
-                          checked={hideText} 
-                          onCheckedChange={(checked) => setHideText(Boolean(checked))}
-                        />
-                        <label
-                          htmlFor="hide-text"
-                          className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          Hide text on textured elements
-                        </label>
-                    </div>
-                    <div className="flex flex-col space-y-1 mb-2">
-                        <Label htmlFor="texture-rotation" className="text-xs font-medium text-muted-foreground">
-                          Wheel Texture Rotation (°)
-                        </Label>
-                        <Input
-                            id="texture-rotation"
-                            type="number"
-                            step="0.1"
-                            value={textureRotation}
-                            onChange={(e) => setTextureRotation(parseFloat(e.target.value) || 0)}
-                            disabled={!customTextures['wheel-full']}
-                            className="h-8"
-                        />
-                    </div>
-                     <div className="flex items-center space-x-2 mb-2">
-                        <Checkbox 
-                          id="skip-bets" 
-                          checked={skipBetsInDataGen} 
-                          onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))}
-                          disabled={isPaused}
-                        />
-                        <label
-                          htmlFor="skip-bets"
-                          className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          Skip random bet placement in simulation data
-                        </label>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Force Next Spin Outcome:
+          <footer className="w-full shrink-0 p-4 pt-0">
+            <div className="mt-2 p-2 border border-dashed border-muted-foreground/50 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                    <p className="text-xs text-muted-foreground font-semibold">
+                        DEV TOOLS
                     </p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {BET_OPTIONS.map(option => (
-                        <Button
-                          key={`force-${option.id}`}
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setForcedWinner(option.id)}
-                          disabled={gameState !== 'BETTING' || isPaused}
-                          className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
-                        >
-                          {option.label}
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <Button variant="outline" size="sm" onClick={() => setShowLegend(s => !s)}>
+                            <BookCopy className="mr-2 h-3 w-3" />
+                            {showLegend ? 'Hide' : 'Show'} Legend
                         </Button>
-                      ))}
-                    </div>
-
-                    <div className="mt-4">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Force Top Slot Outcome:
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Select onValueChange={(value) => setForcedTopSlotLeft(value === 'null' ? null : value)} value={forcedTopSlotLeft ?? 'null'} disabled={gameState !== 'BETTING' || isPaused}>
-                                <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue placeholder="Left Reel" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="null">Random</SelectItem>
-                                    {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
-                                        <SelectItem key={`force-left-${item}`} value={item}>{item.replace(/_/g, ' ')}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select onValueChange={(value) => setForcedTopSlotRight(value === 'null' ? null : Number(value))} value={forcedTopSlotRight?.toString() ?? 'null'} disabled={gameState !== 'BETTING' || isPaused}>
-                                <SelectTrigger className="h-8 text-xs">
-                                    <SelectValue placeholder="Right Reel" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="null">Random</SelectItem>
-                                    {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a, b) => a - b).map(item => (
-                                        <SelectItem key={`force-right-${item}`} value={String(item)}>{item}x</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    {showLegend && (
-                      <Card className="mt-4 p-4 text-xs bg-background/70">
-                        <CardHeader className="p-0 pb-2">
-                          <CardTitle className="text-sm">Index Legend</CardTitle>
-                          <CardDescription className="text-xs">Categorized indexes used in the game log.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <h5 className="font-semibold mt-2">1. Main Wheel / Top Slot Bet Type</h5>
-                              <ul className="list-inside mt-1 space-y-1">
-                                {BET_OPTIONS.map((option, index) => (
-                                  <li key={`legend-bet-${index}`} className="flex items-center gap-2">
-                                    <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
-                                    <span>{option.label}</span>
-                                  </li>
+                        <Button variant="outline" size="sm" onClick={() => setIsTopSlotSpinning(s => !s)}>
+                            <TestTube2 className="mr-2 h-3 w-3" />
+                            Test Top Slot
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleSkipCountdown} disabled={gameState !== 'BETTING' || isPaused}>
+                            <FastForward className="mr-2 h-3 w-3" />
+                            Skip Timer
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleCloseRound} disabled={isPaused}>
+                        <RefreshCw className="mr-2 h-3 w-3" />
+                        Close Round
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
+                            {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
+                            {isPaused ? 'Resume' : 'Pause'}
+                        </Button>
+                        <input
+                        type="file"
+                        ref={bgFileInputRef}
+                        onChange={handleBgImageUpload}
+                        accept="image/*"
+                        className="hidden"
+                        />
+                        <input
+                        type="file"
+                        ref={textureFileInputRef}
+                        onChange={handleTextureUpload}
+                        accept="image/*"
+                        className="hidden"
+                        />
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                            <UploadCloud className="mr-2 h-3 w-3" />
+                            Upload Assets
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="max-h-[500px] overflow-y-auto w-64">
+                            <DropdownMenuLabel>Upload custom image assets.</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>General</DropdownMenuLabel>
+                                <DropdownMenuItem onSelect={() => handleUploadClick('background')} className="flex justify-between">
+                                    <span>Background Image</span>
+                                    <span className="text-muted-foreground text-xs">1920x1080px</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
+                                <DropdownMenuItem key={`upload-wheel-full`} onSelect={() => handleUploadClick(`wheel-full`)} className="flex justify-between">
+                                    <span>Full Wheel Texture</span>
+                                    <span className="text-muted-foreground text-xs">420x420px</span>
+                                </DropdownMenuItem>
+                                {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
+                                <DropdownMenuItem key={`upload-wheel-${label}`} onSelect={() => handleUploadClick(`wheel-${label}`)} className="flex justify-between">
+                                    <span>{label.replace(/_/g, ' ')} (Segment)</span>
+                                    <span className="text-muted-foreground text-xs">420x420px</span>
+                                </DropdownMenuItem>
                                 ))}
-                              </ul>
-                            </div>
-                            <div>
-                              <h5 className="font-semibold mt-2">2. Top Slot Multiplier</h5>
-                              <ul className="list-inside mt-1 space-y-1">
-                                {TOP_SLOT_RIGHT_REEL_ITEMS.map((item, index) => (
-                                  <li key={`legend-mult-${index}`} className="flex items-center gap-2">
-                                    <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>Top Slot: Bet Types</DropdownMenuLabel>
+                                {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
+                                <DropdownMenuItem key={`upload-topslot-left-${item}`} onSelect={() => handleUploadClick(`topslot-left-${item}`)} className="flex justify-between">
+                                    <span>{item.replace(/_/g, ' ')}</span>
+                                    <span className="text-muted-foreground text-xs">160x80px</span>
+                                </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>Top Slot: Multipliers</DropdownMenuLabel>
+                                {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
+                                <DropdownMenuItem key={`upload-topslot-right-${item}x`} onSelect={() => handleUploadClick(`topslot-right-${item}x`)} className="flex justify-between">
                                     <span>{item}x</span>
-                                  </li>
+                                    <span className="text-muted-foreground text-xs">160x80px</span>
+                                </DropdownMenuItem>
                                 ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                    {forcedWinner && (
-                      <p className="text-xs text-center text-accent mt-2 animate-pulse">
-                        Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
-                      </p>
-                    )}
-                  </div>
-                
-              </CardContent>
-            </Card>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>Betting Chips</DropdownMenuLabel>
+                                {BET_OPTIONS.map(option => (
+                                <DropdownMenuItem key={`upload-chip-${option.id}`} onSelect={() => handleUploadClick(`chip-${option.id}`)} className="flex justify-between">
+                                    <span>{option.label}</span>
+                                    <span className="text-muted-foreground text-xs">128x128px</span>
+                                </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            
+                            <DropdownMenuGroup>
+                                <DropdownMenuLabel>History Log</DropdownMenuLabel>
+                                {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
+                                <DropdownMenuItem key={`upload-history-${label}`} onSelect={() => handleUploadClick(`history-${label}`)} className="flex justify-between">
+                                    <span>{label.replace(/_/g, ' ')}</span>
+                                    <span className="text-muted-foreground text-xs">40x40px</span>
+                                </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuGroup>
+
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <Button variant="outline" size="sm" onClick={() => setIsClearTexturesAlertOpen(true)} disabled={!hasCustomAssets}>
+                            <Trash2 className="mr-2 h-3 w-3" />
+                            Clear Assets
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
+                            <Download className="mr-2 h-3 w-3" />
+                            Latest Spin
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleGenerateAndDownload} disabled={isGenerating}>
+                            <FileClock className="mr-2 h-3 w-3" />
+                            {isGenerating ? 'Generating...' : 'Generate Hour Log'}
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadLog} disabled={gameLog.length === 0}>
+                            <Download className="mr-2 h-3 w-3" />
+                            Full Log
+                        </Button>
+                    </div>
+                </div>
+                <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox 
+                        id="disable-ai" 
+                        checked={disableAi} 
+                        onCheckedChange={(checked) => setDisableAi(Boolean(checked))}
+                    />
+                    <label
+                        htmlFor="disable-ai"
+                        className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Disable AI Encouragement (avoids rate limits)
+                    </label>
+                </div>
+                <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox 
+                        id="hide-text" 
+                        checked={hideText} 
+                        onCheckedChange={(checked) => setHideText(Boolean(checked))}
+                    />
+                    <label
+                        htmlFor="hide-text"
+                        className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Hide text on textured elements
+                    </label>
+                </div>
+                <div className="flex flex-col space-y-1 mb-2">
+                    <Label htmlFor="texture-rotation" className="text-xs font-medium text-muted-foreground">
+                        Wheel Texture Rotation (°)
+                    </Label>
+                    <Input
+                        id="texture-rotation"
+                        type="number"
+                        step="0.1"
+                        value={textureRotation}
+                        onChange={(e) => setTextureRotation(parseFloat(e.target.value) || 0)}
+                        disabled={!customTextures['wheel-full']}
+                        className="h-8"
+                    />
+                </div>
+                    <div className="flex items-center space-x-2 mb-2">
+                    <Checkbox 
+                        id="skip-bets" 
+                        checked={skipBetsInDataGen} 
+                        onCheckedChange={(checked) => setSkipBetsInDataGen(Boolean(checked))}
+                        disabled={isPaused}
+                    />
+                    <label
+                        htmlFor="skip-bets"
+                        className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Skip random bet placement in simulation data
+                    </label>
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">
+                    Force Next Spin Outcome:
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                    {BET_OPTIONS.map(option => (
+                    <Button
+                        key={`force-${option.id}`}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setForcedWinner(option.id)}
+                        disabled={gameState !== 'BETTING' || isPaused}
+                        className={cn("h-auto p-1 text-[10px]", {"ring-2 ring-accent": forcedWinner === option.id})}
+                    >
+                        {option.label}
+                    </Button>
+                    ))}
+                </div>
+
+                <div className="mt-4">
+                    <p className="text-xs text-muted-foreground mb-1">
+                        Force Top Slot Outcome:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Select onValueChange={(value) => setForcedTopSlotLeft(value === 'null' ? null : value)} value={forcedTopSlotLeft ?? 'null'} disabled={gameState !== 'BETTING' || isPaused}>
+                            <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Left Reel" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="null">Random</SelectItem>
+                                {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
+                                    <SelectItem key={`force-left-${item}`} value={item}>{item.replace(/_/g, ' ')}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select onValueChange={(value) => setForcedTopSlotRight(value === 'null' ? null : Number(value))} value={forcedTopSlotRight?.toString() ?? 'null'} disabled={gameState !== 'BETTING' || isPaused}>
+                            <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Right Reel" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="null">Random</SelectItem>
+                                {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a, b) => a - b).map(item => (
+                                    <SelectItem key={`force-right-${item}`} value={String(item)}>{item}x</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {showLegend && (
+                    <Card className="mt-4 p-4 text-xs bg-background/70">
+                    <CardHeader className="p-0 pb-2">
+                        <CardTitle className="text-sm">Index Legend</CardTitle>
+                        <CardDescription className="text-xs">Categorized indexes used in the game log.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <h5 className="font-semibold mt-2">1. Main Wheel / Top Slot Bet Type</h5>
+                            <ul className="list-inside mt-1 space-y-1">
+                            {BET_OPTIONS.map((option, index) => (
+                                <li key={`legend-bet-${index}`} className="flex items-center gap-2">
+                                <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                                <span>{option.label}</span>
+                                </li>
+                            ))}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 className="font-semibold mt-2">2. Top Slot Multiplier</h5>
+                            <ul className="list-inside mt-1 space-y-1">
+                            {TOP_SLOT_RIGHT_REEL_ITEMS.map((item, index) => (
+                                <li key={`legend-mult-${index}`} className="flex items-center gap-2">
+                                <code className="bg-muted px-1.5 py-0.5 rounded-sm">{index}</code>
+                                <span>{item}x</span>
+                                </li>
+                            ))}
+                            </ul>
+                        </div>
+                        </div>
+                    </CardContent>
+                    </Card>
+                )}
+                {forcedWinner && (
+                    <p className="text-xs text-center text-accent mt-2 animate-pulse">
+                    Next spin will land on: {BET_OPTIONS.find(o => o.id === forcedWinner)?.label || forcedWinner}
+                    </p>
+                )}
+            </div>
           </footer>
-        </>
+        </div>
       )}
     </div>
   );
