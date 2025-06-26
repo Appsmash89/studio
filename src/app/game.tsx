@@ -349,7 +349,7 @@ export default function Game() {
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(true);
-  const [textureRotation, setTextureRotation] = useState(3.4);
+  const [textureRotation, setTextureRotation] = useState(0);
   const [disableAi, setDisableAi] = useState(true);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
@@ -765,7 +765,7 @@ export default function Game() {
     let timer: NodeJS.Timeout;
 
     if (gameState === 'BETTING') {
-      if (countdown <= 0) {
+      if (countdown < 0) {
         handleSpin();
       } else {
         timer = setTimeout(() => {
@@ -1002,6 +1002,59 @@ export default function Game() {
       />
       <div className="absolute inset-0 bg-background/80 z-[-1]"></div>
       
+      {gameState === 'BETTING' && !isPaused && (() => {
+          const radius = 40;
+          const circumference = 2 * Math.PI * radius;
+          const progressPercentage = Math.max(0, countdown) / BETTING_TIME_SECONDS;
+          const strokeDashoffset = circumference - (progressPercentage * circumference);
+
+          const getTimerColor = () => {
+              if (countdown <= 4) return 'text-red-500';
+              if (countdown <= 10) return 'text-yellow-500';
+              return 'text-green-500';
+          };
+
+          return (
+              <div className="fixed top-4 left-4 z-50">
+                  <div className="relative h-24 w-24">
+                      <svg className="w-full h-full" viewBox="0 0 100 100">
+                          {/* Background circle */}
+                          <circle
+                              className="stroke-current text-foreground/20"
+                              strokeWidth="8"
+                              stroke="currentColor"
+                              fill="transparent"
+                              r={radius}
+                              cx="50"
+                              cy="50"
+                          />
+                          {/* Progress circle */}
+                          <circle
+                              className={cn(
+                                  "stroke-current",
+                                  getTimerColor()
+                              )}
+                              strokeWidth="8"
+                              strokeDasharray={circumference}
+                              strokeDashoffset={strokeDashoffset}
+                              strokeLinecap="round"
+                              stroke="currentColor"
+                              fill="transparent"
+                              r={radius}
+                              cx="50"
+                              cy="50"
+                              transform="rotate(-90 50 50)"
+                              style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease-in-out' }}
+                          />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-headline text-foreground">{Math.max(0, countdown)}</span>
+                      </div>
+                  </div>
+              </div>
+          );
+      })()}
+
       <AlertDialog open={isClearTexturesAlertOpen} onOpenChange={setIsClearTexturesAlertOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -1158,52 +1211,11 @@ export default function Game() {
             </div>
             
             <div className="h-40 flex flex-col items-center justify-center text-center">
-                {gameState === 'BETTING' && (() => {
-                    const radius = 45;
-                    const circumference = 2 * Math.PI * radius;
-                    const progressPercentage = countdown / BETTING_TIME_SECONDS;
-                    const strokeDashoffset = circumference - (progressPercentage * circumference);
-
-                    return (
-                        <div className="flex flex-col items-center justify-center gap-4">
-                            <h2 className="text-xl font-bold uppercase tracking-wider text-accent">
-                                {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
-                            </h2>
-                            <div className="relative h-32 w-32">
-                                <svg className="w-full h-full" viewBox="0 0 100 100">
-                                    {/* Background circle */}
-                                    <circle
-                                        className="stroke-current text-green-900/50"
-                                        strokeWidth="8"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r={radius}
-                                        cx="50"
-                                        cy="50"
-                                    />
-                                    {/* Progress circle */}
-                                    <circle
-                                        className="stroke-current text-green-500"
-                                        strokeWidth="8"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={strokeDashoffset}
-                                        strokeLinecap="round"
-                                        stroke="currentColor"
-                                        fill="transparent"
-                                        r={radius}
-                                        cx="50"
-                                        cy="50"
-                                        transform="rotate(-90 50 50)"
-                                        style={{ transition: 'stroke-dashoffset 1s linear' }}
-                                    />
-                                </svg>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className="text-4xl font-headline text-foreground">{countdown}</span>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })()}
+                {gameState === 'BETTING' && (
+                  <h2 className="text-xl font-bold uppercase tracking-wider text-accent">
+                      {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
+                  </h2>
+                )}
                 {gameState === 'SPINNING' && (
                     <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
                         No More Bets!
