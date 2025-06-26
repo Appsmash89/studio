@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/config/game-config';
 
-const REEL_ITEM_HEIGHT = 80; // h-20 in tailwind
+const REEL_ITEM_HEIGHT = 100;
 
 interface ReelProps {
     items: (string | number)[];
@@ -100,7 +100,7 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type, hide
                     return (
                         <div key={i} 
                             className={cn(
-                                "h-20 flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider",
+                                "h-[100px] flex-shrink-0 flex items-center justify-center text-xl font-bold text-white uppercase text-center leading-tight tracking-wider",
                                 (customTexture && hideText) && 'text-transparent'
                             )} 
                             style={style}>
@@ -127,7 +127,7 @@ export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { resu
     return (
         <div 
             className={cn(
-                "relative w-80 h-24 rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1",
+                "relative w-[200px] h-[100px] rounded-xl border-4 border-yellow-400 shadow-2xl flex items-center justify-center p-1",
                 !backgroundTexture && "bg-gradient-to-br from-purple-900 via-slate-800 to-purple-900"
             )}
             style={containerStyle}
@@ -135,7 +135,7 @@ export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { resu
             {!backgroundTexture && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0% 0%, 100% 50%, 0% 100%)' }} />}
             <div className="w-full h-full flex gap-1 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
-                <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 bg-white/5 pointer-events-none" />
+                <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[100px] border-y-2 border-yellow-500/70 pointer-events-none" />
                 
                 <Reel 
                     items={TOP_SLOT_LEFT_REEL_ITEMS} 
