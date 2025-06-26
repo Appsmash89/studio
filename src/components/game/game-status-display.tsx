@@ -1,19 +1,16 @@
+
 'use client';
 
 import React from 'react';
-import type { SEGMENTS_CONFIG } from '@/config/game-config';
-
 
 interface GameStatusDisplayProps {
     gameState: string;
     isPaused: boolean;
-    winningSegment: (typeof SEGMENTS_CONFIG)[0] | null;
 }
 
 export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
     gameState,
     isPaused,
-    winningSegment,
 }) => {
 
     const getDisplayMessage = () => {

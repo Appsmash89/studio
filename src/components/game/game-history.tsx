@@ -3,11 +3,11 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import type { SEGMENTS_CONFIG } from '@/config/game-config';
 import { cn } from '@/lib/utils';
+import type { GameSegment } from '@/types/game';
 
 interface GameHistoryProps {
-    spinHistory: (typeof SEGMENTS_CONFIG)[];
+    spinHistory: GameSegment[];
     customTextures: Record<string, string>;
 }
 

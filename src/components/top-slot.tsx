@@ -3,9 +3,8 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/config/game-config';
 
-export const TOP_SLOT_LEFT_REEL_ITEMS = [ '1', '2', '5', '1', 'PACHINKO', '1', '2', '10', '1', '2', 'CASH_HUNT', '1', '5', '1', '2', 'COIN_FLIP', '1', '2', '5', '1', '2', '1', 'CRAZY_TIME', '2', ];
-export const TOP_SLOT_RIGHT_REEL_ITEMS = [2, 3, 5, 7, 10, 15, 20, 50];
 const REEL_ITEM_HEIGHT = 80; // h-20 in tailwind
 
 interface ReelProps {

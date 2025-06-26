@@ -18,9 +18,10 @@ import { GameHeader } from '@/components/game/game-header';
 import { GameHistory } from '@/components/game/game-history';
 import { BettingInterface } from '@/components/game/betting-interface';
 import { GameStatusDisplay } from '@/components/game/game-status-display';
-import { TopSlot, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/components/top-slot';
+import { TopSlot } from '@/components/top-slot';
 import { Wheel } from '@/components/game/wheel';
 import { DevTools } from '@/components/dev/dev-tools';
+import { generateHourOfData } from '@/lib/data-generator';
 
 import { 
     BET_OPTION_INDEX_MAP,
@@ -30,19 +31,18 @@ import {
     RESULT_DISPLAY_SECONDS,
     TOP_SLOT_ANIMATION_DURATION_MS,
     TOP_SLOT_LEFT_REEL_ITEMS,
-    CHIP_VALUES,
+    TOP_SLOT_RIGHT_REEL_ITEMS,
     initialBetsState,
-    type GameLogEntry,
-    BET_OPTIONS
 } from '@/config/game-config';
 import { cn } from '@/lib/utils';
+import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, CustomTextures, TopSlotResult } from '@/types/game';
 
 
 export default function Game() {
   const { user, signOut } = useAuth();
   const [balance, setBalance] = useState(1000);
-  const [bets, setBets] = useState<{[key: string]: number}>(initialBetsState);
-  const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
+  const [bets, setBets] = useState<Bets>(initialBetsState);
+  const [betHistory, setBetHistory] = useState<BetHistory>([]);
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
   const [spinDuration, setSpinDuration] = useState(14);
@@ -58,21 +58,21 @@ export default function Game() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [customTextures, setCustomTextures] = useState<Record<string, string>>({});
+  const [customTextures, setCustomTextures] = useState<CustomTextures>({});
   const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(true);
   const [textureRotation, setTextureRotation] = useState(3.4);
 
-  const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'NUMBER_RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
+  const [gameState, setGameState] = useState<GameState>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
-  const [winningSegment, setWinningSegment] = useState<(typeof SEGMENTS_CONFIG)[0] | null>(null);
+  const [winningSegment, setWinningSegment] = useState<GameSegment | null>(null);
   const [roundWinnings, setRoundWinnings] = useState(0);
-  const [spinHistory, setSpinHistory] = useState<((typeof SEGMENTS_CONFIG)[0])[]>([]);
+  const [spinHistory, setSpinHistory] = useState<GameSegment[]>([]);
   const spinIdCounter = useRef(0);
 
   const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
-  const [topSlotResult, setTopSlotResult] = useState<{ left: string | null; right: number | null } | null>(null);
+  const [topSlotResult, setTopSlotResult] = useState<TopSlotResult | null>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -462,196 +462,22 @@ export default function Game() {
     return () => clearTimeout(timer);
   }, [gameState, countdown, handleSpin, isPaused, startNewRound]);
   
-  const generateHourOfData = () => {
-    const NUM_SPINS_IN_HOUR = 120; // Approximate
-    const generatedLog: GameLogEntry[] = [];
-    const MAX_MULTIPLIER = 20000;
-
-    const INITIAL_CRAZY_TIME_SEGMENTS: { value: number | 'DOUBLE' | 'TRIPLE', color: string }[] = [ { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 15, color: 'hsl(320, 70%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'TRIPLE', color: 'hsl(0, 80%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 20, color: 'hsl(100, 60%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 15, color: 'hsl(320, 70%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 20, color: 'hsl(100, 60%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 15, color: 'hsl(320, 70%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'TRIPLE', color: 'hsl(0, 80%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 20, color: 'hsl(100, 60%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 15, color: 'hsl(320, 70%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 20, color: 'hsl(100, 60%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'DOUBLE', color: 'hsl(45, 90%, 60%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 15, color: 'hsl(320, 70%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 7, color: 'hsl(140, 60%, 50%)' }, { value: 10, color: 'hsl(280, 80%, 65%)' }, { value: 'TRIPLE', color: 'hsl(0, 80%, 60%)' }, { value: 5, color: 'hsl(210, 80%, 55%)' }, { value: 20, color: 'hsl(100, 60%, 60%)' }, ];
-
-    // Helper to simulate random bets
-    const simulateRandomBets = () => {
-        const bets: { [key: string]: number } = { ...initialBetsState };
-        let totalBet = 0;
-        const numBets = Math.floor(Math.random() * 4) + 1; // 1 to 4 bets
-        const betOptionsCopy = [...BET_OPTIONS];
-
-        for (let i = 0; i < numBets; i++) {
-            if (betOptionsCopy.length === 0) break;
-            const randIndex = Math.floor(Math.random() * betOptionsCopy.length);
-            const betOption = betOptionsCopy.splice(randIndex, 1)[0];
-            const chipValue = CHIP_VALUES[Math.floor(Math.random() * CHIP_VALUES.length)];
-            bets[betOption.id] += chipValue;
-            totalBet += chipValue;
-        }
-        return { bets, totalBet };
-    };
-
-    const simulateCoinFlip = (betAmount: number) => {
-        const MULTIPLIERS = [2, 3, 4, 5, 10, 15, 20, 25, 50, 100];
-        const shuffled = [...MULTIPLIERS].sort(() => 0.5 - Math.random());
-        const multipliers = { red: shuffled[0], blue: shuffled[1] };
-        const result = Math.random() < 0.5 ? 'red' : 'blue';
-        const winningMultiplier = result === 'red' ? multipliers.red : multipliers.blue;
-        const winnings = betAmount * winningMultiplier;
-        return { bonusWinnings: winnings, bonusDetails: { coinFlipMultipliers: multipliers } };
-    };
-    
-    const simulatePachinko = (betAmount: number) => {
-        let currentMultipliers: (number | 'DOUBLE')[] = [5, 10, 15, 'DOUBLE', 25, 'DOUBLE', 15, 10, 5];
-        const dropHistory: (number | 'DOUBLE')[] = [];
-        let finalMultiplier = 0;
-
-        while (true) {
-            const dropIndex = Math.floor(Math.random() * currentMultipliers.length);
-            const result = currentMultipliers[dropIndex];
-            dropHistory.push(result);
-            if (result === 'DOUBLE') {
-                 if (dropHistory.filter(d => d === 'DOUBLE').length > 2) {
-                    const numberMultipliers = currentMultipliers.filter(m => typeof m === 'number') as number[];
-                    finalMultiplier = numberMultipliers[Math.floor(Math.random() * numberMultipliers.length)];
-                    break;
-                 }
-                currentMultipliers = currentMultipliers.map(m => (typeof m === 'number' ? Math.min(m * 2, MAX_MULTIPLIER) : 'DOUBLE'));
-            } else {
-                finalMultiplier = result;
-                break;
-            }
-        }
-        const winnings = betAmount * finalMultiplier;
-        return { bonusWinnings: winnings, bonusDetails: { pachinkoDropHistory: dropHistory, pachinkoFinalMultipliers: currentMultipliers } };
-    };
-    
-    const simulateCashHunt = (betAmount: number) => {
-        const generateMultipliers = () => {
-             const multipliers = [ 100, 75, 50, 50, ...Array(10).fill(25), ...Array(14).fill(20), ...Array(20).fill(15), ...Array(20).fill(10), ...Array(20).fill(7), ...Array(20).fill(5), ];
-            return multipliers.sort(() => Math.random() - 0.5);
-        };
-        const multipliers = generateMultipliers();
-        const selectedMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
-        const winnings = betAmount * selectedMultiplier;
-        return { bonusWinnings: winnings, bonusDetails: { cashHuntMultipliers: multipliers } };
-    };
-
-    const simulateCrazyTime = (betAmount: number) => {
-        let currentSegments = [...INITIAL_CRAZY_TIME_SEGMENTS];
-        const spinHistory: (string | number)[] = [];
-        let finalMultiplier = 0;
-
-        while(true) {
-            const winningSegment = currentSegments[Math.floor(Math.random() * currentSegments.length)];
-            spinHistory.push(winningSegment.value);
-            if (winningSegment.value === 'DOUBLE' || winningSegment.value === 'TRIPLE') {
-                if (spinHistory.filter(d => typeof d === 'string').length > 2) {
-                    const numberSegments = currentSegments.filter(s => typeof s.value === 'number').map(s => s.value as number);
-                    finalMultiplier = numberSegments[Math.floor(Math.random() * numberSegments.length)];
-                    break;
-                }
-                const multiplier = winningSegment.value === 'DOUBLE' ? 2 : 3;
-                currentSegments = currentSegments.map(seg => ({ ...seg, value: typeof seg.value === 'number' ? Math.min(seg.value * multiplier, MAX_MULTIPLIER) : seg.value, }));
-            } else {
-                finalMultiplier = winningSegment.value as number;
-                break;
-            }
-        }
-        const winnings = betAmount * finalMultiplier;
-        return { bonusWinnings: winnings, bonusDetails: { selectedFlapper: ['green', 'blue', 'yellow'][Math.floor(Math.random()*3)] as 'green' | 'blue' | 'yellow', spinHistory, finalSegments: currentSegments.map(s => s.value) }};
-    };
-
-    for (let i = 0; i < NUM_SPINS_IN_HOUR; i++) {
-        const spinId = Date.now() + i;
-        const { bets: currentBets, totalBet: currentTotalBet } = skipBetsInDataGen
-            ? { bets: { ...initialBetsState }, totalBet: 0 }
-            : simulateRandomBets();
-
-        const topSlotResult = {
-            left: TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
-            right: TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
-        };
-        const rightIndex = topSlotResult.right !== null ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === topSlotResult.right) : null;
-        
-        const winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
-        const winningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
-
-        let logEntry: Omit<GameLogEntry, 'roundWinnings' | 'netResult'> & { roundWinnings?: number; netResult?: number } = {
-            spinId,
-            timestamp: new Date(Date.now() - (NUM_SPINS_IN_HOUR - i) * 45 * 1000).toISOString(),
-            bets: currentBets,
-            totalBet: currentTotalBet,
-            winningSegment: {
-                label: winningSegment.label,
-                type: winningSegment.type,
-                multiplier: winningSegment.type === 'number' ? winningSegment.multiplier : 0,
-                index: BET_OPTION_INDEX_MAP[winningSegment.label]!,
-            },
-            topSlotResult: {
-                ...topSlotResult,
-                leftIndex: topSlotResult.left ? BET_OPTION_INDEX_MAP[topSlotResult.left]! : null,
-                rightIndex: rightIndex !== -1 ? rightIndex : null,
-            },
-            isBonus: winningSegment.type === 'bonus',
-        };
-
-        let roundWinnings = 0;
-        const betOnWinner = currentBets[winningSegment.label] || 0;
-
-        if (winningSegment.type === 'bonus') {
-            if (betOnWinner > 0) {
-                let bonusResult;
-                switch (winningSegment.label) {
-                    case 'COIN_FLIP':
-                        bonusResult = simulateCoinFlip(betOnWinner);
-                        break;
-                    case 'PACHINKO':
-                         bonusResult = simulatePachinko(betOnWinner);
-                        break;
-                    case 'CASH_HUNT':
-                         bonusResult = simulateCashHunt(betOnWinner);
-                        break;
-                    case 'CRAZY_TIME':
-                         bonusResult = simulateCrazyTime(betOnWinner);
-                        break;
-                    default:
-                        bonusResult = { bonusWinnings: 0, bonusDetails: {} };
-                }
-                logEntry.bonusWinnings = bonusResult.bonusWinnings;
-                logEntry.bonusDetails = bonusResult.bonusDetails;
-                roundWinnings = betOnWinner + bonusResult.bonusWinnings;
-            }
-        } else {
-             if (betOnWinner > 0) {
-                let effectiveMultiplier = winningSegment.multiplier;
-                if (topSlotResult && topSlotResult.left === winningSegment.label && topSlotResult.right) {
-                    effectiveMultiplier = topSlotResult.right;
-                }
-                roundWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
-            }
-        }
-
-        logEntry.roundWinnings = roundWinnings;
-        logEntry.netResult = roundWinnings - currentTotalBet;
-
-        generatedLog.push(logEntry as GameLogEntry);
-    }
-    
-    // Download the log
-    const dataStr = JSON.stringify(generatedLog, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    const downloadLink = document.createElement('a');
-    downloadLink.setAttribute('href', dataUri);
-    downloadLink.setAttribute('download', `wheel_of_fortune_1_hour_log_${new Date().toISOString()}.json`);
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  };
-
   const handleGenerateAndDownload = () => {
       setIsGenerating(true);
       toast({ title: "Generating Data...", description: "Please wait, this may take a moment." });
       
       setTimeout(() => {
           try {
-              generateHourOfData();
+              const generatedLog = generateHourOfData(skipBetsInDataGen);
+              const dataStr = JSON.stringify(generatedLog, null, 2);
+              const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+              const downloadLink = document.createElement('a');
+              downloadLink.setAttribute('href', dataUri);
+              downloadLink.setAttribute('download', `wheel_of_fortune_1_hour_log_${new Date().toISOString()}.json`);
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+              document.body.removeChild(downloadLink);
+
               toast({ title: "Success!", description: "Your data is downloading." });
           } catch(e) {
               console.error(e);
@@ -807,7 +633,6 @@ export default function Game() {
                     <GameStatusDisplay
                         gameState={gameState}
                         isPaused={isPaused}
-                        winningSegment={winningSegment}
                     />
                     <div className="w-full max-w-md">
                         <BettingInterface

@@ -4,9 +4,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn, adjustHsl } from '@/lib/utils';
 import { RotateCcw, XCircle } from 'lucide-react';
-import { BET_OPTIONS, CHIP_VALUES, adjustHsl } from '@/config/game-config';
+import { BET_OPTIONS, CHIP_VALUES } from '@/config/game-config';
 
 interface BettingInterfaceProps {
     bets: { [key: string]: number };
