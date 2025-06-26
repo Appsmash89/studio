@@ -45,6 +45,7 @@ export default function Game() {
   const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
+  const [spinDuration, setSpinDuration] = useState(SPIN_DURATION_SECONDS);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
   const [forcedTopSlotLeft, setForcedTopSlotLeft] = useState<string | null>(null);
@@ -280,6 +281,9 @@ export default function Game() {
     setGameState('SPINNING');
     spinIdCounter.current++;
 
+    const newSpinDuration = Math.random() * 3 + 12; // Random duration between 12 and 15 seconds
+    setSpinDuration(newSpinDuration);
+
 
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
@@ -322,7 +326,7 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-    const fullSpins = 4 * 360;
+    const fullSpins = 5 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
     
     setRotation(prev => {
@@ -412,7 +416,7 @@ export default function Game() {
       setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
       setGameState('RESULT');
 
-    }, SPIN_DURATION_SECONDS * 1000);
+    }, newSpinDuration * 1000);
   }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
 
   // Game Loop Timer
@@ -653,7 +657,7 @@ export default function Game() {
       <div className="absolute inset-0 bg-background/80 z-[-1]"></div>
       
       {gameState === 'BETTING' && !isPaused && (() => {
-          const radius = 32;
+          const radius = 24;
           const circumference = 2 * Math.PI * radius;
           const progressPercentage = Math.max(0, countdown) / BETTING_TIME_SECONDS;
           const strokeDashoffset = circumference * (1 - progressPercentage);
@@ -666,35 +670,35 @@ export default function Game() {
 
           return (
               <div className="fixed top-20 left-4 z-50">
-                  <div className="relative h-20 w-20">
-                      <svg className="w-full h-full" viewBox="0 0 70 70">
+                  <div className="relative h-16 w-16">
+                      <svg className="w-full h-full" viewBox="0 0 52 52">
                           <circle
                               className="stroke-current text-foreground/20"
-                              strokeWidth="5"
+                              strokeWidth="4"
                               fill="transparent"
                               r={radius}
-                              cx="35"
-                              cy="35"
+                              cx="26"
+                              cy="26"
                           />
                           <circle
                               className={cn(
                                   "stroke-current",
                                   getTimerColor()
                               )}
-                              strokeWidth="5"
+                              strokeWidth="4"
                               strokeDasharray={circumference}
                               strokeDashoffset={strokeDashoffset}
                               strokeLinecap="round"
                               fill="transparent"
                               r={radius}
-                              cx="35"
-                              cy="35"
-                              transform="rotate(-90 35 35)"
+                              cx="26"
+                              cy="26"
+                              transform="rotate(-90 26 26)"
                               style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease-in-out' }}
                           />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-2xl font-headline text-foreground">{Math.max(0, countdown)}</span>
+                          <span className="text-xl font-headline text-foreground">{Math.max(0, countdown)}</span>
                       </div>
                   </div>
               </div>
@@ -736,7 +740,7 @@ export default function Game() {
                 </div>
                 
                 <div className="relative flex flex-col items-center">
-                    <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={SPIN_DURATION_SECONDS} />
+                    <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={spinDuration} />
                     <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                         <div
                         className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
