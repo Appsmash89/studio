@@ -13,7 +13,7 @@ const polarToCartesian = (centerX: number, centerY: number, radius: number, angl
     };
 };
 
-export const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; textureRotation: number; }) => {
+export const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation, spinDuration }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; textureRotation: number; spinDuration: number; }) => {
   const radius = 200;
   const center = 210;
   const fullWheelTexture = customTextures['wheel-full'];
@@ -42,7 +42,7 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
       <div
         className="absolute w-full h-full rounded-full"
         style={{
-          transition: `transform 8s cubic-bezier(0.25, 0.1, 0.25, 1)`,
+          transition: `transform ${spinDuration}s cubic-bezier(0.25, 0.1, 0.25, 1)`,
           transform: `rotate(${rotation}deg)`,
         }}
       >

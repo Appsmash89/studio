@@ -105,7 +105,7 @@ export const SEGMENTS_CONFIG = baseSegments.map((seg, index) => {
 export const NUM_SEGMENTS = SEGMENTS_CONFIG.length;
 export const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 
-export const SPIN_DURATION_SECONDS = 8;
+export const SPIN_DURATION_SECONDS = 12;
 export const BETTING_TIME_SECONDS = 15;
 export const RESULT_DISPLAY_SECONDS = 5;
 export const TOP_SLOT_ANIMATION_DURATION_MS = 3500;

@@ -4,10 +4,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Wallet, Sparkles, XCircle, Download, FastForward, RotateCcw, Upload, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud, RefreshCw, Trash2, LogOut } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from '@/contexts/auth-context';
 
@@ -38,6 +36,7 @@ import {
     initialBetsState,
     type GameLogEntry
 } from '@/config/game-config';
+import { cn } from '@/lib/utils';
 
 
 export default function Game() {
@@ -794,7 +793,7 @@ export default function Game() {
                 </div>
                 
                 <div className="relative flex flex-col items-center">
-                    <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} />
+                    <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={SPIN_DURATION_SECONDS} />
                     <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                         <div
                         className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
