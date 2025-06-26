@@ -4,6 +4,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { SEGMENTS_CONFIG } from '@/config/game-config';
+import { cn } from '@/lib/utils';
 
 interface GameHistoryProps {
     spinHistory: (typeof SEGMENTS_CONFIG)[];
@@ -22,22 +23,23 @@ export const GameHistory: React.FC<GameHistoryProps> = ({ spinHistory, customTex
                         {spinHistory.map((segment, index) => {
                             const customTexture = customTextures[`history-${segment.label}`];
                             const style: React.CSSProperties = {
-                                backgroundColor: segment.color,
-                                color: segment.textColor,
-                                textShadow: '1px 1px 1px rgba(0,0,0,0.3)',
+                                color: 'transparent',
+                                backgroundColor: 'transparent'
                             };
 
                             if (customTexture) {
                                 style.backgroundImage = `url(${customTexture})`;
                                 style.backgroundSize = 'cover';
                                 style.backgroundPosition = 'center';
-                                style.color = 'transparent';
                             }
 
                             return (
                                 <div
                                     key={`${segment.id}-${index}`}
-                                    className="w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in"
+                                    className={cn(
+                                        "w-10 h-10 rounded-md flex items-center justify-center text-xs font-bold shadow-inner transition-all animate-in fade-in",
+                                        !customTexture && 'bg-background/30'
+                                    )}
                                     style={style}
                                     title={segment.label.replace('_', ' ')}
                                 >
