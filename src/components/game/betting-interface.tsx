@@ -85,7 +85,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     };
 
     return (
-        <Card className="w-full max-w-2xl p-4 bg-card/50 backdrop-blur-sm border-accent/30 shadow-lg">
+        <Card className="w-full p-4 bg-transparent border-none shadow-none">
             <CardContent className="p-0 flex flex-col gap-4">
                 <div className="grid grid-cols-4 gap-2">
                     {numberBets.map(renderBetButton)}
