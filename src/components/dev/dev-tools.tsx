@@ -35,8 +35,6 @@ interface DevToolsProps {
     handleGenerateAndDownload: () => void;
     isGenerating: boolean;
     handleDownloadLog: () => void;
-    disableAi: boolean;
-    setDisableAi: React.Dispatch<React.SetStateAction<boolean>>;
     hideText: boolean;
     setHideText: React.Dispatch<React.SetStateAction<boolean>>;
     textureRotation: number;
@@ -74,8 +72,6 @@ export const DevTools: React.FC<DevToolsProps> = ({
     handleGenerateAndDownload,
     isGenerating,
     handleDownloadLog,
-    disableAi,
-    setDisableAi,
     hideText,
     setHideText,
     textureRotation,
@@ -227,19 +223,6 @@ export const DevTools: React.FC<DevToolsProps> = ({
                             Full Log
                         </Button>
                     </div>
-                </div>
-                <div className="flex items-center space-x-2 mb-2">
-                    <Checkbox 
-                        id="disable-ai" 
-                        checked={disableAi} 
-                        onCheckedChange={(checked) => setDisableAi(Boolean(checked))}
-                    />
-                    <label
-                        htmlFor="disable-ai"
-                        className="text-xs font-medium text-muted-foreground leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                        Disable AI Encouragement (avoids rate limits)
-                    </label>
                 </div>
                 <div className="flex items-center space-x-2 mb-2">
                     <Checkbox 

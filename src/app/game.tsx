@@ -3,7 +3,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { getEncouragement, type AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import { buttonVariants } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from "@/hooks/use-toast"
@@ -46,7 +45,6 @@ export default function Game() {
   const [betHistory, setBetHistory] = useState<{ optionId: string; amount: number }[]>([]);
   const [selectedChip, setSelectedChip] = useState(10);
   const [rotation, setRotation] = useState(0);
-  const [aiMessage, setAiMessage] = useState<AiEncouragementOutput | null>(null);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
   const [forcedTopSlotLeft, setForcedTopSlotLeft] = useState<string | null>(null);
@@ -64,7 +62,6 @@ export default function Game() {
   const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
   const [hideText, setHideText] = useState(true);
   const [textureRotation, setTextureRotation] = useState(3.4);
-  const [disableAi, setDisableAi] = useState(true);
 
   const [gameState, setGameState] = useState<'BETTING' | 'SPINNING' | 'RESULT' | 'BONUS_COIN_FLIP' | 'BONUS_PACHINKO' | 'BONUS_CASH_HUNT' | 'BONUS_CRAZY_TIME'>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -110,7 +107,6 @@ export default function Game() {
     setCountdown(BETTING_TIME_SECONDS);
     setBets(initialBetsState);
     setBetHistory([]);
-    setAiMessage(null);
     setWinningSegment(null);
     setForcedWinner(null);
     setForcedTopSlotLeft(null);
@@ -259,25 +255,8 @@ export default function Game() {
     const winningLabel = winningSegment.label;
     const betOnWinner = spinDataRef.current.bets[winningLabel] || 0;
     const roundWinnings = betOnWinner + bonusWinnings;
-    const currentTotalBet = spinDataRef.current.totalBet;
 
     setBalance(prev => prev + roundWinnings);
-
-    if (disableAi) {
-        setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
-    } else {
-        try {
-            const encouragement = await getEncouragement({
-                gameEvent: 'win',
-                betAmount: currentTotalBet,
-                winAmount: roundWinnings,
-            });
-            setAiMessage(encouragement);
-        } catch (error) {
-            console.error("AI encouragement error:", error);
-            setAiMessage({ message: "What a bonus round!", encouragementLevel: 'high' });
-        }
-    }
     
     setGameLog(prevLog => {
         const updatedLog = [...prevLog];
@@ -295,11 +274,10 @@ export default function Game() {
     });
 
     setGameState('RESULT');
-  }, [winningSegment, disableAi]);
+  }, [winningSegment]);
 
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
-    setAiMessage(null);
     spinIdCounter.current++;
 
 
@@ -363,23 +341,6 @@ export default function Game() {
 
       if (currentWinningSegment.type === 'bonus') {
           const isBonusWin = betOnWinner > 0;
-          if (!isBonusWin) {
-               if (disableAi) {
-                   setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
-               } else {
-                   try {
-                      const encouragement = await getEncouragement({
-                          gameEvent: 'loss',
-                          betAmount: currentTotalBet,
-                          winAmount: 0,
-                      });
-                      setAiMessage(encouragement);
-                  } catch (error) {
-                      console.error("AI encouragement error:", error);
-                      setAiMessage({ message: "Good luck next time!", encouragementLevel: 'low' });
-                  }
-               }
-          }
           
           const newLogEntry: GameLogEntry = {
               spinId: spinIdCounter.current,
@@ -424,24 +385,6 @@ export default function Game() {
       }
       
       setBalance(prev => prev + roundWinnings);
-
-      if (currentTotalBet > 0) {
-        if (disableAi) {
-            setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
-        } else {
-            try {
-              const encouragement = await getEncouragement({
-                gameEvent: roundWinnings > currentTotalBet ? 'win' : 'loss',
-                betAmount: currentTotalBet,
-                winAmount: roundWinnings,
-              });
-              setAiMessage(encouragement);
-            } catch (error) {
-              console.error("AI encouragement error:", error);
-              setAiMessage({ message: "Good luck on the next spin!", encouragementLevel: 'low' });
-            }
-        }
-      }
       
       const newLogEntry: GameLogEntry = {
           spinId: spinIdCounter.current,
@@ -470,7 +413,7 @@ export default function Game() {
       setGameState('RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight, disableAi]);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -830,7 +773,6 @@ export default function Game() {
                   gameState={gameState}
                   isPaused={isPaused}
                   winningSegment={winningSegment}
-                  aiMessage={aiMessage}
                 />
             </div>
             
@@ -873,8 +815,6 @@ export default function Game() {
             handleGenerateAndDownload={handleGenerateAndDownload}
             isGenerating={isGenerating}
             handleDownloadLog={handleDownloadLog}
-            disableAi={disableAi}
-            setDisableAi={setDisableAi}
             hideText={hideText}
             setHideText={setHideText}
             textureRotation={textureRotation}

@@ -2,10 +2,6 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { Sparkles } from 'lucide-react';
-import type { AiEncouragementOutput } from '@/ai/flows/ai-encouragement';
 import type { SEGMENTS_CONFIG } from '@/config/game-config';
 
 
@@ -13,21 +9,13 @@ interface GameStatusDisplayProps {
     gameState: string;
     isPaused: boolean;
     winningSegment: (typeof SEGMENTS_CONFIG)[0] | null;
-    aiMessage: AiEncouragementOutput | null;
 }
 
 export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
     gameState,
     isPaused,
     winningSegment,
-    aiMessage,
 }) => {
-
-    const aiMessageColor = {
-        low: 'text-muted-foreground',
-        medium: 'text-foreground',
-        high: 'text-accent',
-    };
 
     const getDisplayMessage = () => {
         if (isPaused) {
@@ -58,16 +46,6 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
             <div className="flex-grow flex items-center justify-center">
                 {getDisplayMessage()}
             </div>
-            {aiMessage && gameState === 'RESULT' && (
-                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-2.5 transition-all duration-500 flex-shrink-0 animate-in fade-in", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
-                    <CardContent className="p-0 flex items-center gap-3">
-                        <Sparkles className="text-accent w-5 h-5 flex-shrink-0" />
-                        <p className={cn("text-sm", aiMessageColor[aiMessage.encouragementLevel])}>
-                            {aiMessage.message}
-                        </p>
-                    </CardContent>
-                </Card>
-            )}
         </div>
     );
 };
