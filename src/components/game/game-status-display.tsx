@@ -25,7 +25,7 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
         }
         switch(gameState) {
             case 'BETTING':
-                return <h2 className="text-xl font-bold uppercase tracking-wider text-accent">Place Your Bets</h2>
+                return <h2 className="text-xl font-bold uppercase tracking-wider text-accent animate-pulse">Place Your Bets</h2>
             case 'SPINNING':
                  return <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">No More Bets!</h2>
             case 'RESULT':
