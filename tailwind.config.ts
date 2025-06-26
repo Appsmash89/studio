@@ -97,23 +97,12 @@ export default {
             '0%, 100%': { fill: 'hsl(43, 98%, 68%)' },
             '50%': { fill: 'hsl(50, 100%, 80%)' },
         },
-        'tile-glow': {
-          '0%, 100%': {
-            transform: 'scale(1)',
-            boxShadow: '0 0 4px 0px hsl(var(--accent) / 0.3)',
-          },
-          '50%': {
-            transform: 'scale(1.05)',
-            boxShadow: '0 0 10px 3px hsl(var(--accent) / 0.7)',
-          },
-        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
-        'tile-glow': 'tile-glow 2s ease-in-out infinite',
       },
     },
   },

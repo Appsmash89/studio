@@ -44,7 +44,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
     const [winnings, setWinnings] = useState(0);
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [isCompleted, setIsCompleted] = useState(false);
-    const [activeColumn, setActiveColumn] = useState<number | null>(0);
+    const [activeColumn, setActiveColumn] = useState<number | null>(null);
     const animationTimeoutRef = useRef<NodeJS.Timeout>();
 
     const shuffleBoard = () => {
@@ -72,15 +72,19 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
         const startColumnAnimation = () => {
             let currentColumn = 0;
             const animateColumn = () => {
+                if (gameState !== 'picking') return;
                 setActiveColumn(currentColumn);
                 currentColumn++;
 
                 if (currentColumn < 12) { // There are 12 columns
                     animationTimeoutRef.current = setTimeout(animateColumn, 120); // Speed of ripple
                 } else {
-                    // Reached the end, pause and then restart
-                    const randomPause = 1500 + Math.random() * 500; // 1.5 to 2 seconds
-                    animationTimeoutRef.current = setTimeout(startColumnAnimation, randomPause);
+                    // Reached the end. Turn off highlight, then pause and restart.
+                    animationTimeoutRef.current = setTimeout(() => {
+                        setActiveColumn(null);
+                        const randomPause = 1500 + Math.random() * 500; // 1.5 to 2 seconds
+                        animationTimeoutRef.current = setTimeout(startColumnAnimation, randomPause);
+                    }, 120); // Duration for the last column highlight
                 }
             };
             animateColumn();
@@ -140,9 +144,9 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                                         'aspect-square rounded-md flex items-center justify-center transition-all duration-300',
                                         'text-foreground bg-primary/20 hover:bg-accent hover:text-accent-foreground disabled:cursor-not-allowed',
                                         'transform hover:scale-110 disabled:transform-none',
-                                        gameState === 'picking' && (index % 12) === activeColumn && 'animate-tile-glow',
-                                        gameState === 'revealed' && 'bg-background/20 !animate-none',
-                                        selectedIndex === index && 'bg-accent text-accent-foreground scale-110 ring-4 ring-accent-foreground !animate-none',
+                                        gameState === 'picking' && (index % 12) === activeColumn && 'bg-accent/30 scale-105',
+                                        gameState === 'revealed' && 'bg-background/20',
+                                        selectedIndex === index && 'bg-accent text-accent-foreground scale-110 ring-4 ring-accent-foreground',
                                         gameState === 'revealed' && selectedIndex !== index && 'opacity-50'
                                     )}
                                 >
