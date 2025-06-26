@@ -16,6 +16,30 @@ import { AlertTriangle } from 'lucide-react';
 function AuthErrorAlert({ message }: { message: string | null }) {
     if (!message) return null;
 
+    if (message === 'auth/unauthorized-domain') {
+        return (
+            <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Action Required: Authorize Your Domain</AlertTitle>
+                <AlertDescription>
+                    <p className="mb-2">Firebase is blocking sign-in because your app's domain isn't on its list of approved sites. This is a security feature.</p>
+                    <p className="font-semibold">To fix this, you must:</p>
+                    <ol className="list-decimal list-inside my-2 text-sm space-y-1">
+                        <li>Go to your project in the <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="underline font-medium">Firebase Console</a>.</li>
+                        <li>Navigate to: <strong>Authentication</strong> &rarr; <strong>Settings</strong> tab.</li>
+                        <li>Under <strong>Authorized domains</strong>, click <strong>Add domain</strong>.</li>
+                        <li>
+                            Copy and paste this exact domain:
+                            <code className="ml-2 bg-background/50 text-foreground font-mono p-1 rounded-md">{typeof window !== 'undefined' ? window.location.hostname : ''}</code>
+                        </li>
+                    </ol>
+                    <p className="text-xs text-muted-foreground">After adding the domain, refresh this page and try signing in again.</p>
+                </AlertDescription>
+            </Alert>
+        );
+    }
+    
+    // Fallback for other errors
     return (
         <Alert variant="destructive" className="mb-4">
             <AlertTriangle className="h-4 w-4" />

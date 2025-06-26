@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User } from 'firebase/auth';
@@ -57,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     console.error('Sign-In Error:', error);
     if (error.code === 'auth/unauthorized-domain') {
-        setAuthError(`This domain is not authorized for sign-in. Please go to the Firebase Console, then Authentication > Settings, and add this app's domain to the list of Authorized domains.`);
+        setAuthError('auth/unauthorized-domain');
     } else {
         setAuthError(error.message);
     }
