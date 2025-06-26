@@ -159,6 +159,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
         setSelectedIndex(index);
         setWinnings(finalWinnings);
         setGameState('revealed');
+        setGridItems(prev => prev.map(item => ({ ...item, isFlipped: false })));
     };
 
     const handleComplete = () => {
@@ -210,19 +211,19 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                                             onClick={() => handleSelect(index)}
                                             disabled={gameState !== 'picking'}
                                             className={cn(
-                                                'relative w-full h-full rounded-md transition-all duration-300 [transform-style:preserve-3d]',
-                                                item.isFlipped && 'animate-cash-hunt-flip',
+                                                'relative w-full h-full rounded-md transition-all duration-500 [transform-style:preserve-3d]',
+                                                item.isFlipped ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]',
                                                 gameState === 'picking' && (index % 12) === activeColumn && 'scale-105',
                                                 gameState === 'revealed' && selectedIndex !== index && 'opacity-50',
-                                                selectedIndex === index && 'scale-110 ring-4 ring-accent-foreground z-10 [transform:rotateY(180deg)]',
+                                                gameState === 'revealed' && selectedIndex === index && 'scale-110 ring-4 ring-accent z-10',
                                             )}
                                         >
-                                            <div className="absolute w-full h-full flex items-center justify-center rounded-md bg-green-600 text-white font-bold [backface-visibility:hidden]">
-                                                {item.displayMultiplier}x
+                                            <div className="absolute w-full h-full flex items-center justify-center rounded-md bg-primary text-primary-foreground font-bold [backface-visibility:hidden]">
+                                                {gameState === 'revealed' ? item.finalMultiplier : item.displayMultiplier}x
                                             </div>
                                             
                                             <div className={cn(
-                                                "absolute w-full h-full flex items-center justify-center rounded-md bg-primary/20 [backface-visibility:hidden] [transform:rotateY(180deg)]",
+                                                "absolute w-full h-full flex items-center justify-center rounded-md bg-secondary [backface-visibility:hidden] [transform:rotateY(180deg)]",
                                                 gameState === 'picking' && (index % 12) === activeColumn && 'bg-accent/30',
                                                 selectedIndex === index && 'bg-accent text-accent-foreground'
                                             )}>
