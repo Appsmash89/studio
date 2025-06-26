@@ -10,7 +10,6 @@ import {
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, firebaseError } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
@@ -21,6 +20,7 @@ interface AuthContextType {
   signInAsGuest: () => void;
   signOut: () => Promise<void>;
   error: string | null;
+  authError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!auth) {
@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsGuest(false);
+        setAuthError(null);
       }
       setUser(user);
       setLoading(false);
@@ -47,59 +48,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const handleSignInError = (error: any) => {
+    console.error('Sign-In Error:', error);
+    if (error.code === 'auth/unauthorized-domain') {
+        setAuthError(`This domain is not authorized for sign-in. Please go to the Firebase Console, then Authentication > Settings, and add this app's domain to the list of Authorized domains.`);
+    } else {
+        setAuthError(error.message);
+    }
+  }
+
   const signInWithGoogle = async () => {
     if (!auth) return;
+    setAuthError(null);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      console.error('Google Sign-In Error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Sign-in failed',
-        description: error.message,
-      });
+      handleSignInError(error);
     }
   };
 
   const signInWithGitHub = async () => {
     if (!auth) return;
+    setAuthError(null);
     const provider = new GithubAuthProvider();
     try {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      console.error('GitHub Sign-In Error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Sign-in failed',
-        description: error.message,
-      });
+      handleSignInError(error);
     }
   };
 
   const signInAsGuest = () => {
     setIsGuest(true);
     setUser(null);
+    setAuthError(null);
   };
 
   const signOut = async () => {
     setIsGuest(false);
     if (!auth) return;
+    setAuthError(null);
     try {
       await firebaseSignOut(auth);
     } catch (error: any) {
       console.error('Sign-Out Error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Sign-out failed',
-        description: error.message,
-      });
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isGuest, signInWithGoogle, signInWithGitHub, signOut, signInAsGuest, error: firebaseError }}
+      value={{ user, loading, isGuest, signInWithGoogle, signInWithGitHub, signOut, signInAsGuest, error: firebaseError, authError }}
     >
       {children}
     </AuthContext.Provider>

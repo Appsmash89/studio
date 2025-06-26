@@ -10,9 +10,23 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
+
+function AuthErrorAlert({ message }: { message: string | null }) {
+    if (!message) return null;
+
+    return (
+        <Alert variant="destructive" className="mb-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Authentication Error</AlertTitle>
+            <AlertDescription>{message}</AlertDescription>
+        </Alert>
+    );
+}
 
 export default function Login() {
-  const { signInWithGoogle, signInWithGitHub, signInAsGuest } = useAuth();
+  const { signInWithGoogle, signInWithGitHub, signInAsGuest, authError } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -30,6 +44,7 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
+          <AuthErrorAlert message={authError} />
           <Button onClick={signInWithGoogle} variant="outline">
             <Icons.google className="mr-2 h-5 w-5" />
             Sign in with Google
