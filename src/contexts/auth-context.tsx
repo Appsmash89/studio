@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { User } from 'firebase/auth';
@@ -49,6 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleSignInError = (error: any) => {
+    // These errors are safe to ignore as they happen when the user closes the popup.
+    if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+      return;
+    }
+
     console.error('Sign-In Error:', error);
     if (error.code === 'auth/unauthorized-domain') {
         setAuthError(`This domain is not authorized for sign-in. Please go to the Firebase Console, then Authentication > Settings, and add this app's domain to the list of Authorized domains.`);
