@@ -1,5 +1,5 @@
-import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getApp, getApps, initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,22 +10,23 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// A simple check to see if the environment variables are loaded.
-if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
-    // If the variables are missing, it's likely the .env file wasn't loaded.
-    // This can happen if the development server wasn't restarted after creating the file.
-    // Or if the variables are missing from the deployment environment.
-    // We throw an error with a more helpful message.
-    throw new Error(
-        'Firebase configuration is missing. ' +
-        'Please ensure you have a `.env` file with the correct Firebase credentials. ' +
-        'If you just created the file, you may need to restart your development server.'
-    );
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+export let firebaseError: string | null = null;
+
+if (
+  !firebaseConfig.apiKey ||
+  !firebaseConfig.authDomain ||
+  !firebaseConfig.projectId
+) {
+  firebaseError = 'Firebase configuration is missing. Please ensure you have a `.env` file with your project credentials. If you just created the file, you may need to restart the development server.';
+} else {
+    try {
+        app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        auth = getAuth(app);
+    } catch (e: any) {
+        firebaseError = `There was an issue initializing Firebase: ${e.message}`;
+    }
 }
-
-
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
 
 export { app, auth };
