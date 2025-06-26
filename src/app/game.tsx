@@ -699,7 +699,7 @@ export default function Game() {
   const hasCustomAssets = Object.keys(customTextures).length > 0 || !backgroundImage.startsWith('https://placehold.co');
   
   return (
-    <div className="relative flex flex-col min-h-screen text-foreground">
+    <div className="relative flex flex-col min-h-screen text-foreground overflow-y-auto">
       <Image
         alt="Carnival background"
         src={backgroundImage}
@@ -787,8 +787,7 @@ export default function Game() {
             signOut={signOut}
           />
           
-          <main className="flex-grow flex items-center justify-center gap-8 px-4 overflow-hidden">
-            {/* Left Column: Wheel and Game elements */}
+          <main className="flex-grow flex flex-col items-center justify-center gap-4 px-4 py-8">
             <div className="flex flex-col items-center justify-center gap-6">
                 <div className="my-4 z-20">
                     <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
@@ -828,31 +827,30 @@ export default function Game() {
                     </div>
                 </div>
 
-                <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
+                <GameStatusDisplay
+                  gameState={gameState}
+                  isPaused={isPaused}
+                  winningSegment={winningSegment}
+                  aiMessage={aiMessage}
+                />
             </div>
+            
+            <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
 
-            {/* Right Column: Betting and Info */}
-            <div className="flex flex-col justify-center gap-4 w-full max-w-lg">
-              <GameStatusDisplay
-                gameState={gameState}
-                isPaused={isPaused}
-                winningSegment={winningSegment}
-                aiMessage={aiMessage}
-              />
-              <BettingInterface
-                bets={bets}
-                handleBet={handleBet}
-                gameState={gameState}
-                isPaused={isPaused}
-                selectedChip={selectedChip}
-                setSelectedChip={setSelectedChip}
-                handleUndoBet={handleUndoBet}
-                handleClearBets={handleClearBets}
-                totalBet={totalBet}
-                customTextures={customTextures}
-                hideText={hideText}
-              />
-            </div>
+            <BettingInterface
+              bets={bets}
+              handleBet={handleBet}
+              gameState={gameState}
+              isPaused={isPaused}
+              selectedChip={selectedChip}
+              setSelectedChip={setSelectedChip}
+              handleUndoBet={handleUndoBet}
+              handleClearBets={handleClearBets}
+              totalBet={totalBet}
+              customTextures={customTextures}
+              hideText={hideText}
+            />
+
           </main>
 
           <DevTools
@@ -897,5 +895,3 @@ export default function Game() {
     </div>
   );
 }
-
-    

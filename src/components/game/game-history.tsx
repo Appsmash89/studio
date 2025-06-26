@@ -12,7 +12,7 @@ interface GameHistoryProps {
 
 export const GameHistory: React.FC<GameHistoryProps> = ({ spinHistory, customTextures }) => {
     return (
-        <div className="h-20 flex items-center justify-center">
+        <div className="h-20 flex items-center justify-center my-4">
             <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
                 <CardContent className="p-0 flex items-center gap-3">
                     <p className="text-sm font-bold pr-3 border-r border-muted-foreground/50 self-stretch flex items-center text-muted-foreground">

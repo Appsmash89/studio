@@ -29,33 +29,40 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
         high: 'text-accent',
     };
 
+    const getDisplayMessage = () => {
+        if (isPaused) {
+            return <h2 className="text-xl font-bold uppercase tracking-wider text-accent animate-pulse">GAME PAUSED</h2>
+        }
+        switch(gameState) {
+            case 'BETTING':
+                return <h2 className="text-xl font-bold uppercase tracking-wider text-accent">Place Your Bets</h2>
+            case 'SPINNING':
+                 return <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">No More Bets!</h2>
+            case 'RESULT':
+                 if (winningSegment) {
+                     return (
+                        <div className="text-center">
+                            <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-1">Winner is...</h2>
+                            <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
+                        </div>
+                     )
+                 }
+                 return null;
+            default:
+                return null;
+        }
+    }
+
     return (
-        <div className="h-32 flex flex-col items-center justify-center text-center gap-4">
+        <div className="h-32 flex flex-col items-center justify-center text-center gap-2">
             <div className="flex-grow flex items-center justify-center">
-                {gameState === 'BETTING' && (
-                    <h2 className="text-xl font-bold uppercase tracking-wider text-accent">
-                        {isPaused ? 'GAME PAUSED' : 'Place Your Bets'}
-                    </h2>
-                )}
-                {gameState === 'SPINNING' && (
-                    <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">
-                        No More Bets!
-                    </h2>
-                )}
-                {gameState === 'RESULT' && winningSegment && (
-                    <>
-                        <h2 className="text-xl font-bold uppercase tracking-wider text-foreground mb-2">
-                            {isPaused ? 'GAME PAUSED' : 'Winner is...'}
-                        </h2>
-                        <p className="text-4xl font-headline text-accent">{winningSegment.label.replace('_', ' ')}</p>
-                    </>
-                )}
+                {getDisplayMessage()}
             </div>
             {aiMessage && gameState === 'RESULT' && (
-                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-3 transition-all duration-500 flex-shrink-0", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
+                <Card className={cn("bg-card/50 backdrop-blur-sm border-accent/30 p-2.5 transition-all duration-500 flex-shrink-0 animate-in fade-in", gameState === 'SPINNING' ? "opacity-0" : "opacity-100")}>
                     <CardContent className="p-0 flex items-center gap-3">
-                        <Sparkles className="text-accent w-5 h-5" />
-                        <p className={cn("text-base", aiMessageColor[aiMessage.encouragementLevel])}>
+                        <Sparkles className="text-accent w-5 h-5 flex-shrink-0" />
+                        <p className={cn("text-sm", aiMessageColor[aiMessage.encouragementLevel])}>
                             {aiMessage.message}
                         </p>
                     </CardContent>
