@@ -224,13 +224,6 @@ const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation }
             {fullWheelTexture ? (
                 <>
                     <circle cx={center} cy={center} r={radius} fill="url(#pattern-wheel-full)" stroke="hsl(43, 78%, 58%)" strokeWidth="2" />
-                    {/* Highlight the first segment's border */}
-                    <path
-                        d={getSegmentPath(0)}
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="3"
-                    />
                     {/* Render labels on top of full texture */}
                     {segments.map((segment, index) => {
                         const isBonus = segment.type === 'bonus';
@@ -261,14 +254,13 @@ const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation }
                     const textureUrl = customTextures[`wheel-${segment.label}`];
                     const isBonus = segment.type === 'bonus';
                     const labelPos = getLabelPosition(index, isBonus);
-                    const isFirstSegment = index === 0;
                     return (
                         <g key={segment.id}>
                             <path 
                             d={getSegmentPath(index)} 
                             fill={textureUrl ? `url(#pattern-wheel-${segment.label})` : segment.color} 
-                            stroke={isFirstSegment ? 'white' : 'hsl(43, 78%, 58%)'} 
-                            strokeWidth={isFirstSegment ? 3 : 2}
+                            stroke="hsl(43, 78%, 58%)" 
+                            strokeWidth={2}
                             filter={isBonus ? 'url(#glow)' : undefined}
                             />
                             <text
