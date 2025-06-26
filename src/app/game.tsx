@@ -281,10 +281,6 @@ export default function Game() {
     setGameState('SPINNING');
     spinIdCounter.current++;
 
-    const newSpinDuration = Math.random() * 3 + 12; // Random duration between 12 and 15 seconds
-    setSpinDuration(newSpinDuration);
-
-
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
         left: forcedTopSlotLeft ?? TOP_SLOT_LEFT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_LEFT_REEL_ITEMS.length)],
@@ -326,7 +322,7 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
-    const fullSpins = 5 * 360;
+    const fullSpins = 3 * 360;
     const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
     
     setRotation(prev => {
@@ -416,8 +412,8 @@ export default function Game() {
       setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
       setGameState('RESULT');
 
-    }, newSpinDuration * 1000);
-  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
+    }, spinDuration * 1000);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight, spinDuration]);
 
   // Game Loop Timer
   useEffect(() => {
