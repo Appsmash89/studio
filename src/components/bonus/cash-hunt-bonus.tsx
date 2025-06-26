@@ -102,7 +102,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
         }
 
         let shuffleCount = 0;
-        const maxShuffles = 8;
+        const maxShuffles = 8; // ~1.5 seconds
 
         shuffleIntervalRef.current = setInterval(() => {
             setGridItems(prev => shuffleArray(prev));
@@ -194,7 +194,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                         </div>
                     )}
                     
-                    <div className={cn("w-full flex-grow overflow-y-auto pr-2 relative rounded-md [perspective:1000px]", gameState === 'shuffling' && 'blur-[2px] opacity-80 transition-all duration-200')}>
+                    <div className={cn("w-full flex-grow overflow-y-auto pr-2 relative rounded-md [perspective:1000px]")}>
                         <div className="grid grid-cols-12 gap-1.5 sm:gap-2">
                             {gridItems.map((item, index) => {
                                 const isEvenRow = Math.floor(item.id / 12) % 2 === 0;
@@ -218,8 +218,8 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                                                 gameState === 'revealed' && selectedIndex === index && 'scale-110 ring-4 ring-accent z-10',
                                             )}
                                         >
-                                            <div className="absolute w-full h-full flex items-center justify-center rounded-md bg-primary text-primary-foreground font-bold [backface-visibility:hidden]">
-                                                {gameState === 'revealed' ? item.finalMultiplier : item.displayMultiplier}x
+                                            <div className="absolute w-full h-full flex items-center justify-center rounded-md bg-primary text-primary-foreground font-bold [backface-visibility:hidden] [transform:rotateY(0deg)]">
+                                                {gameState === 'revealed' ? `${item.finalMultiplier}x` : `${item.displayMultiplier}x`}
                                             </div>
                                             
                                             <div className={cn(
