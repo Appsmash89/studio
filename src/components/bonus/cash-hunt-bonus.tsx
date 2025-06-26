@@ -77,14 +77,14 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                 currentColumn++;
 
                 if (currentColumn < 12) { // There are 12 columns
-                    animationTimeoutRef.current = setTimeout(animateColumn, 120); // Speed of ripple
+                    animationTimeoutRef.current = setTimeout(animateColumn, 80); // Speed of ripple
                 } else {
                     // Reached the end. Turn off highlight, then pause and restart.
                     animationTimeoutRef.current = setTimeout(() => {
                         setActiveColumn(null);
                         const randomPause = 1500 + Math.random() * 500; // 1.5 to 2 seconds
                         animationTimeoutRef.current = setTimeout(startColumnAnimation, randomPause);
-                    }, 120); // Duration for the last column highlight
+                    }, 80); // Duration for the last column highlight
                 }
             };
             animateColumn();
