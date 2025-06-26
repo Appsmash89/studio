@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -160,7 +159,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
                                 {numberBetOptions.map(option => (
                                     <DropdownMenuItem key={`upload-result-popup-${option.id}`} onSelect={() => handleUploadClick(`result-popup-${option.id}`)} className="flex justify-between">
                                         <span>Popup for "{option.label}"</span>
-                                        <span className="text-muted-foreground text-xs">Any</span>
+                                        <span className="text-muted-foreground text-xs">200x200px</span>
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuGroup>

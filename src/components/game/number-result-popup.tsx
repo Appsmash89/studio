@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,7 +45,7 @@ export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl
     return (
         <div 
             className={cn(
-                "fixed top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[300px] z-50 flex flex-col items-center justify-center p-6 text-center text-white transition-opacity duration-500 pointer-events-none",
+                "fixed top-1/4 left-1/2 -translate-x-1/2 w-[200px] h-[200px] z-50 flex flex-col items-center justify-center p-6 text-center text-white transition-opacity duration-500 pointer-events-none",
                 isVisible ? 'opacity-100' : 'opacity-0'
             )}
             style={containerStyle}
