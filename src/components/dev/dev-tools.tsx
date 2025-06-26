@@ -189,7 +189,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
                                 {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
                                 <DropdownMenuItem key={`upload-topslot-left-${item}`} onSelect={() => handleUploadClick(`topslot-left-${item}`)} className="flex justify-between">
                                     <span>{item.replace(/_/g, ' ')}</span>
-                                    <span className="text-muted-foreground text-xs">160x80px</span>
+                                    <span className="text-muted-foreground text-xs">100x100px</span>
                                 </DropdownMenuItem>
                                 ))}
                             </DropdownMenuGroup>
@@ -200,7 +200,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
                                 {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
                                 <DropdownMenuItem key={`upload-topslot-right-${item}x`} onSelect={() => handleUploadClick(`topslot-right-${item}x`)} className="flex justify-between">
                                     <span>{item}x</span>
-                                    <span className="text-muted-foreground text-xs">160x80px</span>
+                                    <span className="text-muted-foreground text-xs">100x100px</span>
                                 </DropdownMenuItem>
                                 ))}
                             </DropdownMenuGroup>
