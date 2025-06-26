@@ -2,8 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface NumberResultPopupProps {
     winningSegment: { label: string; };
@@ -13,37 +12,48 @@ interface NumberResultPopupProps {
 }
 
 export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl, totalWinnings }: NumberResultPopupProps) {
-    const [isCompleted, setIsCompleted] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
 
-    const handleComplete = () => {
-        if (isCompleted) return;
-        setIsCompleted(true);
-        onComplete();
-    };
-    
-    // Automatically complete after a few seconds
     useEffect(() => {
-        const timer = setTimeout(() => {
-            handleComplete();
-        }, 4000); // show for 4 seconds
-        return () => clearTimeout(timer);
-    }, []);
+        // Fade in
+        const fadeInTimer = setTimeout(() => setIsVisible(true), 100);
 
-    const cardStyle: React.CSSProperties = {};
+        // Start fade out after 2 seconds
+        const fadeOutTimer = setTimeout(() => {
+            setIsVisible(false);
+        }, 2100);
+
+        // Complete the action after the fade-out completes (500ms transition)
+        const completeTimer = setTimeout(() => {
+            onComplete();
+        }, 2600);
+
+        return () => {
+            clearTimeout(fadeInTimer);
+            clearTimeout(fadeOutTimer);
+            clearTimeout(completeTimer);
+        };
+    }, [onComplete]);
+
+    const containerStyle: React.CSSProperties = {};
     if (customTextureUrl) {
-        cardStyle.backgroundImage = `url(${customTextureUrl})`;
-        cardStyle.backgroundSize = 'cover';
-        cardStyle.backgroundPosition = 'center';
+        containerStyle.backgroundImage = `url(${customTextureUrl})`;
+        containerStyle.backgroundSize = 'contain';
+        containerStyle.backgroundRepeat = 'no-repeat';
+        containerStyle.backgroundPosition = 'center';
     }
 
     return (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-in fade-in p-4">
-            <Card
-                className="w-full max-w-md text-center overflow-hidden border-4 border-accent relative"
-                style={cardStyle}
-            >
-                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm" />
-                <CardContent className="relative z-10 flex flex-col items-center justify-center gap-4 min-h-[300px] p-6">
+        <div 
+            className={cn(
+                "fixed top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[300px] z-50 flex flex-col items-center justify-center p-6 text-center text-white transition-opacity duration-500 pointer-events-none",
+                isVisible ? 'opacity-100' : 'opacity-0'
+            )}
+            style={containerStyle}
+        >
+            {/* If no custom texture, provide a fallback visual */}
+            {!customTextureUrl && (
+                <div className='contents'>
                     <p className="text-2xl font-bold text-foreground">The winner is</p>
                     <p
                         className="text-8xl font-headline text-accent"
@@ -57,11 +67,19 @@ export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl
                             <p className="text-4xl font-bold text-accent">${totalWinnings.toLocaleString()}</p>
                         </div>
                     )}
-                    <Button onClick={handleComplete} disabled={isCompleted} className="mt-4">
-                        Continue
-                    </Button>
-                </CardContent>
-            </Card>
+                </div>
+            )}
+            
+            {/* If there IS a texture, you can still overlay text if desired */}
+            {customTextureUrl && (
+                 <div className='contents'>
+                    <p
+                        className="text-8xl font-headline text-accent opacity-0" // Example: hide default text when texture is present
+                    >
+                        {winningSegment.label}
+                    </p>
+                 </div>
+            )}
         </div>
     );
 }

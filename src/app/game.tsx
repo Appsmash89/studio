@@ -750,7 +750,7 @@ export default function Game() {
             winningSegment={winningSegment}
             totalWinnings={roundWinnings}
             onComplete={handleNumberResultComplete}
-            customTextureUrl={customTextures['result-popup-background']}
+            customTextureUrl={customTextures[`result-popup-${winningSegment.label}`]}
         />
       )}
 

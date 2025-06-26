@@ -93,6 +93,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
     handleClearSingleTexture,
 }) => {
     const toTitleCase = (str: string) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    const numberBetOptions = BET_OPTIONS.filter(o => o.type === 'number');
 
     return (
         <footer className="w-full shrink-0 p-4 pt-0">
@@ -152,10 +153,16 @@ export const DevTools: React.FC<DevToolsProps> = ({
                                     <span>Background Image</span>
                                     <span className="text-muted-foreground text-xs">1920x1080px</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleUploadClick('result-popup-background')} className="flex justify-between">
-                                    <span>Result Popup Background</span>
-                                    <span className="text-muted-foreground text-xs">Any</span>
-                                </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                             <DropdownMenuGroup>
+                                <DropdownMenuLabel>Result Popups</DropdownMenuLabel>
+                                {numberBetOptions.map(option => (
+                                    <DropdownMenuItem key={`upload-result-popup-${option.id}`} onSelect={() => handleUploadClick(`result-popup-${option.id}`)} className="flex justify-between">
+                                        <span>Popup for "{option.label}"</span>
+                                        <span className="text-muted-foreground text-xs">Any</span>
+                                    </DropdownMenuItem>
+                                ))}
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
                             <DropdownMenuGroup>
@@ -226,7 +233,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
                                     Clear Asset
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="max-h-[500px] overflow-y-auto w-64">
                                 <DropdownMenuLabel>Clear a specific asset</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 
