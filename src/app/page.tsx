@@ -62,28 +62,21 @@ export default function Home() {
   useEffect(() => {
     const initializeAssets = async () => {
       try {
-        // --- Phase 1: Load Critical Assets ---
-        setAssetLoadingMessage("Loading essential assets...");
-        const manifest = await assetManager.init('/asset-manifest.json', (progress) => {
+        setAssetLoadingMessage("Loading game assets...");
+        
+        // init will now download ALL assets and report progress
+        await assetManager.init('/asset-manifest.json', (progress) => {
             setAssetLoadProgress(progress);
         });
         
-        // Get URLs for the critical assets that just loaded
-        const initialUrls = await assetManager.getAllCachedUrls();
-        setAssetUrls(initialUrls);
-        setAssetsReady(true); // Render the game!
-
-        // --- Phase 2: Load Non-Critical Assets in Background ---
-        const nonCriticalAssets = manifest.assets.filter(asset => !asset.critical);
-        await assetManager.downloadAssets(nonCriticalAssets);
-        
-        // Refresh URLs with all assets now available
+        // Get URLs for all the assets that are now cached
         const allUrls = await assetManager.getAllCachedUrls();
         setAssetUrls(allUrls);
+        setAssetsReady(true); // Render the game now that everything is ready
         
       } catch (err) {
         console.error(err);
-        setAssetError("Could not load critical game assets. Please check your internet connection and try again.");
+        setAssetError("Could not load game assets. Please check your internet connection and try again.");
       }
     };
 
@@ -102,7 +95,7 @@ export default function Home() {
       return <FirebaseErrorScreen message={assetError} />;
   }
   
-  // The loading screen is now shown until critical assets are ready.
+  // Show the loading screen until all assets are downloaded and their URLs are ready.
   if (!assetsReady || !assetUrls) {
       return <LoadingScreen message={assetLoadingMessage} progress={assetLoadProgress} />;
   }

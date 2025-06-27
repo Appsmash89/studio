@@ -26,7 +26,7 @@ class AssetManager {
     private manifest: AssetManifest | null = null;
 
     constructor() {
-        // Constructor is now empty and safe to call on the server.
+        // Constructor is empty and safe to call on the server.
     }
 
     private getDb(): Promise<IDBPDatabase> {
@@ -49,13 +49,12 @@ class AssetManager {
     }
 
     /**
-     * Fetches the manifest, checks version, and downloads only critical assets.
+     * Fetches the manifest, checks version, and downloads all assets.
      * @param manifestUrl - The URL to the asset manifest JSON file.
-     * @param onProgress - Optional callback for critical asset download progress.
-     * @returns The full asset manifest for later use.
+     * @param onProgress - Optional callback for download progress.
      */
-    public async init(manifestUrl: string, onProgress?: (progress: number) => void): Promise<AssetManifest> {
-        console.log("AssetManager: Initializing and loading critical assets...");
+    public async init(manifestUrl: string, onProgress?: (progress: number) => void): Promise<void> {
+        console.log("AssetManager: Initializing and loading all assets...");
         
         try {
             const response = await fetch(manifestUrl, { cache: 'no-store' });
@@ -72,11 +71,10 @@ class AssetManager {
                 await db.put(STORE_NAME, manifest.version, VERSION_KEY);
             }
 
-            const criticalAssets = manifest.assets.filter(asset => asset.critical);
-            await this.downloadAssets(criticalAssets, onProgress);
+            // Download ALL assets from the manifest, not just critical ones.
+            await this.downloadAssets(manifest.assets, onProgress);
             
-            console.log("AssetManager: Critical assets are ready.");
-            return manifest;
+            console.log("AssetManager: All assets are downloaded and ready.");
 
         } catch (error) {
             console.error("AssetManager: A critical error occurred during initialization.", error);
@@ -90,6 +88,9 @@ class AssetManager {
      * @param onProgress - Optional callback to report download progress.
      */
     public async downloadAssets(assets: Asset[], onProgress?: (progress: number) => void): Promise<void> {
+        if (!this.manifest) {
+            throw new Error("Asset manifest is not loaded. Call init() first.");
+        }
         if (!assets.length) {
             onProgress?.(100);
             return;
@@ -99,15 +100,22 @@ class AssetManager {
         const totalAssets = assets.length;
         let downloadedCount = 0;
 
+        // Create a list of assets that need to be downloaded
+        const assetsToDownload: Asset[] = [];
         for (const asset of assets) {
-            // Check if asset already exists to avoid re-downloading
             const existing = await db.get(STORE_NAME, asset.key);
-            if (existing) {
+            if (!existing) {
+                assetsToDownload.push(asset);
+            } else {
                 downloadedCount++;
-                onProgress?.(Math.round((downloadedCount / totalAssets) * 100));
-                continue;
             }
-            
+        }
+
+        // Update progress for already cached assets
+        onProgress?.(Math.round((downloadedCount / totalAssets) * 100));
+
+        // Download missing assets in parallel
+        await Promise.all(assetsToDownload.map(async (asset) => {
             const assetUrl = `${this.manifest!.baseUrl}${asset.path}`;
             try {
                 const assetResponse = await fetch(assetUrl);
@@ -116,13 +124,14 @@ class AssetManager {
                 const blob = await assetResponse.blob();
                 await db.put(STORE_NAME, blob, asset.key);
                 
+                // This is not thread-safe, but for progress reporting it's acceptable.
                 downloadedCount++;
                 onProgress?.(Math.round((downloadedCount / totalAssets) * 100));
 
             } catch (error) {
                 console.error(`AssetManager: Failed to download or cache asset '${asset.key}' from ${assetUrl}`, error);
             }
-        }
+        }));
     }
     
     /**
