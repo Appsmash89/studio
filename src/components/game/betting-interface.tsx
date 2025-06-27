@@ -18,7 +18,7 @@ interface BettingInterfaceProps {
     handleUndoBet: () => void;
     handleClearBets: () => void;
     totalBet: number;
-    customTextures: Record<string, string>;
+    assetUrls: Record<string, string>;
     hideText: boolean;
 }
 
@@ -32,13 +32,13 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     handleUndoBet,
     handleClearBets,
     totalBet,
-    customTextures,
+    assetUrls,
     hideText,
 }) => {
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
-        const customTexture = customTextures[`chip-${option.id}`];
+        const customTexture = assetUrls[`chip-${option.id}`];
         const style: React.CSSProperties = {
             color: option.textColor,
             textShadow: '1px 1px 2px rgba(0,0,0,0.4)',

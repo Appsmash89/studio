@@ -2,7 +2,7 @@
 'use client';
 
 import { cn } from "@/lib/utils";
-import { SEGMENT_ANGLE, type SEGMENTS_CONFIG } from "@/config/game-config";
+import { SEGMENT_ANGLE, SPIN_DURATION_SECONDS, type SEGMENTS_CONFIG } from "@/config/game-config";
 
 // This function is defined locally to make the component self-contained
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -13,10 +13,10 @@ const polarToCartesian = (centerX: number, centerY: number, radius: number, angl
     };
 };
 
-export const Wheel = ({ segments, rotation, customTextures, hideText, textureRotation, spinDuration }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; customTextures: Record<string, string>; hideText: boolean; textureRotation: number; spinDuration: number; }) => {
+export const Wheel = ({ segments, rotation, assetUrls, hideText, textureRotation }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; assetUrls: Record<string, string>; hideText: boolean; textureRotation: number; }) => {
   const radius = 200;
   const center = 210;
-  const fullWheelTexture = customTextures['wheel-full'];
+  const fullWheelTexture = assetUrls['wheel-full'];
   const NUM_SEGMENTS = segments.length;
 
   const getSegmentPath = (index: number) => {
@@ -34,7 +34,7 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
   };
   
   const bulbs = Array.from({ length: NUM_SEGMENTS });
-  const uniqueLabelsWithTextures = [...new Set(segments.map(s => s.label))].filter(label => customTextures[`wheel-${label}`]);
+  const uniqueLabelsWithTextures = [...new Set(segments.map(s => s.label))].filter(label => assetUrls[`wheel-${label}`]);
 
 
   return (
@@ -42,7 +42,7 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
       <div
         className="absolute w-full h-full rounded-full"
         style={{
-          transition: `transform ${spinDuration}s cubic-bezier(0.42, 0, 0.2, 1)`,
+          transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.42, 0, 0.2, 1)`,
           transform: `rotate(${rotation}deg)`,
         }}
       >
@@ -65,7 +65,7 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
             )}
             {uniqueLabelsWithTextures.map(label => (
               <pattern key={`pattern-wheel-${label}`} id={`pattern-wheel-${label}`} patternUnits="userSpaceOnUse" width="420" height="420">
-                <image href={customTextures[`wheel-${label}`]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
+                <image href={assetUrls[`wheel-${label}`]} x="0" y="0" width="420" height="420" preserveAspectRatio="xMidYMid slice" />
               </pattern>
             ))}
           </defs>
@@ -101,7 +101,7 @@ export const Wheel = ({ segments, rotation, customTextures, hideText, textureRot
             ) : (
                 /* Original logic for individual segments */
                 segments.map((segment, index) => {
-                    const textureUrl = customTextures[`wheel-${segment.label}`];
+                    const textureUrl = assetUrls[`wheel-${segment.label}`];
                     const isBonus = segment.type === 'bonus';
                     const labelPos = getLabelPosition(index, isBonus);
                     return (

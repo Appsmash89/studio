@@ -12,12 +12,12 @@ interface ReelProps {
     result: string | number | null;
     isSpinning: boolean;
     reelIndex: number;
-    customTextures: Record<string, string>;
+    assetUrls: Record<string, string>;
     type: 'left' | 'right';
     hideText: boolean;
 }
 
-const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type, hideText }: ReelProps) => {
+const Reel = ({ items, result, isSpinning, reelIndex, assetUrls, type, hideText }: ReelProps) => {
     // Duplicate items to ensure the list is long enough for a seamless wrap-around illusion.
     const duplicatedItems = useMemo(() => Array.from({ length: 20 }).flatMap(() => items), [items]);
     const reelRef = useRef<HTMLDivElement>(null);
@@ -84,7 +84,7 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type, hide
             >
                 {duplicatedItems.map((item, i) => {
                     const textureKey = type === 'right' ? `topslot-right-${item}x` : `topslot-left-${String(item)}`;
-                    const customTexture = customTextures[textureKey];
+                    const customTexture = assetUrls[textureKey];
                     
                     const style: React.CSSProperties = {
                         textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
@@ -114,8 +114,8 @@ const Reel = ({ items, result, isSpinning, reelIndex, customTextures, type, hide
 };
 
 
-export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, customTextures: Record<string, string>, hideText: boolean }) => {
-    const backgroundTexture = customTextures['topslot-background'];
+export const TopSlot = ({ result, isSpinning, assetUrls, hideText }: { result: { left: string | null; right: number | null } | null, isSpinning: boolean, assetUrls: Record<string, string>, hideText: boolean }) => {
+    const backgroundTexture = assetUrls['topslot-background'];
     
     const containerStyle: React.CSSProperties = {};
     if (backgroundTexture) {
@@ -132,7 +132,12 @@ export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { resu
             )}
             style={containerStyle}
         >
-            {!backgroundTexture && <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0% 0%, 100% 50%, 0% 100%)' }} />}
+            {!backgroundTexture && (
+                <>
+                    <div className="absolute left-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(0% 0%, 100% 50%, 0% 100%)' }} />
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0%, 0% 50%, 100% 100%)' }} />
+                </>
+            )}
             <div className="w-full h-full flex gap-1 rounded-md relative overflow-hidden">
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-yellow-400/50" />
                 <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-20 border-y-2 border-yellow-500/70 pointer-events-none" />
@@ -142,7 +147,7 @@ export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { resu
                     result={result?.left ?? null} 
                     isSpinning={isSpinning}
                     reelIndex={1}
-                    customTextures={customTextures}
+                    assetUrls={assetUrls}
                     type="left"
                     hideText={hideText}
                 />
@@ -151,12 +156,11 @@ export const TopSlot = ({ result, isSpinning, customTextures, hideText }: { resu
                     result={result?.right ?? null} 
                     isSpinning={isSpinning}
                     reelIndex={0}
-                    customTextures={customTextures}
+                    assetUrls={assetUrls}
                     type="right"
                     hideText={hideText}
                 />
             </div>
-            {!backgroundTexture && <div className="absolute right-1 top-1/2 -translate-y-1/2 w-4 h-8 bg-yellow-400/80 shadow-lg z-10" style={{ clipPath: 'polygon(100% 0%, 0% 50%, 100% 100%)' }} />}
         </div>
     );
 };

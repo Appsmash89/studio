@@ -1,22 +1,31 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/auth-context';
 import Login from '@/components/login';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, DownloadCloud } from 'lucide-react';
+import { assetManager } from '@/lib/asset-manager';
+import { Progress } from '@/components/ui/progress';
 
 const Game = dynamic(() => import('@/app/game'), {
   ssr: false,
   loading: () => <LoadingScreen message="Loading Game..." />,
 });
 
-function LoadingScreen({ message }: { message: string }) {
+function LoadingScreen({ message, progress }: { message: string, progress?: number }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
       <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
-        Wheel of Fortune Casino – Free Spins
+        SpinRiches
       </h1>
-      <p className="mt-4 text-xl animate-pulse">{message}</p>
+      <div className="w-full max-w-sm flex flex-col items-center gap-4 mt-8">
+        <div className="flex items-center gap-2">
+            <DownloadCloud className="w-6 h-6 animate-pulse" />
+            <p className="text-xl animate-pulse">{message}</p>
+        </div>
+        {progress !== undefined && <Progress value={progress} className="w-full" />}
+      </div>
     </div>
   );
 }
@@ -41,16 +50,44 @@ function FirebaseErrorScreen({ message }: { message: string }) {
     );
 }
 
-
 export default function Home() {
-  const { user, loading, error, isGuest } = useAuth();
+  const { user, loading: authLoading, error: firebaseError, isGuest } = useAuth();
+  const [assetsReady, setAssetsReady] = useState(false);
+  const [assetLoadingMessage, setAssetLoadingMessage] = useState("Initializing...");
+  const [assetLoadProgress, setAssetLoadProgress] = useState(0);
+  const [assetError, setAssetError] = useState<string | null>(null);
 
-  if (error) {
-    return <FirebaseErrorScreen message={error} />;
+  useEffect(() => {
+    const initializeAssets = async () => {
+      try {
+        await assetManager.init('/asset-manifest.json', (progress) => {
+            setAssetLoadingMessage(progress < 100 ? `Downloading Assets...` : 'Assets Ready!');
+            setAssetLoadProgress(progress);
+        });
+        setAssetsReady(true);
+      } catch (err) {
+        console.error(err);
+        setAssetError("Could not load critical game assets. Please check your internet connection and try again.");
+      }
+    };
+
+    initializeAssets();
+  }, []);
+
+  if (firebaseError) {
+    return <FirebaseErrorScreen message={firebaseError} />;
   }
 
-  if (loading) {
+  if (authLoading) {
     return <LoadingScreen message="Authenticating..." />;
+  }
+  
+  if (assetError) {
+      return <FirebaseErrorScreen message={assetError} />;
+  }
+  
+  if (!assetsReady) {
+      return <LoadingScreen message={assetLoadingMessage} progress={assetLoadProgress} />;
   }
 
   if (!user && !isGuest) {

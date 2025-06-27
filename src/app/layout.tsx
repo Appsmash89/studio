@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Wheel of Fortune Casino – Free Spins',
+  title: 'SpinRiches Casino',
   description: 'A virtual Wheel of Fortune game',
 };
 

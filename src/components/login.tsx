@@ -56,7 +56,7 @@ export default function Login() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="mb-8 text-center">
         <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
-          Wheel of Fortune Casino
+          SpinRiches
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">Sign in to start your adventure!</p>
       </div>

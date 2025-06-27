@@ -8,10 +8,10 @@ import type { GameSegment } from '@/types/game';
 
 interface GameHistoryProps {
     spinHistory: GameSegment[];
-    customTextures: Record<string, string>;
+    assetUrls: Record<string, string>;
 }
 
-export const GameHistory: React.FC<GameHistoryProps> = ({ spinHistory, customTextures }) => {
+export const GameHistory: React.FC<GameHistoryProps> = ({ spinHistory, assetUrls }) => {
     return (
         <div className="h-20 flex items-center justify-center my-4">
             <Card className="bg-card/50 backdrop-blur-sm border-accent/30 p-2 shadow-lg">
@@ -21,7 +21,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({ spinHistory, customTex
                     </p>
                     <div className="flex gap-1.5">
                         {spinHistory.map((segment, index) => {
-                            const customTexture = customTextures[`history-${segment.label}`];
+                            const customTexture = assetUrls[`history-${segment.label}`];
                             const style: React.CSSProperties = {
                                 color: 'transparent',
                                 backgroundColor: 'transparent'

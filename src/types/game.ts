@@ -17,8 +17,6 @@ export type Bets = { [key: string]: number };
 
 export type BetHistory = { optionId: string; amount: number }[];
 
-export type CustomTextures = Record<string, string>;
-
 export type TopSlotResult = { left: string | null; right: number | null };
 
 export type GameLogEntry = {

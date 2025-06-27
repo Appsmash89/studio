@@ -3,8 +3,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { buttonVariants } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from '@/contexts/auth-context';
 
@@ -22,6 +20,7 @@ import { TopSlot } from '@/components/top-slot';
 import { Wheel } from '@/components/game/wheel';
 import { DevTools } from '@/components/dev/dev-tools';
 import { generateHourOfData } from '@/lib/data-generator';
+import { assetManager } from '@/lib/asset-manager';
 
 import { 
     BET_OPTION_INDEX_MAP,
@@ -36,7 +35,7 @@ import {
     SPIN_DURATION_SECONDS,
 } from '@/config/game-config';
 import { cn } from '@/lib/utils';
-import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, CustomTextures, TopSlotResult } from '@/types/game';
+import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, TopSlotResult } from '@/types/game';
 
 
 export default function Game() {
@@ -51,18 +50,16 @@ export default function Game() {
   const [forcedTopSlotLeft, setForcedTopSlotLeft] = useState<string | null>(null);
   const [forcedTopSlotRight, setForcedTopSlotRight] = useState<number | null>(null);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
-  const [backgroundImage, setBackgroundImage] = useState('https://placehold.co/1920x1080.png');
-  const bgFileInputRef = useRef<HTMLInputElement>(null);
-  const textureFileInputRef = useRef<HTMLInputElement>(null);
+  
   const [showLegend, setShowLegend] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [skipBetsInDataGen, setSkipBetsInDataGen] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  const [customTextures, setCustomTextures] = useState<CustomTextures>({});
-  const [textureUploadTarget, setTextureUploadTarget] = useState<string | null>(null);
-  const [isClearTexturesAlertOpen, setIsClearTexturesAlertOpen] = useState(false);
+  
   const [hideText, setHideText] = useState(true);
   const [textureRotation, setTextureRotation] = useState(3.4);
+
+  const [assetUrls, setAssetUrls] = useState<Record<string, string>>({});
 
   const [gameState, setGameState] = useState<GameState>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
@@ -79,46 +76,24 @@ export default function Game() {
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
 
-  // Load assets from localStorage on initial client-side render
   useEffect(() => {
-    try {
-      const storedTextures = localStorage.getItem('spinriches_custom_textures');
-      if (storedTextures) {
-        setCustomTextures(JSON.parse(storedTextures));
-      }
-      const storedBg = localStorage.getItem('spinriches_custom_bg_image');
-      if (storedBg) {
-        setBackgroundImage(storedBg);
-      }
-    } catch (error) {
-      console.error("Failed to load assets from localStorage", error);
-    }
+    const loadAssets = async () => {
+        // Fetch the manifest to know which assets to load
+        const manifestResponse = await fetch('/asset-manifest.json');
+        const manifest = await manifestResponse.json();
+        
+        const urls: Record<string, string> = {};
+        for (const asset of manifest.assets) {
+            const url = await assetManager.get(asset.key);
+            if (url) {
+                urls[asset.key] = url;
+            }
+        }
+        setAssetUrls(urls);
+    };
+
+    loadAssets();
   }, []);
-
-  const handleClearAllAssets = () => {
-    setCustomTextures({});
-    setBackgroundImage('https://placehold.co/1920x1080.png');
-    localStorage.removeItem('spinriches_custom_textures');
-    localStorage.removeItem('spinriches_custom_bg_image');
-    toast({ title: "Assets Cleared", description: "All custom assets have been removed and restored to default." });
-    setIsClearTexturesAlertOpen(false);
-  };
-  
-  const handleClearBackgroundImage = () => {
-    setBackgroundImage('https://placehold.co/1920x1080.png');
-    localStorage.removeItem('spinriches_custom_bg_image');
-    toast({ title: "Asset Cleared", description: "The custom background image has been removed." });
-  };
-
-  const handleClearSingleTexture = (key: string) => {
-    const newTextures = { ...customTextures };
-    delete newTextures[key];
-    setCustomTextures(newTextures);
-    localStorage.setItem('spinriches_custom_textures', JSON.stringify(newTextures));
-    const toTitleCase = (str: string) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    const friendlyName = toTitleCase(key.replace(/-/g, ' ').replace(/_/g, ' '));
-    toast({ title: "Asset Cleared", description: `The custom texture for "${friendlyName}" has been removed.` });
-  };
 
   const startNewRound = useCallback(() => {
     setGameState('BETTING');
@@ -206,60 +181,6 @@ export default function Game() {
     document.body.removeChild(downloadLink);
   };
 
-  const handleBgImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          setBackgroundImage(result);
-          try {
-            localStorage.setItem('spinriches_custom_bg_image', result);
-          } catch (error) {
-            console.error("Failed to save background image to localStorage", error);
-            toast({ variant: "destructive", title: "Storage Error", description: "Could not save background image. Storage might be full." });
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUploadClick = (target: string) => {
-    if (target === 'background') {
-        bgFileInputRef.current?.click();
-    } else {
-        setTextureUploadTarget(target);
-        textureFileInputRef.current?.click();
-    }
-  };
-
-  const handleTextureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && textureUploadTarget) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          const newTextures = { ...customTextures, [textureUploadTarget]: result };
-          setCustomTextures(newTextures);
-          try {
-              localStorage.setItem('spinriches_custom_textures', JSON.stringify(newTextures));
-          } catch (error) {
-              console.error("Failed to save textures to localStorage", error);
-              toast({ variant: "destructive", title: "Storage Error", description: "Could not save textures. Storage might be full." });
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-    if (event.target) {
-        event.target.value = "";
-    }
-    setTextureUploadTarget(null);
-  };
-
   const handleSkipCountdown = () => {
     if (gameState !== 'BETTING') return;
     setCountdown(0);
@@ -318,25 +239,17 @@ export default function Game() {
 
 
     // --- Main Wheel Logic ---
-    // First, determine the winning segment randomly (or use the forced winner).
     let winningSegmentIndex;
     if (forcedWinner) {
-      // Find all possible indices for the forced winner.
       const possibleIndices = SEGMENTS_CONFIG.reduce((acc, segment, index) => {
-        if (segment.label === forcedWinner) {
-          acc.push(index);
-        }
+        if (segment.label === forcedWinner) acc.push(index);
         return acc;
       }, [] as number[]);
       
-      // If found, pick one of them randomly.
-      if (possibleIndices.length > 0) {
-        winningSegmentIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
-      } else {
-        // Fallback to a fully random segment if the forced one isn't on the wheel.
-        winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
-      }
-      setForcedWinner(null); // Clear the forced winner after use.
+      winningSegmentIndex = possibleIndices.length > 0
+        ? possibleIndices[Math.floor(Math.random() * possibleIndices.length)]
+        : Math.floor(Math.random() * NUM_SEGMENTS);
+      setForcedWinner(null);
     } else {
       winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
     }
@@ -344,25 +257,12 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     // --- Calculate Final Rotation ---
-    // The trick is to calculate the final destination angle *before* the animation starts.
-    // The CSS transition then handles the smooth animation over the fixed duration.
-
-    // 1. Calculate the angle for the middle of the winning segment.
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
     const winningSegmentAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
-
-    // 2. Add multiple full rotations to make it look like a real spin.
     const fullSpins = 5 * 360;
 
-    // 3. Set the new rotation value. The browser will animate to this value.
     setRotation(prev => {
-      // To ensure the wheel always spins forward, we normalize the current rotation.
-      // We take the total previous rotation and subtract the remainder of a full 360-degree circle.
-      // This gives us a starting point at a multiple of 360.
       const rotationBase = prev - (prev % 360);
-
-      // The final rotation is the base + full spins + the angle to get the winner to the top.
-      // We use (360 - winningSegmentAngle) because our rotation is clockwise.
       return rotationBase + fullSpins + (360 - winningSegmentAngle);
     });
     
@@ -500,13 +400,12 @@ export default function Game() {
   }
 
   const isBonusActive = gameState.startsWith('BONUS_');
-  const hasCustomAssets = Object.keys(customTextures).length > 0 || !backgroundImage.startsWith('https://placehold.co');
   
   return (
     <div className="relative flex flex-col min-h-screen text-foreground overflow-y-auto">
       <Image
-        alt="Carnival background"
-        src={backgroundImage}
+        alt="Game background"
+        src={assetUrls['background'] || 'https://placehold.co/1920x1080.png'}
         data-ai-hint="carnival night"
         fill
         className="object-cover z-[-2]"
@@ -563,21 +462,6 @@ export default function Game() {
           );
       })()}
 
-      <AlertDialog open={isClearTexturesAlertOpen} onOpenChange={setIsClearTexturesAlertOpen}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action will permanently remove all uploaded custom assets (background and textures) and restore the default appearance. This cannot be undone.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearAllAssets} className={buttonVariants({ variant: "destructive" })}>Confirm &amp; Clear</AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {gameState === 'BONUS_COIN_FLIP' && <CoinFlipBonus betAmount={bets['COIN_FLIP']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} />}
       {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
@@ -585,9 +469,9 @@ export default function Game() {
       {gameState === 'NUMBER_RESULT' && winningSegment && (
         <NumberResultPopup
             winningSegment={winningSegment}
-            totalWinnings={roundWinnings}
             onComplete={handleNumberResultComplete}
-            customTextureUrl={customTextures[`result-popup-${winningSegment.label}`]}
+            customTextureUrl={assetUrls[`result-popup-${winningSegment.label}`]}
+            totalWinnings={roundWinnings}
         />
       )}
 
@@ -602,10 +486,10 @@ export default function Game() {
                 {/* --- Left Column --- */}
                 <div className="lg:sticky lg:top-24 flex flex-col items-center justify-start gap-4">
                     <div className="my-2 z-20">
-                        <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} customTextures={customTextures} hideText={hideText} />
+                        <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} assetUrls={assetUrls} hideText={hideText} />
                     </div>
                     <div className="relative flex flex-col items-center">
-                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} customTextures={customTextures} hideText={hideText} textureRotation={textureRotation} spinDuration={SPIN_DURATION_SECONDS} />
+                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} assetUrls={assetUrls} hideText={hideText} textureRotation={textureRotation} />
                         <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                             <div
                             className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"
@@ -636,7 +520,7 @@ export default function Game() {
                             </div>
                         </div>
                     </div>
-                    <GameHistory spinHistory={spinHistory} customTextures={customTextures} />
+                    <GameHistory spinHistory={spinHistory} assetUrls={assetUrls} />
                 </div>
                 
                 {/* --- Right Column --- */}
@@ -656,7 +540,7 @@ export default function Game() {
                             handleUndoBet={handleUndoBet}
                             handleClearBets={handleClearBets}
                             totalBet={totalBet}
-                            customTextures={customTextures}
+                            assetUrls={assetUrls}
                             hideText={hideText}
                         />
                     </div>
@@ -673,13 +557,6 @@ export default function Game() {
                 isPaused={isPaused}
                 handleCloseRound={handleCloseRound}
                 setIsPaused={setIsPaused}
-                bgFileInputRef={bgFileInputRef}
-                handleBgImageUpload={handleBgImageUpload}
-                textureFileInputRef={textureFileInputRef}
-                handleTextureUpload={handleTextureUpload}
-                handleUploadClick={handleUploadClick}
-                setIsClearTexturesAlertOpen={setIsClearTexturesAlertOpen}
-                hasCustomAssets={hasCustomAssets}
                 handleDownloadLatestSpinData={handleDownloadLatestSpinData}
                 gameLog={gameLog}
                 handleGenerateAndDownload={handleGenerateAndDownload}
@@ -689,7 +566,7 @@ export default function Game() {
                 setHideText={setHideText}
                 textureRotation={textureRotation}
                 setTextureRotation={setTextureRotation}
-                customTextures={customTextures}
+                assetUrls={assetUrls}
                 skipBetsInDataGen={skipBetsInDataGen}
                 setSkipBetsInDataGen={setSkipBetsInDataGen}
                 forcedWinner={forcedWinner}
@@ -698,9 +575,6 @@ export default function Game() {
                 setForcedTopSlotLeft={setForcedTopSlotLeft}
                 forcedTopSlotRight={forcedTopSlotRight}
                 setForcedTopSlotRight={setForcedTopSlotRight}
-                backgroundImage={backgroundImage}
-                handleClearBackgroundImage={handleClearBackgroundImage}
-                handleClearSingleTexture={handleClearSingleTexture}
               />
           </footer>
         </div>

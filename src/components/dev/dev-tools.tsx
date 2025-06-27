@@ -4,15 +4,16 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Download, FastForward, RotateCcw, Play, Pause, TestTube2, BookCopy, FileClock, UploadCloud, RefreshCw, Trash2 } from 'lucide-react';
-import { BET_OPTIONS, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS, SEGMENTS_CONFIG } from '@/config/game-config';
+import { Download, FastForward, Play, Pause, TestTube2, BookCopy, FileClock, RefreshCw, Trash2 } from 'lucide-react';
+import { BET_OPTIONS, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/config/game-config';
 import type { GameLogEntry } from '@/types/game';
+import { assetManager } from '@/lib/asset-manager';
+import { useToast } from '@/hooks/use-toast';
 
 interface DevToolsProps {
     showLegend: boolean;
@@ -23,13 +24,6 @@ interface DevToolsProps {
     isPaused: boolean;
     handleCloseRound: () => void;
     setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
-    bgFileInputRef: React.RefObject<HTMLInputElement>;
-    handleBgImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    textureFileInputRef: React.RefObject<HTMLInputElement>;
-    handleTextureUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    handleUploadClick: (target: string) => void;
-    setIsClearTexturesAlertOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    hasCustomAssets: boolean;
     handleDownloadLatestSpinData: () => void;
     gameLog: GameLogEntry[];
     handleGenerateAndDownload: () => void;
@@ -39,7 +33,7 @@ interface DevToolsProps {
     setHideText: React.Dispatch<React.SetStateAction<boolean>>;
     textureRotation: number;
     setTextureRotation: React.Dispatch<React.SetStateAction<number>>;
-    customTextures: Record<string, string>;
+    assetUrls: Record<string, string>;
     skipBetsInDataGen: boolean;
     setSkipBetsInDataGen: React.Dispatch<React.SetStateAction<boolean>>;
     forcedWinner: string | null;
@@ -48,9 +42,6 @@ interface DevToolsProps {
     setForcedTopSlotLeft: React.Dispatch<React.SetStateAction<string | null>>;
     forcedTopSlotRight: number | null;
     setForcedTopSlotRight: React.Dispatch<React.SetStateAction<number | null>>;
-    backgroundImage: string;
-    handleClearBackgroundImage: () => void;
-    handleClearSingleTexture: (key: string) => void;
 }
 
 
@@ -63,13 +54,6 @@ export const DevTools: React.FC<DevToolsProps> = ({
     isPaused,
     handleCloseRound,
     setIsPaused,
-    bgFileInputRef,
-    handleBgImageUpload,
-    textureFileInputRef,
-    handleTextureUpload,
-    handleUploadClick,
-    setIsClearTexturesAlertOpen,
-    hasCustomAssets,
     handleDownloadLatestSpinData,
     gameLog,
     handleGenerateAndDownload,
@@ -79,7 +63,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
     setHideText,
     textureRotation,
     setTextureRotation,
-    customTextures,
+    assetUrls,
     skipBetsInDataGen,
     setSkipBetsInDataGen,
     forcedWinner,
@@ -88,12 +72,14 @@ export const DevTools: React.FC<DevToolsProps> = ({
     setForcedTopSlotLeft,
     forcedTopSlotRight,
     setForcedTopSlotRight,
-    backgroundImage,
-    handleClearBackgroundImage,
-    handleClearSingleTexture,
 }) => {
-    const toTitleCase = (str: string) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    const numberBetOptions = BET_OPTIONS.filter(o => o.type === 'number');
+    const { toast } = useToast();
+
+    const handleClearAssetCache = async () => {
+        toast({ title: 'Clearing Cache...', description: 'Please wait. The page will reload automatically.' });
+        await assetManager.clearCache();
+        window.location.reload();
+    };
 
     return (
         <footer className="w-full shrink-0 p-4 pt-0">
@@ -123,144 +109,10 @@ export const DevTools: React.FC<DevToolsProps> = ({
                             {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
                             {isPaused ? 'Resume' : 'Pause'}
                         </Button>
-                        <input
-                        type="file"
-                        ref={bgFileInputRef}
-                        onChange={handleBgImageUpload}
-                        accept="image/*"
-                        className="hidden"
-                        />
-                        <input
-                        type="file"
-                        ref={textureFileInputRef}
-                        onChange={handleTextureUpload}
-                        accept="image/*"
-                        className="hidden"
-                        />
-                        <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                            <UploadCloud className="mr-2 h-3 w-3" />
-                            Upload Assets
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="max-h-[500px] overflow-y-auto w-64">
-                            <DropdownMenuLabel>Upload custom image assets.</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>General</DropdownMenuLabel>
-                                <DropdownMenuItem onSelect={() => handleUploadClick('background')} className="flex justify-between">
-                                    <span>Background Image</span>
-                                    <span className="text-muted-foreground text-xs">1920x1080px</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={() => handleUploadClick('topslot-background')} className="flex justify-between">
-                                    <span>Top Slot Background</span>
-                                    <span className="text-muted-foreground text-xs">320x96px</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                             <DropdownMenuGroup>
-                                <DropdownMenuLabel>Result Popups</DropdownMenuLabel>
-                                {numberBetOptions.map(option => (
-                                    <DropdownMenuItem key={`upload-result-popup-${option.id}`} onSelect={() => handleUploadClick(`result-popup-${option.id}`)} className="flex justify-between">
-                                        <span>Popup for "{option.label}"</span>
-                                        <span className="text-muted-foreground text-xs">100x100px</span>
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>Wheel Segments</DropdownMenuLabel>
-                                <DropdownMenuItem key={`upload-wheel-full`} onSelect={() => handleUploadClick(`wheel-full`)} className="flex justify-between">
-                                    <span>Full Wheel Texture</span>
-                                    <span className="text-muted-foreground text-xs">420x420px</span>
-                                </DropdownMenuItem>
-                                {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
-                                <DropdownMenuItem key={`upload-wheel-${label}`} onSelect={() => handleUploadClick(`wheel-${label}`)} className="flex justify-between">
-                                    <span>{label.replace(/_/g, ' ')} (Segment)</span>
-                                    <span className="text-muted-foreground text-xs">420x420px</span>
-                                </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>Top Slot: Bet Types</DropdownMenuLabel>
-                                {[...new Set(TOP_SLOT_LEFT_REEL_ITEMS)].sort().map(item => (
-                                <DropdownMenuItem key={`upload-topslot-left-${item}`} onSelect={() => handleUploadClick(`topslot-left-${item}`)} className="flex justify-between">
-                                    <span>{item.replace(/_/g, ' ')}</span>
-                                    <span className="text-muted-foreground text-xs">100x100px</span>
-                                </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>Top Slot: Multipliers</DropdownMenuLabel>
-                                {[...new Set(TOP_SLOT_RIGHT_REEL_ITEMS)].sort((a,b) => a-b).map(item => (
-                                <DropdownMenuItem key={`upload-topslot-right-${item}x`} onSelect={() => handleUploadClick(`topslot-right-${item}x`)} className="flex justify-between">
-                                    <span>{item}x</span>
-                                    <span className="text-muted-foreground text-xs">100x100px</span>
-                                </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>Betting Chips</DropdownMenuLabel>
-                                {BET_OPTIONS.map(option => (
-                                <DropdownMenuItem key={`upload-chip-${option.id}`} onSelect={() => handleUploadClick(`chip-${option.id}`)} className="flex justify-between">
-                                    <span>{option.label}</span>
-                                    <span className="text-muted-foreground text-xs">128x128px</span>
-                                </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
-                            
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>History Log</DropdownMenuLabel>
-                                {[...new Set(SEGMENTS_CONFIG.map(s => s.label))].sort().map(label => (
-                                <DropdownMenuItem key={`upload-history-${label}`} onSelect={() => handleUploadClick(`history-${label}`)} className="flex justify-between">
-                                    <span>{label.replace(/_/g, ' ')}</span>
-                                    <span className="text-muted-foreground text-xs">40x40px</span>
-                                </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuGroup>
-
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" disabled={!hasCustomAssets}>
-                                    <Trash2 className="mr-2 h-3 w-3" />
-                                    Clear Asset
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="max-h-[500px] overflow-y-auto w-64">
-                                <DropdownMenuLabel>Clear a specific asset</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                
-                                {!backgroundImage.startsWith('https://placehold.co') && (
-                                <DropdownMenuItem onSelect={handleClearBackgroundImage}>
-                                    Background Image
-                                </DropdownMenuItem>
-                                )}
-
-                                {Object.keys(customTextures).sort().map(key => (
-                                <DropdownMenuItem key={key} onSelect={() => handleClearSingleTexture(key)}>
-                                    {toTitleCase(key.replace(/-/g, ' ').replace(/_/g, ' '))}
-                                </DropdownMenuItem>
-                                ))}
-
-                                {hasCustomAssets && <DropdownMenuSeparator />}
-                                
-                                <DropdownMenuItem onSelect={() => setIsClearTexturesAlertOpen(true)} className="text-destructive focus:bg-destructive focus:text-destructive-foreground">
-                                    Clear All Assets...
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
+                        <Button variant="destructive" size="sm" onClick={handleClearAssetCache}>
+                            <Trash2 className="mr-2 h-3 w-3" />
+                            Clear Asset Cache
+                        </Button>
                         <Button variant="outline" size="sm" onClick={handleDownloadLatestSpinData} disabled={gameLog.length === 0}>
                             <Download className="mr-2 h-3 w-3" />
                             Latest Spin
@@ -298,7 +150,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
                         step="0.1"
                         value={textureRotation}
                         onChange={(e) => setTextureRotation(parseFloat(e.target.value) || 0)}
-                        disabled={!customTextures['wheel-full']}
+                        disabled={!assetUrls['wheel-full']}
                         className="h-8"
                     />
                 </div>
