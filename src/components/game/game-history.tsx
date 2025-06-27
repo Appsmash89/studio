@@ -21,7 +21,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({ spinHistory, assetUrls
                     </p>
                     <div className="flex gap-1.5">
                         {spinHistory.map((segment, index) => {
-                            const customTexture = assetUrls[`history-${segment.label}`];
+                            const customTexture = assetUrls[`chip-${segment.label}`];
                             const style: React.CSSProperties = {
                                 color: 'transparent',
                                 backgroundColor: 'transparent'
