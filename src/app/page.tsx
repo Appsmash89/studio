@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,7 +13,7 @@ const Game = dynamic(() => import('@/app/game') as Promise<React.ComponentType<{
   loading: () => <LoadingScreen message="Loading Game..." />,
 });
 
-function LoadingScreen({ message, progress }: { message: string, progress?: number }) {
+function LoadingScreen({ message, progress, isFirstLoad }: { message: string, progress?: number, isFirstLoad?: boolean }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
       <h1 className="text-4xl sm:text-5xl font-headline text-accent tracking-wider text-center" style={{ textShadow: '2px 2px 4px hsl(var(--primary))' }}>
@@ -26,6 +25,11 @@ function LoadingScreen({ message, progress }: { message: string, progress?: numb
             <p className="text-xl animate-pulse">{message}</p>
         </div>
         {progress !== undefined && <Progress value={progress} className="w-full" />}
+        {isFirstLoad && progress !== undefined && progress < 100 && (
+          <p className="text-sm text-muted-foreground mt-2 text-center">
+            Subsequent loads will be much faster!
+          </p>
+        )}
       </div>
     </div>
   );
@@ -58,21 +62,21 @@ export default function Home() {
   const [assetLoadingMessage, setAssetLoadingMessage] = useState("Initializing...");
   const [assetLoadProgress, setAssetLoadProgress] = useState(0);
   const [assetError, setAssetError] = useState<string | null>(null);
+  const [isFirstLoad, setIsFirstLoad] = useState(false);
 
   useEffect(() => {
     const initializeAssets = async () => {
       try {
         setAssetLoadingMessage("Loading game assets...");
         
-        // init will now download ALL assets and report progress
-        await assetManager.init('/asset-manifest.json', (progress) => {
+        const wasFreshLoad = await assetManager.init('/asset-manifest.json', (progress) => {
             setAssetLoadProgress(progress);
         });
+
+        setIsFirstLoad(wasFreshLoad);
         
-        // Get URLs for all the assets that are now cached
         const allUrls = await assetManager.getAllCachedUrls();
         setAssetUrls(allUrls);
-
         setAssetsReady(true);
         
       } catch (err) {
@@ -96,9 +100,8 @@ export default function Home() {
       return <FirebaseErrorScreen message={assetError} />;
   }
   
-  // Show the loading screen until all assets are downloaded and their URLs are ready.
   if (!assetsReady || !assetUrls) {
-      return <LoadingScreen message={assetLoadingMessage} progress={assetLoadProgress} />;
+      return <LoadingScreen message={assetLoadingMessage} progress={assetLoadProgress} isFirstLoad={isFirstLoad} />;
   }
 
   if (!user && !isGuest) {

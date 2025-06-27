@@ -1,4 +1,3 @@
-
 // src/lib/asset-manager.ts
 'use client';
 
@@ -52,9 +51,11 @@ class AssetManager {
      * Fetches the manifest, checks version, and downloads all assets.
      * @param manifestUrl - The URL to the asset manifest JSON file.
      * @param onProgress - Optional callback for download progress.
+     * @returns A promise that resolves to true if this was a fresh download, false otherwise.
      */
-    public async init(manifestUrl: string, onProgress?: (progress: number) => void): Promise<void> {
+    public async init(manifestUrl: string, onProgress?: (progress: number) => void): Promise<boolean> {
         console.log("AssetManager: Initializing and loading all assets...");
+        let isFreshLoad = false;
         
         try {
             const response = await fetch(manifestUrl, { cache: 'no-store' });
@@ -66,15 +67,16 @@ class AssetManager {
             const storedVersion = await db.get(STORE_NAME, VERSION_KEY);
             
             if (storedVersion !== manifest.version) {
+                isFreshLoad = true;
                 console.log(`AssetManager: New version found (Old: ${storedVersion}, New: ${manifest.version}). Clearing cache.`);
                 await this.clearCache();
                 await db.put(STORE_NAME, manifest.version, VERSION_KEY);
             }
 
-            // Download ALL assets from the manifest, not just critical ones.
             await this.downloadAssets(manifest.assets, onProgress);
             
             console.log("AssetManager: All assets are downloaded and ready.");
+            return isFreshLoad;
 
         } catch (error) {
             console.error("AssetManager: A critical error occurred during initialization.", error);
@@ -100,21 +102,19 @@ class AssetManager {
         const totalAssets = assets.length;
         let downloadedCount = 0;
 
-        // Create a list of assets that need to be downloaded
         const assetsToDownload: Asset[] = [];
+        
         for (const asset of assets) {
             const existing = await db.get(STORE_NAME, asset.key);
             if (!existing) {
                 assetsToDownload.push(asset);
-            } else {
-                downloadedCount++;
             }
         }
-
-        // Update progress for already cached assets
+        
+        downloadedCount = assets.length - assetsToDownload.length;
+        
         onProgress?.(Math.round((downloadedCount / totalAssets) * 100));
 
-        // Download missing assets in parallel
         await Promise.all(assetsToDownload.map(async (asset) => {
             const assetUrl = `${this.manifest!.baseUrl}${asset.path}`;
             try {
@@ -124,7 +124,6 @@ class AssetManager {
                 const blob = await assetResponse.blob();
                 await db.put(STORE_NAME, blob, asset.key);
                 
-                // This is not thread-safe, but for progress reporting it's acceptable.
                 downloadedCount++;
                 onProgress?.(Math.round((downloadedCount / totalAssets) * 100));
 
