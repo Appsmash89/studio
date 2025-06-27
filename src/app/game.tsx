@@ -309,21 +309,19 @@ export default function Game() {
         right: forcedTopSlotRight ?? TOP_SLOT_RIGHT_REEL_ITEMS[Math.floor(Math.random() * TOP_SLOT_RIGHT_REEL_ITEMS.length)],
     };
 
-    // Set the final result first, so the animation knows where to go.
     setTopSlotResult(finalTopSlotResult);
-    // Then, trigger the animation.
     setIsTopSlotSpinning(true);
     
-    // After the animation is done, set spinning to false.
-    // This allows the component to reset its animation state without visual glitches.
     setTimeout(() => {
         setIsTopSlotSpinning(false);
     }, TOP_SLOT_ANIMATION_DURATION_MS);
 
 
     // --- Main Wheel Logic ---
+    // First, determine the winning segment randomly (or use the forced winner).
     let winningSegmentIndex;
     if (forcedWinner) {
+      // Find all possible indices for the forced winner.
       const possibleIndices = SEGMENTS_CONFIG.reduce((acc, segment, index) => {
         if (segment.label === forcedWinner) {
           acc.push(index);
@@ -331,25 +329,41 @@ export default function Game() {
         return acc;
       }, [] as number[]);
       
+      // If found, pick one of them randomly.
       if (possibleIndices.length > 0) {
         winningSegmentIndex = possibleIndices[Math.floor(Math.random() * possibleIndices.length)];
       } else {
+        // Fallback to a fully random segment if the forced one isn't on the wheel.
         winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
       }
-      setForcedWinner(null);
+      setForcedWinner(null); // Clear the forced winner after use.
     } else {
       winningSegmentIndex = Math.floor(Math.random() * NUM_SEGMENTS);
     }
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
+    // --- Calculate Final Rotation ---
+    // The trick is to calculate the final destination angle *before* the animation starts.
+    // The CSS transition then handles the smooth animation over the fixed duration.
+
+    // 1. Calculate the angle for the middle of the winning segment.
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
+    const winningSegmentAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
+
+    // 2. Add multiple full rotations to make it look like a real spin.
     const fullSpins = 5 * 360;
-    const targetAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
-    
+
+    // 3. Set the new rotation value. The browser will animate to this value.
     setRotation(prev => {
-      const currentOffset = prev % 360;
-      return prev - currentOffset + fullSpins + (360 - targetAngle);
+      // To ensure the wheel always spins forward, we normalize the current rotation.
+      // We take the total previous rotation and subtract the remainder of a full 360-degree circle.
+      // This gives us a starting point at a multiple of 360.
+      const rotationBase = prev - (prev % 360);
+
+      // The final rotation is the base + full spins + the angle to get the winner to the top.
+      // We use (360 - winningSegmentAngle) because our rotation is clockwise.
+      return rotationBase + fullSpins + (360 - winningSegmentAngle);
     });
     
     setTimeout(async () => {
