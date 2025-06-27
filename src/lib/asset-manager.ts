@@ -15,16 +15,31 @@ interface AssetManifest {
 }
 
 class AssetManager {
-    private dbPromise: Promise<IDBPDatabase>;
+    private dbPromise: Promise<IDBPDatabase> | null = null;
 
     constructor() {
-        this.dbPromise = openDB(DB_NAME, DB_VERSION, {
-            upgrade(db) {
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    db.createObjectStore(STORE_NAME);
-                }
-            },
-        });
+        // Constructor is now empty and safe to call on the server.
+    }
+
+    private getDb(): Promise<IDBPDatabase> {
+        if (this.dbPromise) {
+            return this.dbPromise;
+        }
+
+        // This check ensures that IndexedDB is only accessed on the client-side.
+        if (typeof window !== 'undefined') {
+            this.dbPromise = openDB(DB_NAME, DB_VERSION, {
+                upgrade(db) {
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME);
+                    }
+                },
+            });
+            return this.dbPromise;
+        }
+
+        // This should not be reached in a normal client-side flow.
+        return Promise.reject(new Error("Cannot access IndexedDB on the server."));
     }
 
     /**
@@ -35,7 +50,7 @@ class AssetManager {
      */
     public async init(manifestUrl: string, onProgress?: (progress: number) => void): Promise<void> {
         console.log("AssetManager: Initializing...");
-        const db = await this.dbPromise;
+        const db = await this.getDb();
         
         try {
             const response = await fetch(manifestUrl, { cache: 'no-store' });
@@ -89,7 +104,7 @@ class AssetManager {
      * @returns A promise that resolves to an object URL for the asset, or null if not found.
      */
     public async get(key: string): Promise<string | null> {
-        const db = await this.dbPromise;
+        const db = await this.getDb();
         const blob = await db.get(STORE_NAME, key);
 
         if (blob instanceof Blob) {
@@ -104,7 +119,7 @@ class AssetManager {
      */
     public async clearCache(): Promise<void> {
         console.log("AssetManager: Clearing cache...");
-        const db = await this.dbPromise;
+        const db = await this.getDb();
         await db.clear(STORE_NAME);
         console.log("AssetManager: Cache cleared.");
     }
