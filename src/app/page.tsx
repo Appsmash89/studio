@@ -73,10 +73,7 @@ export default function Home() {
         const allUrls = await assetManager.getAllCachedUrls();
         setAssetUrls(allUrls);
 
-        // Wait a short moment after loading is complete to show the 100% bar
-        setTimeout(() => {
-            setAssetsReady(true);
-        }, 500); // 500ms delay to show the completed bar
+        setAssetsReady(true);
         
       } catch (err) {
         console.error(err);
