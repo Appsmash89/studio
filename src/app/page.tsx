@@ -72,7 +72,11 @@ export default function Home() {
         // Get URLs for all the assets that are now cached
         const allUrls = await assetManager.getAllCachedUrls();
         setAssetUrls(allUrls);
-        setAssetsReady(true); // Render the game now that everything is ready
+
+        // Wait a short moment after loading is complete to show the 100% bar
+        setTimeout(() => {
+            setAssetsReady(true);
+        }, 500); // 500ms delay to show the completed bar
         
       } catch (err) {
         console.error(err);
