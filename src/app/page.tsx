@@ -8,7 +8,7 @@ import { AlertTriangle, DownloadCloud } from 'lucide-react';
 import { assetManager } from '@/lib/asset-manager';
 import { Progress } from '@/components/ui/progress';
 
-const Game = dynamic(() => import('@/app/game'), {
+const Game = dynamic(() => import('@/app/game') as Promise<React.ComponentType<{ assetUrls: Record<string, string> }>>, {
   ssr: false,
   loading: () => <LoadingScreen message="Loading Game..." />,
 });
@@ -53,6 +53,7 @@ function FirebaseErrorScreen({ message }: { message: string }) {
 export default function Home() {
   const { user, loading: authLoading, error: firebaseError, isGuest } = useAuth();
   const [assetsReady, setAssetsReady] = useState(false);
+  const [assetUrls, setAssetUrls] = useState<Record<string, string> | null>(null);
   const [assetLoadingMessage, setAssetLoadingMessage] = useState("Initializing...");
   const [assetLoadProgress, setAssetLoadProgress] = useState(0);
   const [assetError, setAssetError] = useState<string | null>(null);
@@ -60,11 +61,25 @@ export default function Home() {
   useEffect(() => {
     const initializeAssets = async () => {
       try {
+        // Step 1: Download and cache all assets from the manifest
         await assetManager.init('/asset-manifest.json', (progress) => {
-            setAssetLoadingMessage(progress < 100 ? `Downloading Assets...` : 'Assets Ready!');
+            setAssetLoadingMessage(progress < 100 ? `Downloading Assets...` : 'Preparing Game...');
             setAssetLoadProgress(progress);
         });
         setAssetsReady(true);
+
+        // Step 2: Once cached, retrieve all asset URLs for use in the app
+        const manifestResponse = await fetch('/asset-manifest.json');
+        const manifest = await manifestResponse.json();
+        const urls: Record<string, string> = {};
+        for (const asset of manifest.assets) {
+            const url = await assetManager.get(asset.key);
+            if (url) {
+                urls[asset.key] = url;
+            }
+        }
+        setAssetUrls(urls);
+
       } catch (err) {
         console.error(err);
         setAssetError("Could not load critical game assets. Please check your internet connection and try again.");
@@ -86,7 +101,8 @@ export default function Home() {
       return <FirebaseErrorScreen message={assetError} />;
   }
   
-  if (!assetsReady) {
+  // The loading screen is now shown until asset URLs are fully loaded and ready.
+  if (!assetsReady || !assetUrls) {
       return <LoadingScreen message={assetLoadingMessage} progress={assetLoadProgress} />;
   }
 
@@ -94,5 +110,5 @@ export default function Home() {
     return <Login />;
   }
 
-  return <Game />;
+  return <Game assetUrls={assetUrls} />;
 }

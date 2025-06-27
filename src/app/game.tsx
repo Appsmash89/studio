@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils';
 import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, TopSlotResult } from '@/types/game';
 
 
-export default function Game() {
+export default function Game({ assetUrls }: { assetUrls: Record<string, string> }) {
   const { user, signOut } = useAuth();
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState<Bets>(initialBetsState);
@@ -59,8 +59,6 @@ export default function Game() {
   const [hideText, setHideText] = useState(true);
   const [textureRotation, setTextureRotation] = useState(3.4);
 
-  const [assetUrls, setAssetUrls] = useState<Record<string, string>>({});
-
   const [gameState, setGameState] = useState<GameState>('BETTING');
   const [countdown, setCountdown] = useState(BETTING_TIME_SECONDS);
   const [winningSegment, setWinningSegment] = useState<GameSegment | null>(null);
@@ -75,25 +73,6 @@ export default function Game() {
 
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
-
-  useEffect(() => {
-    const loadAssets = async () => {
-        // Fetch the manifest to know which assets to load
-        const manifestResponse = await fetch('/asset-manifest.json');
-        const manifest = await manifestResponse.json();
-        
-        const urls: Record<string, string> = {};
-        for (const asset of manifest.assets) {
-            const url = await assetManager.get(asset.key);
-            if (url) {
-                urls[asset.key] = url;
-            }
-        }
-        setAssetUrls(urls);
-    };
-
-    loadAssets();
-  }, []);
 
   const startNewRound = useCallback(() => {
     setGameState('BETTING');
@@ -257,10 +236,19 @@ export default function Game() {
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
     // --- Calculate Final Rotation ---
+    // This logic ensures the wheel lands on the correct segment after a fixed spin duration.
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
+    
+    // 1. Calculate the base angle for the winning segment.
+    // We add half a segment's angle to point the indicator to the middle of the segment.
     const winningSegmentAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
+
+    // 2. Add multiple full rotations for visual effect.
     const fullSpins = 5 * 360;
 
+    // 3. Set the final rotation.
+    // We subtract the winning angle from 360 to ensure the wheel rotates clockwise to the correct position.
+    // The `rotation % 360` logic handles resetting the base rotation to prevent the number from growing indefinitely.
     setRotation(prev => {
       const rotationBase = prev - (prev % 360);
       return rotationBase + fullSpins + (360 - winningSegmentAngle);
