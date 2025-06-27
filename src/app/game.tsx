@@ -21,6 +21,7 @@ import { Wheel } from '@/components/game/wheel';
 import { DevTools } from '@/components/dev/dev-tools';
 import { generateHourOfData } from '@/lib/data-generator';
 import { assetManager } from '@/lib/asset-manager';
+import { TransitionOverlay } from '@/components/game/transition-overlay';
 
 import { 
     BET_OPTION_INDEX_MAP,
@@ -391,6 +392,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   
   return (
     <div className="relative flex flex-col min-h-screen text-foreground overflow-y-auto">
+      <TransitionOverlay />
       <Image
         alt="Game background"
         src={assetUrls['background'] || 'https://placehold.co/1920x1080.png'}
