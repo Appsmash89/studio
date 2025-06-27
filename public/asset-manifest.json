@@ -1,29 +1,99 @@
+
 {
-  "version": "1.0.5",
-  "baseUrl": "https://cdn.jsdelivr.net/gh/Appsmash89/spinriches-assets@main/",
+  "version": "1.0.6",
+  "baseUrl": "https://cdn.jsdelivr.net/gh/Appsmash89/spinriches-assets@main/web-assets/",
   "assets": [
-    { "key": "background", "path": "web-assets/background.png" },
-    { "key": "topslot-background", "path": "web-assets/topslot-background.png" },
-    { "key": "wheel-full", "path": "web-assets/wheel-full.png" },
-    { "key": "chip-1", "path": "web-assets/chips/chip-1.png" },
-    { "key": "chip-2", "path": "web-assets/chips/chip-2.png" },
-    { "key": "chip-5", "path": "web-assets/chips/chip-5.png" },
-    { "key": "chip-10", "path": "web-assets/chips/chip-10.png" },
-    { "key": "chip-COIN_FLIP", "path": "web-assets/chips/chip-coin-flip.png" },
-    { "key": "chip-PACHINKO", "path": "web-assets/chips/chip-pachinko.png" },
-    { "key": "chip-CASH_HUNT", "path": "web-assets/chips/chip-cash-hunt.png" },
-    { "key": "chip-CRAZY_TIME", "path": "web-assets/chips/chip-crazy-time.png" },
-    { "key": "history-1", "path": "web-assets/history/history-1.png" },
-    { "key": "history-2", "path": "web-assets/history/history-2.png" },
-    { "key": "history-5", "path": "web-assets/history/history-5.png" },
-    { "key": "history-10", "path": "web-assets/history/history-10.png" },
-    { "key": "history-COIN_FLIP", "path": "web-assets/history/history-coin-flip.png" },
-    { "key": "history-PACHINKO", "path": "web-assets/history/history-pachinko.png" },
-    { "key": "history-CASH_HUNT", "path": "web-assets/history/history-cash-hunt.png" },
-    { "key": "history-CRAZY_TIME", "path": "web-assets/history/history-crazy-time.png" },
-    { "key": "result-popup-1", "path": "web-assets/result-popups/result-popup-1.png" },
-    { "key": "result-popup-2", "path": "web-assets/result-popups/result-popup-2.png" },
-    { "key": "result-popup-5", "path": "web-assets/result-popups/result-popup-5.png" },
-    { "key": "result-popup-10", "path": "web-assets/result-popups/result-popup-10.png" }
+    {
+      "key": "background",
+      "path": "background.png"
+    },
+    {
+      "key": "topslot-background",
+      "path": "topslot-background.png"
+    },
+    {
+      "key": "wheel-full",
+      "path": "wheel-full.png"
+    },
+    {
+      "key": "chip-1",
+      "path": "chips/chip-1.png"
+    },
+    {
+      "key": "chip-2",
+      "path": "chips/chip-2.png"
+    },
+    {
+      "key": "chip-5",
+      "path": "chips/chip-5.png"
+    },
+    {
+      "key": "chip-10",
+      "path": "chips/chip-10.png"
+    },
+    {
+      "key": "chip-COIN_FLIP",
+      "path": "chips/chip-coin-flip.png"
+    },
+    {
+      "key": "chip-PACHINKO",
+      "path": "chips/chip-pachinko.png"
+    },
+    {
+      "key": "chip-CASH_HUNT",
+      "path": "chips/chip-cash-hunt.png"
+    },
+    {
+      "key": "chip-CRAZY_TIME",
+      "path": "chips/chip-crazy-time.png"
+    },
+    {
+      "key": "history-1",
+      "path": "history/history-1.png"
+    },
+    {
+      "key": "history-2",
+      "path": "history/history-2.png"
+    },
+    {
+      "key": "history-5",
+      "path": "history/history-5.png"
+    },
+    {
+      "key": "history-10",
+      "path": "history/history-10.png"
+    },
+    {
+      "key": "history-COIN_FLIP",
+      "path": "history/history-coin-flip.png"
+    },
+    {
+      "key": "history-PACHINKO",
+      "path": "history/history-pachinko.png"
+    },
+    {
+      "key": "history-CASH_HUNT",
+      "path": "history/history-cash-hunt.png"
+    },
+    {
+      "key": "history-CRAZY_TIME",
+      "path": "history/history-crazy-time.png"
+    },
+    {
+      "key": "result-popup-1",
+      "path": "result-popups/result-popup-1.png"
+    },
+    {
+      "key": "result-popup-2",
+      "path": "result-popups/result-popup-2.png"
+    },
+    {
+      "key": "result-popup-5",
+      "path": "result-popups/result-popup-5.png"
+    },
+    {
+      "key": "result-popup-10",
+      "path": "result-popups/result-popup-10.png"
+    }
   ]
 }
