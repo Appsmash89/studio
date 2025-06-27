@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -30,7 +31,7 @@ function LoadingScreen({ message, progress }: { message: string, progress?: numb
   );
 }
 
-function FirebaseErrorScreen({ message }: { message: string }) {
+function FirebaseErrorScreen({ message }: { message:string }) {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
              <div className="max-w-2xl text-center p-8 border-2 border-destructive rounded-lg bg-destructive/10">
@@ -61,25 +62,25 @@ export default function Home() {
   useEffect(() => {
     const initializeAssets = async () => {
       try {
-        // Step 1: Download and cache all assets from the manifest
-        await assetManager.init('/asset-manifest.json', (progress) => {
-            setAssetLoadingMessage(progress < 100 ? `Downloading Assets...` : 'Preparing Game...');
+        // --- Phase 1: Load Critical Assets ---
+        setAssetLoadingMessage("Loading essential assets...");
+        const manifest = await assetManager.init('/asset-manifest.json', (progress) => {
             setAssetLoadProgress(progress);
         });
-        setAssetsReady(true);
+        
+        // Get URLs for the critical assets that just loaded
+        const initialUrls = await assetManager.getAllCachedUrls();
+        setAssetUrls(initialUrls);
+        setAssetsReady(true); // Render the game!
 
-        // Step 2: Once cached, retrieve all asset URLs for use in the app
-        const manifestResponse = await fetch('/asset-manifest.json');
-        const manifest = await manifestResponse.json();
-        const urls: Record<string, string> = {};
-        for (const asset of manifest.assets) {
-            const url = await assetManager.get(asset.key);
-            if (url) {
-                urls[asset.key] = url;
-            }
-        }
-        setAssetUrls(urls);
-
+        // --- Phase 2: Load Non-Critical Assets in Background ---
+        const nonCriticalAssets = manifest.assets.filter(asset => !asset.critical);
+        await assetManager.downloadAssets(nonCriticalAssets);
+        
+        // Refresh URLs with all assets now available
+        const allUrls = await assetManager.getAllCachedUrls();
+        setAssetUrls(allUrls);
+        
       } catch (err) {
         console.error(err);
         setAssetError("Could not load critical game assets. Please check your internet connection and try again.");
@@ -101,7 +102,7 @@ export default function Home() {
       return <FirebaseErrorScreen message={assetError} />;
   }
   
-  // The loading screen is now shown until asset URLs are fully loaded and ready.
+  // The loading screen is now shown until critical assets are ready.
   if (!assetsReady || !assetUrls) {
       return <LoadingScreen message={assetLoadingMessage} progress={assetLoadProgress} />;
   }
