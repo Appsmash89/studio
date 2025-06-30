@@ -7,6 +7,8 @@ import Login from '@/components/login';
 import { AlertTriangle, DownloadCloud } from 'lucide-react';
 import { assetManager } from '@/lib/asset-manager';
 import { Progress } from '@/components/ui/progress';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const Game = dynamic(() => import('@/app/game') as Promise<React.ComponentType<{ assetUrls: Record<string, string> }>>, {
   ssr: false,
@@ -86,6 +88,32 @@ export default function Home() {
     };
 
     initializeAssets();
+  }, []);
+
+  useEffect(() => {
+    const fetchHighScores = async () => {
+      if (!db) {
+        console.log("Firestore not initialized, skipping fetch.");
+        return;
+      }
+      try {
+        console.log("Fetching high scores from Firestore...");
+        const highScoresCol = collection(db, 'highscores');
+        const querySnapshot = await getDocs(highScoresCol);
+        const highScores = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        console.log('Fetched High Scores:', highScores);
+        if (querySnapshot.empty) {
+          console.log('The "highscores" collection is empty or does not exist. This is expected if you have not added any data to it yet.');
+        }
+      } catch (error) {
+        console.error("Error fetching high scores:", error);
+      }
+    };
+
+    fetchHighScores();
   }, []);
 
   if (firebaseError) {
