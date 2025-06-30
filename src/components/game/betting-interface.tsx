@@ -127,32 +127,37 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 variant="secondary"
                 style={style}
                 className={cn(
-                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative active:scale-95 transition-transform duration-200",
-                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0",
-                    isMultiplierActive ? "animate-multiplier-glow" : "shadow-lg"
+                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative overflow-hidden",
+                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0 active:scale-95 shadow-lg",
+                    "transition-transform duration-200"
                 )}
                 onClick={() => handleBet(option.id)}
                 disabled={bettingDisabled}
             >
                 {isMultiplierActive && (
-                    <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-accent text-accent-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm shadow-lg z-10">
-                        {activeMultiplier.multiplier}x
-                    </div>
+                    <>
+                        <div className="absolute inset-0 bg-accent rounded-md animate-glow-pulse opacity-70" />
+                        <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-accent text-accent-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm shadow-lg z-20">
+                            {activeMultiplier.multiplier}x
+                        </div>
+                    </>
                 )}
-                <span className={cn(
-                    "font-bold drop-shadow-md",
-                    option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
-                    customTexture && hideText ? 'text-transparent' : option.textColor,
-                    (customTexture && hideText) && 'text-transparent'
-                )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
-                    {option.label}
-                </span>
-                <span className={cn(
-                    "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
-                    (customTexture && hideText) && 'text-transparent'
-                )}>
-                    ${bets[option.id].toLocaleString()}
-                </span>
+                <div className="relative z-10 flex flex-col items-center justify-center gap-1">
+                    <span className={cn(
+                        "font-bold drop-shadow-md",
+                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
+                        customTexture && hideText ? 'text-transparent' : option.textColor,
+                        (customTexture && hideText) && 'text-transparent'
+                    )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
+                        {option.label}
+                    </span>
+                    <span className={cn(
+                        "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
+                        (customTexture && hideText) && 'text-transparent'
+                    )}>
+                        ${bets[option.id].toLocaleString()}
+                    </span>
+                </div>
             </Button>
         )
     };
