@@ -82,9 +82,9 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setChipValues(newChipValues);
 
     if (!newChipValues.includes(selectedChip)) {
-        setSelectedChip(newChipValues[0]);
+        setSelectedChip(newChipValues.length > 0 ? newChipValues[0] : 0);
     }
-  }, [balance]);
+  }, [balance, selectedChip]);
 
   const startNewRound = useCallback(() => {
     setGameState('BETTING');

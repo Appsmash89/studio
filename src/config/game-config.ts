@@ -124,7 +124,19 @@ const CHIP_TIERS = [
 
 export const getChipValues = (balance: number): number[] => {
   const tier = CHIP_TIERS.find(t => balance < t.maxBalance);
-  return tier ? tier.values : CHIP_TIERS[CHIP_TIERS.length - 1].values;
+  const baseChips = tier ? tier.values : CHIP_TIERS[CHIP_TIERS.length - 1].values;
+  
+  const maxChipAllowed = balance / 2;
+  
+  const validChips = baseChips.filter(chip => chip <= maxChipAllowed);
+
+  // If filtering leaves no options, but the user has enough balance for the smallest chip,
+  // provide just the smallest chip to prevent them from being unable to bet.
+  if (validChips.length === 0 && balance >= baseChips[0]) {
+    return [baseChips[0]];
+  }
+
+  return validChips;
 };
 
 export const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});
