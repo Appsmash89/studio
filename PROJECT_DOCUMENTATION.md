@@ -105,7 +105,7 @@ This system is designed to provide a fast, offline-first experience by caching i
 -   **Mechanism**: It uses `IndexedDB`, a robust client-side database, to store assets as `Blob`s.
 -   **`asset-manifest.json`**: This file, located in `public/`, is the catalog of all game assets.
     -   `version`: A string (e.g., `"1.0.1"`). If this version changes, the `AssetManager` will automatically clear the old cache and download all assets fresh.
-    -   `baseUrl`: The root URL for the assets (e.g., a CDN address).
+    -   `baseUrl`: The root URL for the assets. **This is critical.** To fetch assets from the JSDelivr CDN, this must be set to `"https://cdn.jsdelivr.net/gh/Appsmash89/spinriches-assets@main/"`. If left blank (`""`), the application will look for assets in the local `public/` directory instead.
     -   `assets`: An array of objects, each with a `key` (used to reference the asset in code) and a `path` (the file path relative to the `baseUrl`).
 -   **Initialization Flow**: On the app's initial load (`/src/app/page.tsx`), `assetManager.init()` is called. It fetches the manifest, compares its version with the one stored in IndexedDB, and downloads any assets that are missing from the cache.
 -   **Usage**: Components receive a map of asset keys to `Blob` URLs (e.g., `blob:http://...`) from the `assetManager`. These URLs are used directly in `<img>` `src` attributes or CSS `backgroundImage` properties.
@@ -138,3 +138,20 @@ The project is configured to be built as a native Android app.
     1.  `npm run build`: Exports the Next.js app to static HTML/CSS/JS in the `out/` directory.
     2.  `npx cap sync android`: Copies these web assets into the native Android project and updates plugins.
     3.  `npx cap open android`: Opens the native project in Android Studio, from where it can be run on an emulator or a physical device.
+
+---
+
+## 10. Developer Notes & Don'ts
+
+### Don'ts (Lessons Learned from Past Mistakes)
+
+This section documents incorrect patterns that were previously attempted and should be avoided in future modifications to ensure a smooth and efficient development process.
+
+1.  **Do Not Be Inconsistent with `asset-manifest.json`**: This file is the single source of truth for external assets.
+    -   **File Formats**: Do not arbitrarily change asset file extensions (e.g., from `.png` to `.webp`) unless specifically instructed. Maintain consistency across all asset paths.
+    -   **`baseUrl`**: The `baseUrl` dictates the location of all assets. Do not change it without understanding the consequences. An empty `baseUrl` is for local development assets in `public/`, whereas a CDN URL is for production assets.
+    -   **Unused Properties**: Do not add or modify properties within the manifest (e.g., `"critical": true`) if they are not actively used by the `AssetManager`. This adds confusion and has no functional impact.
+
+2.  **Avoid Unnecessary Back-and-Forth Changes**: Modifying a file, having the user correct it, and then changing it back is inefficient and frustrating. Ensure that any proposed change is well-understood, correct, and directly contributes to the user's request before generating the code.
+
+    
