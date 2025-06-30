@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn, adjustHsl } from '@/lib/utils';
@@ -36,6 +36,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     hideText,
 }) => {
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
+    const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
         const customTexture = assetUrls[`chip-${option.id}`];
@@ -81,6 +82,37 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
             </Button>
         )
     };
+    
+    const handleMainChipClick = () => {
+        if (bettingDisabled) return;
+        setIsChipSelectorOpen(prev => !prev);
+    };
+    
+    const handleSelectNewChip = (chipValue: number) => {
+        if (bettingDisabled) return;
+        setSelectedChip(chipValue);
+        setIsChipSelectorOpen(false);
+    };
+
+    const radius = 70; // pixels for the spread
+    const startAngle = -90; // Starting angle in degrees (upwards)
+    const angleIncrement = 180 / (CHIP_VALUES.length - 1); // Spread over a 180 degree arc
+
+    const chipColors: { [key: number]: string } = {
+        1: 'hsl(0, 0%, 80%)',
+        5: 'hsl(0, 70%, 50%)',
+        10: 'hsl(210, 70%, 50%)',
+        25: 'hsl(120, 50%, 45%)',
+        100: 'hsl(0, 0%, 10%)',
+    };
+    
+    const chipTextColors: { [key: number]: string } = {
+        1: 'hsl(0, 0%, 10%)',
+        5: 'hsl(0, 0%, 100%)',
+        10: 'hsl(0, 0%, 100%)',
+        25: 'hsl(0, 0%, 100%)',
+        100: 'hsl(45, 90%, 60%)',
+    }
 
     return (
         <Card className="w-full p-4 bg-transparent border-none shadow-none">
@@ -89,23 +121,50 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                     {BET_OPTIONS.map(renderBetButton)}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
-                    <div className="flex-grow flex items-center gap-1.5 p-1 rounded-full bg-background/50">
-                        {CHIP_VALUES.map(chip => (
-                            <Button 
-                                key={chip} 
-                                size="sm" 
-                                variant={selectedChip === chip ? 'default' : 'ghost'} 
-                                className="rounded-full w-10 h-10 text-xs flex-shrink-0" 
-                                onClick={() => setSelectedChip(chip)} 
-                                disabled={bettingDisabled}
-                            >
-                                ${chip}
-                            </Button>
-                        ))}
+                <div className="flex items-center justify-between gap-2 mt-2">
+                    {/* Sundial Chip Selector on the left */}
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                        {CHIP_VALUES.map((chip) => {
+                            const isMainChip = chip === selectedChip;
+                            
+                            const otherChips = CHIP_VALUES.filter(c => c !== selectedChip);
+                            const displayIndex = otherChips.findIndex(c => c === chip);
+                            const angle = startAngle + (displayIndex * angleIncrement);
+                            
+                            const x = radius * Math.cos(angle * (Math.PI / 180));
+                            const y = radius * Math.sin(angle * (Math.PI / 180));
+
+                            return (
+                                <Button
+                                    key={chip}
+                                    size="icon"
+                                    style={{ 
+                                        backgroundColor: chipColors[chip],
+                                        color: chipTextColors[chip],
+                                     }}
+                                    className={cn(
+                                        'absolute rounded-full w-14 h-14 text-lg font-bold shadow-lg transition-all duration-300 ease-in-out',
+                                        'border-b-4 border-black/30 hover:border-b-2 active:border-b-0',
+                                        isMainChip ? 'z-20' : 'z-10',
+                                        !isMainChip && {
+                                            'transform': isChipSelectorOpen ? `translate(${x}px, ${y}px) scale(1)` : 'translate(0, 0) scale(0.5)',
+                                            'opacity': isChipSelectorOpen ? 1 : 0,
+                                            'pointer-events': isChipSelectorOpen ? 'auto' : 'none',
+                                            'transition-delay': isChipSelectorOpen ? `${displayIndex * 40}ms` : '0ms'
+                                        }
+                                    )}
+                                    onClick={() => isMainChip ? handleMainChipClick() : handleSelectNewChip(chip)}
+                                    disabled={bettingDisabled}
+                                >
+                                    ${chip}
+                                </Button>
+                            );
+                        })}
                     </div>
+                    
+                    {/* Controls on the right */}
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={bettingDisabled || Object.values(bets).every(b => b === 0)}><RotateCcw className="w-5 h-5" /></Button>
+                        <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={bettingDisabled || totalBet === 0}><RotateCcw className="w-5 h-5" /></Button>
                         <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={bettingDisabled || totalBet === 0}><XCircle className="w-5 h-5" /></Button>
                          <Card className="bg-card/80">
                             <CardContent className="p-2 text-center min-w-[120px]">
