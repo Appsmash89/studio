@@ -81,8 +81,11 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     const newChipValues = getChipValues(balance);
     setChipValues(newChipValues);
 
-    if (!newChipValues.includes(selectedChip)) {
-        setSelectedChip(newChipValues.length > 0 ? newChipValues[0] : 0);
+    const isChipValid = newChipValues.includes(selectedChip) && selectedChip <= balance;
+
+    if (!isChipValid) {
+      const bestChip = [...newChipValues].reverse().find(chip => chip <= balance);
+      setSelectedChip(bestChip ?? (newChipValues[0] || 0));
     }
   }, [balance, selectedChip]);
 
