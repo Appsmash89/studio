@@ -472,7 +472,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                 user={user}
                 signOut={signOut}
             />
-            <main className="flex-grow w-full max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <main className="flex-grow w-full max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* --- Left Column --- */}
                 <div className="lg:sticky lg:top-24 flex flex-col items-center justify-start gap-4">
                     <div className="my-2 z-20">
@@ -514,7 +514,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                 </div>
                 
                 {/* --- Right Column --- */}
-                <div className="flex flex-col items-center justify-start gap-4 w-full">
+                <div className="flex flex-col items-center justify-between gap-4 w-full">
                     <GameStatusDisplay
                         gameState={gameState}
                         isPaused={isPaused}
