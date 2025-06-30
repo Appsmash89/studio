@@ -21,7 +21,6 @@ interface BettingInterfaceProps {
     totalBet: number;
     assetUrls: Record<string, string>;
     hideText: boolean;
-    activeMultiplier: { optionId: string; multiplier: number } | null;
 }
 
 const chipColors: { [key: number]: string } = {
@@ -78,7 +77,6 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     totalBet,
     assetUrls,
     hideText,
-    activeMultiplier,
 }) => {
     const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
@@ -110,7 +108,6 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
         const customTexture = assetUrls[`chip-${option.id}`];
-        const isMultiplierActive = activeMultiplier?.optionId === option.id;
         const style: React.CSSProperties = {};
 
         if (customTexture) {
@@ -127,22 +124,14 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 variant="secondary"
                 style={style}
                 className={cn(
-                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative overflow-hidden",
+                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1",
                     "border-b-4 border-black/30 hover:border-b-2 active:border-b-0 active:scale-95 shadow-lg",
-                    "transition-transform duration-200"
+                    "transition-transform duration-200 disabled:opacity-100"
                 )}
                 onClick={() => handleBet(option.id)}
                 disabled={bettingDisabled}
             >
-                {isMultiplierActive && (
-                    <>
-                        <div className="absolute inset-0 bg-accent rounded-md animate-glow-pulse opacity-70" />
-                        <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-accent text-accent-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm shadow-lg z-20">
-                            {activeMultiplier.multiplier}x
-                        </div>
-                    </>
-                )}
-                <div className="relative z-10 flex flex-col items-center justify-center gap-1">
+                <div className="flex flex-col items-center justify-center gap-1">
                     <span className={cn(
                         "font-bold drop-shadow-md",
                         option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',

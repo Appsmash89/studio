@@ -82,7 +82,6 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
   const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
   const [topSlotResult, setTopSlotResult] = useState<TopSlotResult | null>(null);
-  const [activeMultiplier, setActiveMultiplier] = useState<{ optionId: string; multiplier: number } | null>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -125,7 +124,6 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setForcedWinner(null);
     setForcedTopSlotLeft(null);
     setForcedTopSlotRight(null);
-    setActiveMultiplier(null);
     spinOutcomeRef.current = { winningSegment: null, topSlotResult: null, multiplierApplied: null };
     setSpinDuration(SPIN_DURATION_SECONDS);
     setIsFastForwarding(false);
@@ -370,13 +368,9 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
-    // Set active multiplier state right before the spin starts for immediate visual feedback
     let multiplierApplied = null;
     if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
         multiplierApplied = { optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right };
-        setActiveMultiplier(multiplierApplied);
-    } else {
-        setActiveMultiplier(null);
     }
 
     spinOutcomeRef.current = { winningSegment: currentWinningSegment, topSlotResult: finalTopSlotResult, multiplierApplied };
@@ -485,8 +479,9 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   }
 
   const isBonusActive = gameState.startsWith('BONUS_');
-  const topSlotMultiplier = (activeMultiplier && winningSegment && activeMultiplier.optionId === winningSegment.label) 
-      ? activeMultiplier.multiplier 
+  const multiplierApplied = spinOutcomeRef.current.multiplierApplied;
+  const topSlotMultiplier = (multiplierApplied && winningSegment && multiplierApplied.optionId === winningSegment.label) 
+      ? multiplierApplied.multiplier 
       : 1;
 
   return (
@@ -632,7 +627,6 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                             totalBet={totalBet}
                             assetUrls={assetUrls}
                             hideText={hideText}
-                            activeMultiplier={activeMultiplier}
                         />
                     </div>
                 </div>
