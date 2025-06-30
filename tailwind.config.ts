@@ -97,12 +97,26 @@ export default {
             '0%, 100%': { fill: 'hsl(43, 98%, 68%)' },
             '50%': { fill: 'hsl(50, 100%, 80%)' },
         },
+        'fly-to-target': {
+          '0%': {
+            transform: 'translate(calc(var(--start-x) - 50%), calc(var(--start-y) - 50%)) scale(1)',
+            opacity: '1',
+          },
+          '40%': {
+            opacity: '1',
+          },
+          '100%': {
+            transform: 'translate(calc(var(--end-x) - 50%), calc(var(--end-y) - 50%)) scale(0.5)',
+            opacity: '0',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
+        'fly-to-target': 'fly-to-target 0.5s ease-out forwards',
       },
     },
   },

@@ -80,7 +80,11 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 }) => {
     const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
-    const chipSelectorRef = useRef<HTMLDivElement>(null);
+    const chipDialRef = useRef<HTMLDivElement>(null);
+    const chipSelectorButtonRef = useRef<HTMLButtonElement>(null);
+    const betOptionRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [flyingChips, setFlyingChips] = useState<any[]>([]);
 
     useEffect(() => {
         if (gameState !== 'BETTING') {
@@ -90,7 +94,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (chipSelectorRef.current && !chipSelectorRef.current.contains(event.target as Node)) {
+            if (chipDialRef.current && !chipDialRef.current.contains(event.target as Node)) {
                 setIsChipSelectorOpen(false);
             }
         }
@@ -106,49 +110,37 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         };
     }, [isChipSelectorOpen]);
 
-    const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
-        const customTexture = assetUrls[`chip-${option.id}`];
-        const style: React.CSSProperties = {};
+    const handleAnimationEnd = (chipId: number) => {
+        setFlyingChips((chips) => chips.filter((chip) => chip.id !== chipId));
+    };
 
-        if (customTexture) {
-            style.backgroundImage = `url(${customTexture})`;
-            style.backgroundSize = 'cover';
-            style.backgroundPosition = 'center';
-        } else {
-            style.backgroundColor = option.color;
+    const handleBetClick = (optionId: string) => {
+        if (bettingDisabled) return;
+
+        const startEl = chipSelectorButtonRef.current;
+        const endEl = betOptionRefs.current[optionId];
+        const containerEl = containerRef.current;
+
+        if (!startEl || !endEl || !containerEl) {
+            handleBet(optionId);
+            return;
         }
 
-        return (
-            <Button
-                key={option.id}
-                variant="secondary"
-                style={style}
-                className={cn(
-                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1",
-                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0 active:scale-95 shadow-lg",
-                    "transition-transform duration-200 disabled:opacity-100"
-                )}
-                onClick={() => handleBet(option.id)}
-                disabled={bettingDisabled}
-            >
-                <div className="flex flex-col items-center justify-center gap-1">
-                    <span className={cn(
-                        "font-bold drop-shadow-md",
-                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
-                        customTexture && hideText ? 'text-transparent' : option.textColor,
-                        (customTexture && hideText) && 'text-transparent'
-                    )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
-                        {option.label}
-                    </span>
-                    <span className={cn(
-                        "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
-                        (customTexture && hideText) && 'text-transparent'
-                    )}>
-                        ${bets[option.id].toLocaleString()}
-                    </span>
-                </div>
-            </Button>
-        )
+        const containerRect = containerEl.getBoundingClientRect();
+        const startRect = startEl.getBoundingClientRect();
+        const endRect = endEl.getBoundingClientRect();
+
+        const newChip = {
+            id: Date.now() + Math.random(),
+            value: selectedChip,
+            startX: startRect.left + startRect.width / 2 - containerRect.left,
+            startY: startRect.top + startRect.height / 2 - containerRect.top,
+            endX: endRect.left + endRect.width / 2 - containerRect.left,
+            endY: endRect.top + endRect.height / 2 - containerRect.top,
+        };
+
+        setFlyingChips((current) => [...current, newChip]);
+        handleBet(optionId);
     };
 
     const otherChips = chipValues.filter(c => c !== selectedChip);
@@ -170,74 +162,140 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 <div className="fixed inset-0 bg-black/70 z-40 animate-in fade-in" />
             )}
             <Card className="w-full p-4 bg-transparent border-none shadow-none">
-                <CardContent className="p-0 flex flex-col gap-4">
-                    <div className="grid grid-cols-2 grid-rows-4 gap-2">
-                        {BET_OPTIONS.map(renderBetButton)}
-                    </div>
+                <div ref={containerRef} className="relative">
+                    <CardContent className="p-0 flex flex-col gap-4">
+                        <div className="grid grid-cols-2 grid-rows-4 gap-2">
+                            {BET_OPTIONS.map(option => {
+                                const customTexture = assetUrls[`chip-${option.id}`];
+                                const style: React.CSSProperties = {};
 
-                    <div className="flex items-center justify-between gap-2 mt-2">
-                        <div ref={chipSelectorRef} className="relative w-24 h-24 flex items-center justify-center z-50">
-                            {/* Container for the arc chips */}
-                            {otherChips.map((chip, index) => {
-                                const angle = startAngle + index * angleIncrement;
+                                if (customTexture) {
+                                    style.backgroundImage = `url(${customTexture})`;
+                                    style.backgroundSize = 'cover';
+                                    style.backgroundPosition = 'center';
+                                } else {
+                                    style.backgroundColor = option.color;
+                                }
                                 return (
-                                    <div
-                                        key={chip}
+                                    <Button
+                                        key={option.id}
+                                        ref={(el) => betOptionRefs.current[option.id] = el}
+                                        variant="secondary"
+                                        style={style}
                                         className={cn(
-                                            "absolute top-1/2 left-1/2 w-14 h-14 -mt-7 -ml-7 transition-all",
-                                            isChipSelectorOpen ? 'opacity-100' : 'opacity-0 scale-50 pointer-events-none'
+                                            "aspect-[2/1] h-auto w-full flex-col p-2 gap-1",
+                                            "border-b-4 border-black/30 hover:border-b-2 active:border-b-0 active:scale-95",
+                                            "transition-transform duration-200 disabled:opacity-100"
                                         )}
-                                        style={{
-                                            transform: isChipSelectorOpen
-                                                ? `rotate(${angle}deg) translate(70px) rotate(${-angle}deg)`
-                                                : 'rotate(0deg) translate(0px)',
-                                            transitionDuration: isChipSelectorOpen ? '100ms' : '100ms',
-                                            transitionDelay: isChipSelectorOpen ? `${index * 5}ms` : '0ms',
-                                        }}
+                                        onClick={() => handleBetClick(option.id)}
+                                        disabled={bettingDisabled}
                                     >
-                                        <Button
-                                            size="icon"
-                                            style={{ backgroundColor: chipColors[chip] || '#cccccc', color: chipTextColors[chip] || '#000000' }}
-                                            className="rounded-full w-full h-full text-lg font-bold shadow-lg border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
-                                            onClick={() => {
-                                                setSelectedChip(chip);
-                                                setIsChipSelectorOpen(false);
-                                            }}
-                                            disabled={bettingDisabled}
-                                        >
-                                            ${formatChipValue(chip)}
-                                        </Button>
-                                    </div>
-                                );
+                                        <div className="flex flex-col items-center justify-center gap-1">
+                                            <span className={cn(
+                                                "font-bold drop-shadow-md",
+                                                option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
+                                                customTexture && hideText ? 'text-transparent' : option.textColor,
+                                                (customTexture && hideText) && 'text-transparent'
+                                            )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
+                                                {option.label}
+                                            </span>
+                                            <span className={cn(
+                                                "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
+                                                (customTexture && hideText) && 'text-transparent'
+                                            )}>
+                                                ${bets[option.id].toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </Button>
+                                )
                             })}
-                            
-                            {/* Main selected chip, always on top */}
-                            <Button
-                                size="icon"
-                                style={{ backgroundColor: chipColors[selectedChip] || '#cccccc', color: chipTextColors[selectedChip] || '#000000' }}
-                                className={cn(
-                                    'relative rounded-full w-14 h-14 text-lg font-bold shadow-lg z-10',
-                                    'border-b-4 border-black/30 hover:border-b-2 active:border-b-0'
-                                )}
-                                onClick={() => !bettingDisabled && setIsChipSelectorOpen(!isChipSelectorOpen)}
-                                disabled={bettingDisabled}
-                            >
-                                ${formatChipValue(selectedChip)}
-                            </Button>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={bettingDisabled || totalBet === 0}><RotateCcw className="w-5 h-5" /></Button>
-                            <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={bettingDisabled || totalBet === 0}><XCircle className="w-5 h-5" /></Button>
-                            <Card className="bg-card/80">
-                                <CardContent className="p-2 text-center min-w-[120px]">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Bet</p>
-                                    <p className="text-xl font-bold text-accent">${totalBet.toLocaleString()}</p>
-                                </CardContent>
-                            </Card>
+                        <div className="flex items-center justify-between gap-2 mt-2">
+                            <div ref={chipDialRef} className="relative w-24 h-24 flex items-center justify-center z-50">
+                                {/* Container for the arc chips */}
+                                {otherChips.map((chip, index) => {
+                                    const angle = startAngle + index * angleIncrement;
+                                    return (
+                                        <div
+                                            key={chip}
+                                            className={cn(
+                                                "absolute top-1/2 left-1/2 w-14 h-14 -mt-7 -ml-7 transition-all",
+                                                isChipSelectorOpen ? 'opacity-100' : 'opacity-0 scale-50 pointer-events-none'
+                                            )}
+                                            style={{
+                                                transform: isChipSelectorOpen
+                                                    ? `rotate(${angle}deg) translate(70px) rotate(${-angle}deg)`
+                                                    : 'rotate(0deg) translate(0px)',
+                                                transitionDuration: isChipSelectorOpen ? '100ms' : '100ms',
+                                                transitionDelay: isChipSelectorOpen ? `${index * 5}ms` : '0ms',
+                                            }}
+                                        >
+                                            <Button
+                                                size="icon"
+                                                style={{ backgroundColor: chipColors[chip] || '#cccccc', color: chipTextColors[chip] || '#000000' }}
+                                                className="rounded-full w-full h-full text-lg font-bold shadow-lg border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
+                                                onClick={() => {
+                                                    setSelectedChip(chip);
+                                                    setIsChipSelectorOpen(false);
+                                                }}
+                                                disabled={bettingDisabled}
+                                            >
+                                                ${formatChipValue(chip)}
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
+                                
+                                {/* Main selected chip, always on top */}
+                                <Button
+                                    ref={chipSelectorButtonRef}
+                                    size="icon"
+                                    style={{ backgroundColor: chipColors[selectedChip] || '#cccccc', color: chipTextColors[selectedChip] || '#000000' }}
+                                    className={cn(
+                                        'relative rounded-full w-14 h-14 text-lg font-bold shadow-lg z-10',
+                                        'border-b-4 border-black/30 hover:border-b-2 active:border-b-0'
+                                    )}
+                                    onClick={() => !bettingDisabled && setIsChipSelectorOpen(!isChipSelectorOpen)}
+                                    disabled={bettingDisabled}
+                                >
+                                    ${formatChipValue(selectedChip)}
+                                </Button>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="icon" onClick={handleUndoBet} disabled={bettingDisabled || totalBet === 0}><RotateCcw className="w-5 h-5" /></Button>
+                                <Button variant="ghost" size="icon" onClick={handleClearBets} disabled={bettingDisabled || totalBet === 0}><XCircle className="w-5 h-5" /></Button>
+                                <Card className="bg-card/80">
+                                    <CardContent className="p-2 text-center min-w-[120px]">
+                                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Bet</p>
+                                        <p className="text-xl font-bold text-accent">${totalBet.toLocaleString()}</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
-                    </div>
-                </CardContent>
+                    </CardContent>
+                    {flyingChips.map((chip) => (
+                        <div
+                            key={chip.id}
+                            onAnimationEnd={() => handleAnimationEnd(chip.id)}
+                            className="absolute top-0 left-0 rounded-full flex items-center justify-center font-bold text-lg pointer-events-none animate-fly-to-target z-50"
+                            style={{
+                                '--start-x': `${chip.startX}px`,
+                                '--start-y': `${chip.startY}px`,
+                                '--end-x': `${chip.endX}px`,
+                                '--end-y': `${chip.endY}px`,
+                                width: '3.5rem', // w-14
+                                height: '3.5rem', // h-14
+                                transform: `translate(calc(var(--start-x) - 1.75rem), calc(var(--start-y) - 1.75rem))`, // Start centered
+                                backgroundColor: chipColors[chip.value] || '#cccccc',
+                                color: chipTextColors[chip.value] || '#000000',
+                            } as React.CSSProperties}
+                        >
+                            ${formatChipValue(chip.value)}
+                        </div>
+                    ))}
+                </div>
             </Card>
         </>
     );
