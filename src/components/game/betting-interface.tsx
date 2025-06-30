@@ -199,12 +199,14 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                             )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
                                                 {option.label}
                                             </span>
-                                            <span className={cn(
-                                                "text-sm font-mono font-semibold text-white/90 drop-shadow-sm",
-                                                (customTexture && hideText) && 'text-transparent'
-                                            )}>
-                                                ${bets[option.id].toLocaleString()}
-                                            </span>
+                                            {bets[option.id] > 0 &&
+                                                <div className={cn(
+                                                    "flex items-center justify-center px-2 py-0.5 min-w-[32px] h-6 rounded-full bg-background/70 backdrop-blur-sm border border-accent text-accent font-bold text-xs shadow-md",
+                                                    (customTexture && hideText) && 'invisible'
+                                                )}>
+                                                    ${bets[option.id].toLocaleString()}
+                                                </div>
+                                            }
                                         </div>
                                     </Button>
                                 )
