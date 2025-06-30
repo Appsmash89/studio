@@ -34,6 +34,7 @@ import {
     TOP_SLOT_RIGHT_REEL_ITEMS,
     initialBetsState,
     SPIN_DURATION_SECONDS,
+    getChipValues,
 } from '@/config/game-config';
 import { cn } from '@/lib/utils';
 import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, TopSlotResult } from '@/types/game';
@@ -44,7 +45,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const [balance, setBalance] = useState(1000);
   const [bets, setBets] = useState<Bets>(initialBetsState);
   const [betHistory, setBetHistory] = useState<BetHistory>([]);
-  const [selectedChip, setSelectedChip] = useState(10);
+  const [chipValues, setChipValues] = useState<number[]>(() => getChipValues(balance));
+  const [selectedChip, setSelectedChip] = useState<number>(() => getChipValues(balance)[3]);
   const [rotation, setRotation] = useState(0);
   const { toast } = useToast();
   const [forcedWinner, setForcedWinner] = useState<string | null>(null);
@@ -74,6 +76,15 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
+
+  useEffect(() => {
+    const newChipValues = getChipValues(balance);
+    setChipValues(newChipValues);
+
+    if (!newChipValues.includes(selectedChip)) {
+        setSelectedChip(newChipValues[0]);
+    }
+  }, [balance]);
 
   const startNewRound = useCallback(() => {
     setGameState('BETTING');
@@ -525,6 +536,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                             handleBet={handleBet}
                             gameState={gameState}
                             isPaused={isPaused}
+                            chipValues={chipValues}
                             selectedChip={selectedChip}
                             setSelectedChip={setSelectedChip}
                             handleUndoBet={handleUndoBet}

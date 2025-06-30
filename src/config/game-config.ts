@@ -115,5 +115,16 @@ export const TOP_SLOT_LEFT_REEL_ITEMS = [ '1', '5', '2', '10', 'COIN_FLIP', '2',
 export const TOP_SLOT_RIGHT_REEL_ITEMS = [2, 3, 5, 7, 10, 15, 20, 50];
 
 
-export const CHIP_VALUES = [1, 5, 10, 25, 100];
+const CHIP_TIERS = [
+  { maxBalance: 1000, values: [1, 2, 5, 10, 25, 50, 100, 250] },
+  { maxBalance: 10000, values: [10, 25, 50, 100, 250, 500, 1000, 2500] },
+  { maxBalance: 100000, values: [100, 250, 500, 1000, 2500, 5000, 10000, 25000] },
+  { maxBalance: Infinity, values: [1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000] },
+];
+
+export const getChipValues = (balance: number): number[] => {
+  const tier = CHIP_TIERS.find(t => balance < t.maxBalance);
+  return tier ? tier.values : CHIP_TIERS[CHIP_TIERS.length - 1].values;
+};
+
 export const initialBetsState = BET_OPTIONS.reduce((acc, option) => ({ ...acc, [option.id]: 0 }), {});

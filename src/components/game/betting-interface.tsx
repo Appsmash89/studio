@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { RotateCcw, XCircle } from 'lucide-react';
-import { BET_OPTIONS, CHIP_VALUES } from '@/config/game-config';
+import { BET_OPTIONS } from '@/config/game-config';
 
 interface BettingInterfaceProps {
     bets: { [key: string]: number };
     handleBet: (optionId: string) => void;
     gameState: string;
     isPaused: boolean;
+    chipValues: number[];
     selectedChip: number;
     setSelectedChip: React.Dispatch<React.SetStateAction<number>>;
     handleUndoBet: () => void;
@@ -24,25 +25,51 @@ interface BettingInterfaceProps {
 
 const chipColors: { [key: number]: string } = {
     1: 'hsl(0, 0%, 80%)',
+    2: 'hsl(180, 50%, 60%)',
     5: 'hsl(0, 70%, 50%)',
     10: 'hsl(210, 70%, 50%)',
     25: 'hsl(120, 50%, 45%)',
+    50: 'hsl(50, 80%, 60%)',
     100: 'hsl(0, 0%, 10%)',
+    250: 'hsl(270, 70%, 50%)',
+    500: 'hsl(30, 90%, 55%)',
+    1000: 'hsl(330, 80%, 60%)',
+    2500: 'hsl(240, 100%, 80%)',
+    5000: 'hsl(150, 100%, 40%)',
+    10000: 'hsl(0, 0%, 95%)',
+    25000: 'hsl(45, 100%, 50%)',
+    50000: 'hsl(60, 100%, 75%)',
+    100000: 'hsl(0, 0%, 0%)',
+    250000: 'hsl(180, 100%, 80%)',
 };
 
 const chipTextColors: { [key: number]: string } = {
     1: 'hsl(0, 0%, 10%)',
+    2: 'hsl(0, 0%, 10%)',
     5: 'hsl(0, 0%, 100%)',
     10: 'hsl(0, 0%, 100%)',
     25: 'hsl(0, 0%, 100%)',
+    50: 'hsl(0, 0%, 10%)',
     100: 'hsl(45, 90%, 60%)',
+    250: 'hsl(0, 0%, 100%)',
+    500: 'hsl(0, 0%, 100%)',
+    1000: 'hsl(0, 0%, 100%)',
+    2500: 'hsl(0, 0%, 10%)',
+    5000: 'hsl(0, 0%, 100%)',
+    10000: 'hsl(0, 0%, 10%)',
+    25000: 'hsl(0, 0%, 10%)',
+    50000: 'hsl(0, 0%, 10%)',
+    100000: 'hsl(45, 90%, 60%)',
+    250000: 'hsl(0, 0%, 10%)',
 };
+
 
 export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     bets,
     handleBet,
     gameState,
     isPaused,
+    chipValues,
     selectedChip,
     setSelectedChip,
     handleUndoBet,
@@ -115,10 +142,18 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         )
     };
 
-    const otherChips = CHIP_VALUES.filter(c => c !== selectedChip);
+    const otherChips = chipValues.filter(c => c !== selectedChip);
     const arcDegrees = 150; 
     const startAngle = -120;
-    const angleIncrement = arcDegrees / (otherChips.length - 1);
+    const angleIncrement = arcDegrees / (otherChips.length > 1 ? otherChips.length - 1 : 1);
+
+
+    const formatChipValue = (value: number) => {
+        if (value >= 1000) {
+            return `${value / 1000}k`;
+        }
+        return value;
+    }
 
     return (
         <>
@@ -153,7 +188,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                     >
                                         <Button
                                             size="icon"
-                                            style={{ backgroundColor: chipColors[chip], color: chipTextColors[chip] }}
+                                            style={{ backgroundColor: chipColors[chip] || '#cccccc', color: chipTextColors[chip] || '#000000' }}
                                             className="rounded-full w-full h-full text-lg font-bold shadow-lg border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
                                             onClick={() => {
                                                 setSelectedChip(chip);
@@ -161,7 +196,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                             }}
                                             disabled={bettingDisabled}
                                         >
-                                            ${chip}
+                                            ${formatChipValue(chip)}
                                         </Button>
                                     </div>
                                 );
@@ -170,7 +205,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                             {/* Main selected chip, always on top */}
                             <Button
                                 size="icon"
-                                style={{ backgroundColor: chipColors[selectedChip], color: chipTextColors[selectedChip] }}
+                                style={{ backgroundColor: chipColors[selectedChip] || '#cccccc', color: chipTextColors[selectedChip] || '#000000' }}
                                 className={cn(
                                     'relative rounded-full w-14 h-14 text-lg font-bold shadow-lg z-10',
                                     'border-b-4 border-black/30 hover:border-b-2 active:border-b-0'
@@ -178,7 +213,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                 onClick={() => !bettingDisabled && setIsChipSelectorOpen(!isChipSelectorOpen)}
                                 disabled={bettingDisabled}
                             >
-                                ${selectedChip}
+                                ${formatChipValue(selectedChip)}
                             </Button>
                         </div>
 
