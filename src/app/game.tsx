@@ -69,6 +69,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const [spinHistory, setSpinHistory] = useState<GameSegment[]>([]);
   const spinIdCounter = useRef(0);
   
+  const [spinDuration, setSpinDuration] = useState(SPIN_DURATION_SECONDS);
+
   const gameTimeouts = useRef<{
     spin: NodeJS.Timeout | null,
     topSlot: NodeJS.Timeout | null,
@@ -124,6 +126,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setForcedTopSlotRight(null);
     setActiveMultiplier(null);
     spinOutcomeRef.current = { winningSegment: null, topSlotResult: null, multiplierApplied: null };
+    setSpinDuration(SPIN_DURATION_SECONDS);
   }, [clearGameTimeouts]);
 
   useEffect(() => {
@@ -331,6 +334,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
     spinIdCounter.current++;
+    setSpinDuration(SPIN_DURATION_SECONDS);
 
     // --- Top Slot Logic ---
     const finalTopSlotResult = {
@@ -393,7 +397,11 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
 
   const handleCloseRound = useCallback(() => {
-    if (gameState === 'SPINNING' || gameState === 'PRE_BONUS') {
+    if (gameState === 'SPINNING') {
+      clearGameTimeouts();
+      setSpinDuration(0);
+      processSpinResult();
+    } else if (gameState === 'PRE_BONUS') {
       clearGameTimeouts();
       processSpinResult();
     } else {
@@ -558,7 +566,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                         <TopSlot isSpinning={isTopSlotSpinning} result={topSlotResult} assetUrls={assetUrls} hideText={hideText} />
                     </div>
                     <div className="relative flex flex-col items-center">
-                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} assetUrls={assetUrls} hideText={hideText} textureRotation={textureRotation} />
+                        <Wheel segments={SEGMENTS_CONFIG} rotation={rotation} assetUrls={assetUrls} hideText={hideText} textureRotation={textureRotation} spinDuration={spinDuration} />
                         <div className="relative -mt-[60px] w-80 h-24 z-[-1]">
                             <div
                             className="absolute bottom-4 left-1/2 -translate-x-1/2 h-[50px] w-48"

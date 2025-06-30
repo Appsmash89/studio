@@ -2,7 +2,7 @@
 'use client';
 
 import { cn } from "@/lib/utils";
-import { SEGMENT_ANGLE, SPIN_DURATION_SECONDS, type SEGMENTS_CONFIG } from "@/config/game-config";
+import { type SEGMENTS_CONFIG } from "@/config/game-config";
 
 // This function is defined locally to make the component self-contained
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -13,11 +13,12 @@ const polarToCartesian = (centerX: number, centerY: number, radius: number, angl
     };
 };
 
-export const Wheel = ({ segments, rotation, assetUrls, hideText, textureRotation }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; assetUrls: Record<string, string>; hideText: boolean; textureRotation: number; }) => {
+export const Wheel = ({ segments, rotation, assetUrls, hideText, textureRotation, spinDuration }: { segments: (typeof SEGMENTS_CONFIG); rotation: number; assetUrls: Record<string, string>; hideText: boolean; textureRotation: number; spinDuration: number; }) => {
   const radius = 200;
   const center = 210;
   const fullWheelTexture = assetUrls['wheel-full'];
   const NUM_SEGMENTS = segments.length;
+  const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
 
   const getSegmentPath = (index: number) => {
     const startAngle = index * SEGMENT_ANGLE;
@@ -42,7 +43,7 @@ export const Wheel = ({ segments, rotation, assetUrls, hideText, textureRotation
       <div
         className="absolute w-full h-full rounded-full"
         style={{
-          transition: `transform ${SPIN_DURATION_SECONDS}s cubic-bezier(0.42, 0, 0.2, 1)`,
+          transition: `transform ${spinDuration}s cubic-bezier(0.42, 0, 0.2, 1)`,
           transform: `rotate(${rotation}deg)`,
         }}
       >
