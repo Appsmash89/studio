@@ -10,6 +10,7 @@ import { ArrowDown } from 'lucide-react';
 interface BonusGameProps {
     betAmount: number;
     onComplete: (winnings: number, details?: any) => void;
+    topSlotMultiplier: number;
 }
 
 const INITIAL_SLOTS: (number | 'DOUBLE')[] = [5, 10, 15, 'DOUBLE', 25, 'DOUBLE', 15, 10, 5];
@@ -42,7 +43,7 @@ const generatePath = (targetSlotIndex: number) => {
     return `M ${path[0].x},${path[0].y} ${path.slice(1).map(p => `L ${p.x},${p.y}`).join(' ')}`;
 };
 
-export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
+export function PachinkoBonus({ betAmount, onComplete, topSlotMultiplier = 1 }: BonusGameProps) {
     const [gameState, setGameState] = useState<'ready' | 'dropping' | 'doubling' | 'result'>('ready');
     const [multipliers, setMultipliers] = useState<(number | 'DOUBLE')[]>(INITIAL_SLOTS);
     const [winnings, setWinnings] = useState(0);
@@ -95,7 +96,7 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
             } else {
                 // Otherwise, calculate winnings and end the bonus round
                 const winningMultiplier = result as number;
-                const finalWinnings = betAmount * winningMultiplier;
+                const finalWinnings = betAmount * winningMultiplier * topSlotMultiplier;
                 setWinnings(finalWinnings);
                 setFinalMultiplier(winningMultiplier);
                 setGameState('result');
@@ -103,7 +104,7 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
         }, 2500); // Corresponds to animation duration
 
         return () => clearTimeout(timer);
-    }, [gameState, multipliers, betAmount]); // Depends on the other values
+    }, [gameState, multipliers, betAmount, topSlotMultiplier]); // Depends on the other values
 
 
     const handleDrop = () => {
@@ -149,7 +150,7 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                    
-                    <div className="h-16 flex flex-col justify-center">
+                    <div className="h-20 flex flex-col justify-center">
                         {gameState === 'ready' && (
                             <>
                                 <p>You bet ${betAmount.toLocaleString()} on Pachinko.</p>
@@ -172,6 +173,11 @@ export function PachinkoBonus({ betAmount, onComplete }: BonusGameProps) {
                         {gameState === 'result' && finalMultiplier !== null && (
                             <div className="text-center animate-in fade-in zoom-in-50">
                                 <p className="text-xl font-semibold">You won with a {finalMultiplier}x multiplier!</p>
+                                {topSlotMultiplier > 1 && (
+                                    <p className="text-lg text-accent font-bold animate-pulse">
+                                        Top Slot Bonus: {topSlotMultiplier}x
+                                    </p>
+                                )}
                                 <p className="text-4xl font-bold text-accent my-1">Prize: ${winnings.toLocaleString()}!</p>
                             </div>
                         )}

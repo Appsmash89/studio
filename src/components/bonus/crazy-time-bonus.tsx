@@ -9,6 +9,7 @@ import { Sparkles, Play } from 'lucide-react';
 interface BonusGameProps {
     betAmount: number;
     onComplete: (winnings: number, details?: any) => void;
+    topSlotMultiplier: number;
 }
 
 type Flapper = 'green' | 'blue' | 'yellow';
@@ -162,7 +163,7 @@ const BonusWheel = ({ segments, rotation }: { segments: Segment[]; rotation: num
 }
 
 
-export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
+export function CrazyTimeBonus({ betAmount, onComplete, topSlotMultiplier = 1 }: BonusGameProps) {
     const [gameState, setGameState] = useState<'picking' | 'ready_to_spin' | 'spinning' | 'result'>('picking');
     const [selectedFlapper, setSelectedFlapper] = useState<Flapper | null>(null);
     const [segments, setSegments] = useState<Segment[]>(INITIAL_WHEEL_SEGMENTS);
@@ -214,7 +215,7 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
                 await new Promise(res => setTimeout(res, 2000)); // Pause to show new values
             } else {
                 finalMultiplier = winningSegment.value as number;
-                finalWinnings = betAmount * finalMultiplier;
+                finalWinnings = betAmount * finalMultiplier * topSlotMultiplier;
                 break;
             }
         }
@@ -305,6 +306,11 @@ export function CrazyTimeBonus({ betAmount, onComplete }: BonusGameProps) {
 
                     {gameState === 'result' && (
                          <div className="text-center animate-in fade-in zoom-in-50 bg-black/50 p-4 rounded-lg">
+                            {topSlotMultiplier > 1 && (
+                                <p className="text-xl text-accent font-bold animate-pulse">
+                                    Top Slot Bonus: {topSlotMultiplier}x
+                                </p>
+                            )}
                             <p className="text-4xl font-bold text-accent my-1">You Won ${winnings.toLocaleString()}!</p>
                             <Button onClick={handleComplete} disabled={isCompleted} className="mt-4">Continue</Button>
                         </div>

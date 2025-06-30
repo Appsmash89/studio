@@ -10,6 +10,7 @@ import { Star, Heart, Spade, Club, Diamond, Gift, Cake, Bird } from 'lucide-reac
 interface BonusGameProps {
     betAmount: number;
     onComplete: (winnings: number, details?: any) => void;
+    topSlotMultiplier: number;
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -50,7 +51,7 @@ type GridItem = {
     introAnimated: boolean;
 };
 
-export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
+export function CashHuntBonus({ betAmount, onComplete, topSlotMultiplier = 1 }: BonusGameProps) {
     const [gameState, setGameState] = useState<'intro' | 'shuffling' | 'picking' | 'revealed'>('intro');
     const [gridItems, setGridItems] = useState<GridItem[]>([]);
     const [winnings, setWinnings] = useState(0);
@@ -154,7 +155,7 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
         if (gameState !== 'picking') return;
 
         const selectedItem = gridItems[index];
-        const finalWinnings = betAmount * selectedItem.finalMultiplier;
+        const finalWinnings = betAmount * selectedItem.finalMultiplier * topSlotMultiplier;
 
         setSelectedIndex(index);
         setWinnings(finalWinnings);
@@ -189,6 +190,11 @@ export function CashHuntBonus({ betAmount, onComplete }: BonusGameProps) {
                     {gameState === 'revealed' && selectedIndex !== null && (
                         <div className="text-center animate-in fade-in zoom-in-50">
                             <p className="text-xl font-semibold">You picked a {gridItems[selectedIndex].finalMultiplier}x multiplier!</p>
+                             {topSlotMultiplier > 1 && (
+                                <p className="text-lg text-accent font-bold animate-pulse">
+                                    Top Slot Bonus: {topSlotMultiplier}x
+                                </p>
+                            )}
                             <p className="text-4xl font-bold text-accent my-2">You Won ${winnings.toLocaleString()}!</p>
                             <Button onClick={handleComplete} disabled={isCompleted} className="mt-2">Continue</Button>
                         </div>

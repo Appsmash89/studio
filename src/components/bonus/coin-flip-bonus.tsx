@@ -10,11 +10,12 @@ import { Sparkles } from 'lucide-react';
 interface BonusGameProps {
     betAmount: number;
     onComplete: (winnings: number, details?: any) => void;
+    topSlotMultiplier: number;
 }
 
 const MULTIPLIERS = [2, 3, 4, 5, 10, 15, 20, 25, 50, 100];
 
-export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
+export function CoinFlipBonus({ betAmount, onComplete, topSlotMultiplier = 1 }: BonusGameProps) {
     const [phase, setPhase] = useState<'generating' | 'show_multipliers' | 'flipping' | 'result'>('generating');
     const [multipliers, setMultipliers] = useState<{ red: number; blue: number } | null>(null);
     const [flipResult, setFlipResult] = useState<'red' | 'blue' | null>(null);
@@ -50,14 +51,14 @@ export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
             timer = setTimeout(() => {
                 setFlipResult(result);
                 const winningMultiplier = result === 'red' ? multipliers.red : multipliers.blue;
-                const finalWinnings = betAmount * winningMultiplier;
+                const finalWinnings = betAmount * winningMultiplier * topSlotMultiplier;
                 setWinnings(finalWinnings);
                 setPhase('result');
             }, 3000); // 3-second flip animation
         }
 
         return () => clearTimeout(timer);
-    }, [phase, multipliers, betAmount]);
+    }, [phase, multipliers, betAmount, topSlotMultiplier]);
 
     return (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-in fade-in">
@@ -106,7 +107,7 @@ export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
                     )}
                     
                     {phase === 'result' && flipResult && multipliers && (
-                         <div className="flex flex-col items-center gap-4 animate-in zoom-in-50">
+                         <div className="flex flex-col items-center gap-2 animate-in zoom-in-50">
                              <p className="text-xl font-semibold">The winning side is...</p>
                              <div className={cn(
                                 "w-32 h-32 rounded-full flex items-center justify-center text-white font-bold text-4xl shadow-lg",
@@ -116,6 +117,11 @@ export function CoinFlipBonus({ betAmount, onComplete }: BonusGameProps) {
                              </div>
                              <p className="text-2xl font-bold text-accent">You Won!</p>
                              <p className="text-lg">Your Bet: ${betAmount.toLocaleString()}</p>
+                             {topSlotMultiplier > 1 && (
+                                <p className="text-lg text-accent font-bold animate-pulse">
+                                    Top Slot Bonus: {topSlotMultiplier}x
+                                </p>
+                            )}
                              <p className="text-3xl font-bold">Total Win: ${winnings.toLocaleString()}</p>
                              <Button onClick={handleComplete} disabled={isCompleted} className="mt-4">Continue</Button>
                          </div>

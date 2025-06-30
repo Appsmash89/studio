@@ -71,6 +71,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
   const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
   const [topSlotResult, setTopSlotResult] = useState<TopSlotResult | null>(null);
+  const [activeMultiplier, setActiveMultiplier] = useState<{ optionId: string; multiplier: number } | null>(null);
 
   const totalBet = Object.values(bets).reduce((sum, amount) => sum + amount, 0);
 
@@ -99,6 +100,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setForcedWinner(null);
     setForcedTopSlotLeft(null);
     setForcedTopSlotRight(null);
+    setActiveMultiplier(null);
   }, []);
 
   useEffect(() => {
@@ -188,6 +190,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     if (!winningSegment) return;
     const winningLabel = winningSegment.label;
     const betOnWinner = spinDataRef.current.bets[winningLabel] || 0;
+    // The winnings returned from the bonus game already include the Top Slot multiplier.
+    // We just need to add the original bet amount back.
     const roundWinnings = betOnWinner + bonusWinnings;
 
     setBalance(prev => prev + roundWinnings);
@@ -273,6 +277,11 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
       const winningLabel = currentWinningSegment.label;
       const betOnWinner = currentBets[winningLabel] || 0;
+
+      // Set active multiplier state right after spin ends for visual feedback
+      if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
+        setActiveMultiplier({ optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right });
+      }
 
       const rightIndex = finalTopSlotResult.right !== null
         ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
@@ -403,7 +412,10 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   }
 
   const isBonusActive = gameState.startsWith('BONUS_');
-  
+  const topSlotMultiplier = (activeMultiplier && winningSegment && activeMultiplier.optionId === winningSegment.label) 
+      ? activeMultiplier.multiplier 
+      : 1;
+
   return (
     <div className="relative flex flex-col min-h-screen text-foreground overflow-y-auto">
       <TransitionOverlay />
@@ -466,10 +478,10 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
           );
       })()}
 
-      {gameState === 'BONUS_COIN_FLIP' && <CoinFlipBonus betAmount={bets['COIN_FLIP']} onComplete={handleBonusComplete} />}
-      {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} />}
-      {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} />}
-      {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} />}
+      {gameState === 'BONUS_COIN_FLIP' && <CoinFlipBonus betAmount={bets['COIN_FLIP']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
+      {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
+      {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
+      {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
       {gameState === 'NUMBER_RESULT' && winningSegment && (
         <NumberResultPopup
             winningSegment={winningSegment}
@@ -547,6 +559,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                             totalBet={totalBet}
                             assetUrls={assetUrls}
                             hideText={hideText}
+                            activeMultiplier={activeMultiplier}
                         />
                     </div>
                 </div>

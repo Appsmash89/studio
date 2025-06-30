@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -20,6 +21,7 @@ interface BettingInterfaceProps {
     totalBet: number;
     assetUrls: Record<string, string>;
     hideText: boolean;
+    activeMultiplier: { optionId: string; multiplier: number } | null;
 }
 
 const chipColors: { [key: number]: string } = {
@@ -76,6 +78,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     totalBet,
     assetUrls,
     hideText,
+    activeMultiplier,
 }) => {
     const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
@@ -107,6 +110,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
         const customTexture = assetUrls[`chip-${option.id}`];
+        const isMultiplierActive = activeMultiplier?.optionId === option.id;
         const style: React.CSSProperties = {};
 
         if (customTexture) {
@@ -124,11 +128,17 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 style={style}
                 className={cn(
                     "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200",
-                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0"
+                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0",
+                    isMultiplierActive && "animate-multiplier-glow"
                 )}
                 onClick={() => handleBet(option.id)}
                 disabled={bettingDisabled}
             >
+                {isMultiplierActive && (
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-accent text-accent-foreground rounded-full h-8 w-8 flex items-center justify-center font-bold text-sm shadow-lg z-10">
+                        {activeMultiplier.multiplier}x
+                    </div>
+                )}
                 <span className={cn(
                     "font-bold drop-shadow-md",
                     option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
