@@ -256,6 +256,39 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         )
     };
 
+    const multiBetTexture = assetUrls['multi-bet-button'];
+    const multiBetStyle: React.CSSProperties = {};
+    if (multiBetTexture) {
+        multiBetStyle.backgroundImage = `url(${multiBetTexture})`;
+        multiBetStyle.backgroundSize = 'cover';
+        multiBetStyle.backgroundPosition = 'center';
+    }
+
+    const renderMultiBetButton = (optionIds: string[]) => (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+            <Button
+                size="icon"
+                variant="outline"
+                className={cn(
+                    "rounded-full w-14 h-14 transition-all hover:scale-105 active:scale-100",
+                    !multiBetTexture && "bg-background/70 backdrop-blur-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                )}
+                style={multiBetStyle}
+                onClick={() => handleMultiBetClick(optionIds)}
+                disabled={bettingDisabled}
+            >
+                {!multiBetTexture && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
+                        <circle cx="17" cy="7" r="2.5" fill="currentColor"/>
+                        <circle cx="7" cy="17" r="2.5" fill="currentColor"/>
+                        <circle cx="17" cy="17" r="2.5" fill="currentColor"/>
+                    </svg>
+                )}
+            </Button>
+        </div>
+    );
+
     return (
         <>
             {isChipSelectorOpen && (
@@ -269,43 +302,13 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                 <div className="grid grid-cols-2 grid-rows-2 gap-2">
                                     {numberOptions.map(renderBettingButton)}
                                 </div>
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                                    <Button
-                                        size="icon"
-                                        variant="outline"
-                                        className="rounded-full w-10 h-10 bg-background/70 backdrop-blur-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-                                        onClick={() => handleMultiBetClick(numberOptions.map(o => o.id))}
-                                        disabled={bettingDisabled}
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
-                                            <circle cx="17" cy="7" r="2.5" fill="currentColor"/>
-                                            <circle cx="7" cy="17" r="2.5" fill="currentColor"/>
-                                            <circle cx="17" cy="17" r="2.5" fill="currentColor"/>
-                                        </svg>
-                                    </Button>
-                                </div>
+                                {renderMultiBetButton(numberOptions.map(o => o.id))}
                             </div>
                             <div className="relative">
                                 <div className="grid grid-cols-2 grid-rows-2 gap-2">
                                     {bonusOptions.map(renderBettingButton)}
                                 </div>
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                                    <Button
-                                        size="icon"
-                                        variant="outline"
-                                        className="rounded-full w-10 h-10 bg-background/70 backdrop-blur-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-                                        onClick={() => handleMultiBetClick(bonusOptions.map(o => o.id))}
-                                        disabled={bettingDisabled}
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
-                                            <circle cx="17" cy="7" r="2.5" fill="currentColor"/>
-                                            <circle cx="7" cy="17" r="2.5" fill="currentColor"/>
-                                            <circle cx="17" cy="17" r="2.5" fill="currentColor"/>
-                                        </svg>
-                                    </Button>
-                                </div>
+                                {renderMultiBetButton(bonusOptions.map(o => o.id))}
                             </div>
                         </div>
 
