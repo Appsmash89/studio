@@ -279,8 +279,10 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       const betOnWinner = currentBets[winningLabel] || 0;
 
       // Set active multiplier state right after spin ends for visual feedback
+      let multiplierApplied = null;
       if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
-        setActiveMultiplier({ optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right });
+        multiplierApplied = { optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right };
+        setActiveMultiplier(multiplierApplied);
       }
 
       const rightIndex = finalTopSlotResult.right !== null
@@ -316,7 +318,11 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
           setGameLog(prev => [newLogEntry, ...prev]);
           
           if (isBonusWin) {
-              setGameState(`BONUS_${winningLabel}` as any);
+              if (multiplierApplied) {
+                setGameState('PRE_BONUS');
+              } else {
+                setGameState(`BONUS_${winningLabel}` as any);
+              }
           } else {
               setGameState('RESULT');
           }
@@ -327,8 +333,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       let calculatedWinnings = 0;
       if (betOnWinner > 0) {
         let effectiveMultiplier = currentWinningSegment.multiplier;
-        if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
-            effectiveMultiplier = finalTopSlotResult.right;
+        if (multiplierApplied) {
+            effectiveMultiplier = multiplierApplied.multiplier;
         }
         calculatedWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
       }
@@ -376,6 +382,14 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
         }, 1000);
     } else if (gameState === 'BETTING' && countdown <= 0) {
         handleSpin();
+    } else if (gameState === 'PRE_BONUS') {
+      timer = setTimeout(() => {
+        if (winningSegment) {
+          setGameState(`BONUS_${winningSegment.label}` as any);
+        } else {
+          startNewRound();
+        }
+      }, 3000); // 3 second pause to show animation
     } else if (gameState === 'RESULT') {
       timer = setTimeout(() => {
         startNewRound();
@@ -383,7 +397,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     }
 
     return () => clearTimeout(timer);
-  }, [gameState, countdown, handleSpin, isPaused, startNewRound]);
+  }, [gameState, countdown, handleSpin, isPaused, startNewRound, winningSegment]);
   
   const handleGenerateAndDownload = () => {
       setIsGenerating(true);

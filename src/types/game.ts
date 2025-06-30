@@ -6,6 +6,7 @@ export type GameState =
   | 'SPINNING'
   | 'RESULT'
   | 'NUMBER_RESULT'
+  | 'PRE_BONUS'
   | 'BONUS_COIN_FLIP'
   | 'BONUS_PACHINKO'
   | 'BONUS_CASH_HUNT'

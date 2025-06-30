@@ -25,6 +25,8 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
                 return <h2 className="text-xl font-bold uppercase tracking-wider text-accent animate-pulse">Place Your Bets</h2>
             case 'SPINNING':
                  return <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">No More Bets!</h2>
+            case 'PRE_BONUS':
+                return <h2 className="text-2xl font-bold uppercase tracking-wider text-accent animate-pulse">MULTIPLIER HIT!</h2>
             case 'RESULT':
                  return null;
             default:
