@@ -22,6 +22,7 @@ interface BettingInterfaceProps {
     totalBet: number;
     assetUrls: Record<string, string>;
     hideText: boolean;
+    balance: number;
 }
 
 const chipColors: { [key: number]: string } = {
@@ -79,6 +80,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     totalBet,
     assetUrls,
     hideText,
+    balance,
 }) => {
     const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
@@ -122,6 +124,11 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     const handleBetClick = (optionId: string) => {
         if (bettingDisabled) return;
 
+        if (balance < selectedChip) {
+            handleBet(optionId);
+            return;
+        }
+
         const startEl = chipSelectorButtonRef.current;
         const endEl = betOptionRefs.current[optionId];
         const containerEl = containerRef.current;
@@ -150,6 +157,12 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 
     const handleMultiBetClick = (optionIds: string[]) => {
         if (bettingDisabled) return;
+
+        const totalBetAmount = selectedChip * optionIds.length;
+        if (balance < totalBetAmount) {
+            handleMultiBet(optionIds);
+            return;
+        }
 
         const startEl = chipSelectorButtonRef.current;
         const containerEl = containerRef.current;

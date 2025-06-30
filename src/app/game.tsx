@@ -657,6 +657,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                             totalBet={totalBet}
                             assetUrls={assetUrls}
                             hideText={hideText}
+                            balance={balance}
                         />
                     </div>
                 </div>
