@@ -108,9 +108,14 @@ export const DevTools: React.FC<DevToolsProps> = ({
                             <FastForward className="mr-2 h-3 w-3" />
                             Skip Timer
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleCloseRound} disabled={isPaused}>
-                        <RefreshCw className="mr-2 h-3 w-3" />
-                        Close Round
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={handleCloseRound} 
+                            disabled={isPaused || gameState === 'BETTING' || gameState.startsWith('BONUS_')}
+                        >
+                            <RefreshCw className="mr-2 h-3 w-3" />
+                            Close Round
                         </Button>
                         <Button variant="outline" size="sm" onClick={() => setIsPaused(p => !p)}>
                             {isPaused ? <Play className="mr-2 h-3 w-3" /> : <Pause className="mr-2 h-3 w-3" />}
@@ -266,3 +271,5 @@ export const DevTools: React.FC<DevToolsProps> = ({
         </footer>
     );
 };
+
+    

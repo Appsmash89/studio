@@ -86,10 +86,17 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
 
+  const spinOutcomeRef = useRef<{
+    winningSegment: GameSegment | null,
+    topSlotResult: TopSlotResult | null,
+    multiplierApplied: { optionId: string; multiplier: number } | null,
+  }>({ winningSegment: null, topSlotResult: null, multiplierApplied: null });
+
   const clearGameTimeouts = useCallback(() => {
     Object.values(gameTimeouts.current).forEach(timeoutId => {
       if (timeoutId) clearTimeout(timeoutId);
     });
+    gameTimeouts.current = { spin: null, topSlot: null, countdown: null, preBonus: null, result: null };
   }, []);
 
   useEffect(() => {
@@ -116,6 +123,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setForcedTopSlotLeft(null);
     setForcedTopSlotRight(null);
     setActiveMultiplier(null);
+    spinOutcomeRef.current = { winningSegment: null, topSlotResult: null, multiplierApplied: null };
   }, [clearGameTimeouts]);
 
   useEffect(() => {
@@ -197,10 +205,6 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setCountdown(0);
   }
 
-  const handleCloseRound = () => {
-    startNewRound();
-  };
-
   const handleBonusComplete = useCallback(async (bonusWinnings: number, bonusDetails?: any) => {
     if (!winningSegment) return;
     const winningLabel = winningSegment.label;
@@ -231,6 +235,97 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
   const handleNumberResultComplete = useCallback(() => {
     setGameState('RESULT');
+  }, []);
+
+  const processSpinResult = useCallback(() => {
+      const outcome = spinOutcomeRef.current;
+      if (!outcome || !outcome.winningSegment || !outcome.topSlotResult) return;
+
+      const { winningSegment: currentWinningSegment, topSlotResult: finalTopSlotResult, multiplierApplied } = outcome;
+      const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
+      const winningLabel = currentWinningSegment.label;
+      const betOnWinner = currentBets[winningLabel] || 0;
+
+      const rightIndex = finalTopSlotResult.right !== null
+          ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
+          : null;
+
+      setWinningSegment(currentWinningSegment);
+      setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
+
+      if (currentWinningSegment.type === 'bonus') {
+          const isBonusWin = betOnWinner > 0;
+
+          const newLogEntry: GameLogEntry = {
+              spinId: spinIdCounter.current,
+              timestamp: new Date().toISOString(),
+              bets: currentBets,
+              totalBet: currentTotalBet,
+              winningSegment: {
+                  label: currentWinningSegment.label,
+                  type: currentWinningSegment.type,
+                  multiplier: 0,
+                  index: BET_OPTION_INDEX_MAP[currentWinningSegment.label]!
+              },
+              topSlotResult: finalTopSlotResult ? {
+                  ...finalTopSlotResult,
+                  leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null,
+                  rightIndex: rightIndex !== -1 ? rightIndex : null,
+              } : null,
+              isBonus: true,
+              roundWinnings: 0, // This will be updated in handleBonusComplete
+              netResult: -currentTotalBet, // This will be updated in handleBonusComplete
+          };
+          setGameLog(prev => [newLogEntry, ...prev]);
+
+          if (isBonusWin) {
+              if (multiplierApplied) {
+                  setGameState('PRE_BONUS');
+              } else {
+                  setGameState(`BONUS_${winningLabel}` as any);
+              }
+          } else {
+              setGameState('RESULT');
+          }
+          return;
+      }
+
+      // It's a number win
+      let calculatedWinnings = 0;
+      if (betOnWinner > 0) {
+          let effectiveMultiplier = currentWinningSegment.multiplier;
+          if (multiplierApplied) {
+              effectiveMultiplier = multiplierApplied.multiplier;
+          }
+          calculatedWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
+      }
+
+      setRoundWinnings(calculatedWinnings);
+      setBalance(prev => prev + calculatedWinnings);
+
+      const newLogEntry: GameLogEntry = {
+          spinId: spinIdCounter.current,
+          timestamp: new Date().toISOString(),
+          bets: currentBets,
+          totalBet: currentTotalBet,
+          winningSegment: {
+              label: currentWinningSegment.label,
+              type: currentWinningSegment.type,
+              multiplier: currentWinningSegment.multiplier,
+              index: BET_OPTION_INDEX_MAP[currentWinningSegment.label]!
+          },
+          topSlotResult: finalTopSlotResult ? {
+              ...finalTopSlotResult,
+              leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null,
+              rightIndex: rightIndex !== -1 ? rightIndex : null,
+          } : null,
+          isBonus: false,
+          roundWinnings: calculatedWinnings,
+          netResult: calculatedWinnings - currentTotalBet,
+      };
+      setGameLog(prev => [newLogEntry, ...prev]);
+
+      setGameState('NUMBER_RESULT');
   }, []);
 
   const handleSpin = useCallback(async () => {
@@ -275,114 +370,35 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
         multiplierApplied = { optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right };
         setActiveMultiplier(multiplierApplied);
     }
+
+    spinOutcomeRef.current = { winningSegment: currentWinningSegment, topSlotResult: finalTopSlotResult, multiplierApplied };
     
     // --- Calculate Final Rotation ---
     // This logic ensures the wheel lands on the correct segment after a fixed spin duration.
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
     
-    // 1. Calculate the base angle for the winning segment.
-    // We add half a segment's angle to point the indicator to the middle of the segment.
     const winningSegmentAngle = (winningSegmentIndex * SEGMENT_ANGLE) + (SEGMENT_ANGLE / 2);
-
-    // 2. Add multiple full rotations for visual effect.
     const fullSpins = 5 * 360;
-
-    // 3. Set the final rotation.
-    // We subtract the winning angle from 360 to ensure the wheel rotates clockwise to the correct position.
-    // The `rotation % 360` logic handles resetting the base rotation to prevent the number from growing indefinitely.
     setRotation(prev => {
       const rotationBase = prev - (prev % 360);
       return rotationBase + fullSpins + (360 - winningSegmentAngle);
     });
     
-    gameTimeouts.current.spin = setTimeout(async () => {
-      const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
-      const winningLabel = currentWinningSegment.label;
-      const betOnWinner = currentBets[winningLabel] || 0;
-
-      const rightIndex = finalTopSlotResult.right !== null
-        ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
-        : null;
-      
-      setWinningSegment(currentWinningSegment);
-      setSpinHistory(prev => [currentWinningSegment, ...prev].slice(0, 7));
-
-      if (currentWinningSegment.type === 'bonus') {
-          const isBonusWin = betOnWinner > 0;
-          
-          const newLogEntry: GameLogEntry = {
-              spinId: spinIdCounter.current,
-              timestamp: new Date().toISOString(),
-              bets: currentBets,
-              totalBet: currentTotalBet,
-              winningSegment: { 
-                label: currentWinningSegment.label, 
-                type: currentWinningSegment.type, 
-                multiplier: 0,
-                index: BET_OPTION_INDEX_MAP[currentWinningSegment.label]!
-              },
-              topSlotResult: finalTopSlotResult ? {
-                ...finalTopSlotResult,
-                leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null,
-                rightIndex: rightIndex !== -1 ? rightIndex : null,
-              } : null,
-              isBonus: true,
-              roundWinnings: 0, // This will be updated in handleBonusComplete
-              netResult: -currentTotalBet, // This will be updated in handleBonusComplete
-          };
-          setGameLog(prev => [newLogEntry, ...prev]);
-          
-          if (isBonusWin) {
-              if (multiplierApplied) {
-                setGameState('PRE_BONUS');
-              } else {
-                setGameState(`BONUS_${winningLabel}` as any);
-              }
-          } else {
-              setGameState('RESULT');
-          }
-          return;
-      }
-      
-      // It's a number win
-      let calculatedWinnings = 0;
-      if (betOnWinner > 0) {
-        let effectiveMultiplier = currentWinningSegment.multiplier;
-        if (multiplierApplied) {
-            effectiveMultiplier = multiplierApplied.multiplier;
-        }
-        calculatedWinnings = betOnWinner * effectiveMultiplier + betOnWinner;
-      }
-      
-      setRoundWinnings(calculatedWinnings);
-      setBalance(prev => prev + calculatedWinnings);
-      
-      const newLogEntry: GameLogEntry = {
-          spinId: spinIdCounter.current,
-          timestamp: new Date().toISOString(),
-          bets: currentBets,
-          totalBet: currentTotalBet,
-          winningSegment: { 
-            label: currentWinningSegment.label, 
-            type: currentWinningSegment.type, 
-            multiplier: currentWinningSegment.multiplier,
-            index: BET_OPTION_INDEX_MAP[currentWinningSegment.label]!
-          },
-          topSlotResult: finalTopSlotResult ? {
-            ...finalTopSlotResult,
-            leftIndex: finalTopSlotResult.left ? BET_OPTION_INDEX_MAP[finalTopSlotResult.left]! : null,
-            rightIndex: rightIndex !== -1 ? rightIndex : null,
-          } : null,
-          isBonus: false,
-          roundWinnings: calculatedWinnings,
-          netResult: calculatedWinnings - currentTotalBet,
-      };
-      setGameLog(prev => [newLogEntry, ...prev]);
-      
-      setGameState('NUMBER_RESULT');
-
+    gameTimeouts.current.spin = setTimeout(() => {
+      processSpinResult();
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight, processSpinResult]);
+
+
+  const handleCloseRound = useCallback(() => {
+    if (gameState === 'SPINNING' || gameState === 'PRE_BONUS') {
+      clearGameTimeouts();
+      processSpinResult();
+    } else {
+      startNewRound();
+    }
+  }, [gameState, clearGameTimeouts, processSpinResult, startNewRound]);
+
 
   // Game Loop Timer
   useEffect(() => {
@@ -635,3 +651,5 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     </div>
   );
 }
+
+    
