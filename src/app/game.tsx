@@ -41,8 +41,7 @@ import type { GameLogEntry, GameState, GameSegment, Bets, BetHistory, TopSlotRes
 
 
 export default function Game({ assetUrls }: { assetUrls: Record<string, string> }) {
-  const { user, signOut } = useAuth();
-  const [balance, setBalance] = useState(1000);
+  const { user, signOut, balance, setBalance } = useAuth();
   const [bets, setBets] = useState<Bets>(initialBetsState);
   const [betHistory, setBetHistory] = useState<BetHistory>([]);
   const [chipValues, setChipValues] = useState<number[]>(() => getChipValues(balance));
@@ -143,7 +142,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       toast({ variant: "destructive", title: "Not enough balance to place that bet." });
       return;
     }
-    setBalance(prev => prev - selectedChip);
+    setBalance(balance - selectedChip);
     setBets(prev => ({...prev, [optionId]: prev[optionId] + selectedChip}));
     setBetHistory(prev => [...prev, { optionId, amount: selectedChip }]);
   }
@@ -155,7 +154,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       toast({ variant: "destructive", title: "Not enough balance to place that bet." });
       return;
     }
-    setBalance(prev => prev - totalBetAmount);
+    setBalance(balance - totalBetAmount);
     
     const newBets = { ...bets };
     const newBetHistory = [...betHistory];
@@ -175,7 +174,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     const lastBet = betHistory[betHistory.length - 1];
     if (!lastBet) return;
 
-    setBalance(prev => prev + lastBet.amount);
+    setBalance(balance + lastBet.amount);
 
     setBets(prev => ({
       ...prev,
@@ -187,7 +186,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
   const handleClearBets = () => {
     if (gameState !== 'BETTING') return;
-    setBalance(prev => prev + totalBet);
+    setBalance(balance + totalBet);
     setBets(initialBetsState);
     setBetHistory([]);
   }
@@ -245,7 +244,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       roundWinnings = betOnWinner + bonusWinnings;
     }
 
-    setBalance(prev => prev + roundWinnings);
+    setBalance(balance + roundWinnings);
     
     setGameLog(prevLog => {
         const updatedLog = [...prevLog];
@@ -263,7 +262,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     });
 
     setGameState('RESULT');
-  }, [winningSegment]);
+  }, [winningSegment, balance, setBalance]);
 
   const handleNumberResultComplete = useCallback(() => {
     setGameState('RESULT');
@@ -333,7 +332,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       }
 
       setRoundWinnings(calculatedWinnings);
-      setBalance(prev => prev + calculatedWinnings);
+      setBalance(balance + calculatedWinnings);
 
       const newLogEntry: GameLogEntry = {
           spinId: spinIdCounter.current,
@@ -358,7 +357,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       setGameLog(prev => [newLogEntry, ...prev]);
 
       setGameState('NUMBER_RESULT');
-  }, []);
+  }, [balance, setBalance]);
 
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
