@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { Download, FastForward, Play, Pause, TestTube2, BookCopy, FileClock, RefreshCw, Trash2 } from 'lucide-react';
+import { Download, FastForward, Play, Pause, TestTube2, BookCopy, FileClock, RefreshCw, Trash2, HelpCircle } from 'lucide-react';
 import { BET_OPTIONS, TOP_SLOT_LEFT_REEL_ITEMS, TOP_SLOT_RIGHT_REEL_ITEMS } from '@/config/game-config';
 import type { GameLogEntry } from '@/types/game';
 import { assetManager } from '@/lib/asset-manager';
@@ -89,6 +90,12 @@ export const DevTools: React.FC<DevToolsProps> = ({
                         DEV TOOLS
                     </p>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href="/layout-guide">
+                            <HelpCircle className="mr-2 h-3 w-3" />
+                            Layout Guide
+                          </Link>
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => setShowLegend(s => !s)}>
                             <BookCopy className="mr-2 h-3 w-3" />
                             {showLegend ? 'Hide' : 'Show'} Legend
@@ -259,5 +266,3 @@ export const DevTools: React.FC<DevToolsProps> = ({
         </footer>
     );
 };
-
-    
