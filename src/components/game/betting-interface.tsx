@@ -96,7 +96,8 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 
     const radius = 70; // pixels for the spread
     const startAngle = -90; // Starting angle in degrees (upwards)
-    const angleIncrement = 180 / (CHIP_VALUES.filter(c => c !== selectedChip).length - 1); // Spread over a 180 degree arc
+    const otherChips = CHIP_VALUES.filter(c => c !== selectedChip);
+    const angleIncrement = otherChips.length > 1 ? 180 / (otherChips.length - 1) : 0;
 
     const chipColors: { [key: number]: string } = {
         1: 'hsl(0, 0%, 80%)',
@@ -127,7 +128,6 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                         {CHIP_VALUES.map((chip) => {
                             const isMainChip = chip === selectedChip;
                             
-                            const otherChips = CHIP_VALUES.filter(c => c !== selectedChip);
                             const displayIndex = otherChips.findIndex(c => c === chip);
                             const angle = startAngle + (displayIndex * angleIncrement);
                             
@@ -150,7 +150,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                             'transform': isChipSelectorOpen ? `translate(${x}px, ${y}px) scale(1)` : 'translate(0, 0) scale(0.5)',
                                             'opacity': isChipSelectorOpen ? 1 : 0,
                                             'pointer-events': isChipSelectorOpen ? 'auto' : 'none',
-                                            'transition-delay': isChipSelectorOpen ? `${displayIndex * 40}ms` : '0ms'
+                                            'transition-delay': isChipSelectorOpen ? `${displayIndex * 40}ms` : `${(otherChips.length - displayIndex) * 40}ms`
                                         }
                                     )}
                                     onClick={() => isMainChip ? handleMainChipClick() : handleSelectNewChip(chip)}
