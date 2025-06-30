@@ -69,7 +69,13 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const [spinHistory, setSpinHistory] = useState<GameSegment[]>([]);
   const spinIdCounter = useRef(0);
   
-  const spinTimeouts = useRef<{ spin: NodeJS.Timeout | null, topSlot: NodeJS.Timeout | null }>({ spin: null, topSlot: null });
+  const gameTimeouts = useRef<{
+    spin: NodeJS.Timeout | null,
+    topSlot: NodeJS.Timeout | null,
+    countdown: NodeJS.Timeout | null,
+    preBonus: NodeJS.Timeout | null,
+    result: NodeJS.Timeout | null,
+  }>({ spin: null, topSlot: null, countdown: null, preBonus: null, result: null });
 
   const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
   const [topSlotResult, setTopSlotResult] = useState<TopSlotResult | null>(null);
@@ -80,9 +86,10 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const spinDataRef = useRef({ bets, totalBet });
   spinDataRef.current = { bets, totalBet };
 
-  const clearSpinTimeouts = useCallback(() => {
-    if (spinTimeouts.current.spin) clearTimeout(spinTimeouts.current.spin);
-    if (spinTimeouts.current.topSlot) clearTimeout(spinTimeouts.current.topSlot);
+  const clearGameTimeouts = useCallback(() => {
+    Object.values(gameTimeouts.current).forEach(timeoutId => {
+      if (timeoutId) clearTimeout(timeoutId);
+    });
   }, []);
 
   useEffect(() => {
@@ -98,7 +105,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   }, [balance, selectedChip]);
 
   const startNewRound = useCallback(() => {
-    clearSpinTimeouts();
+    clearGameTimeouts();
     setGameState('BETTING');
     setCountdown(BETTING_TIME_SECONDS);
     setBets(initialBetsState);
@@ -109,7 +116,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setForcedTopSlotLeft(null);
     setForcedTopSlotRight(null);
     setActiveMultiplier(null);
-  }, [clearSpinTimeouts]);
+  }, [clearGameTimeouts]);
 
   useEffect(() => {
     // Set initial random result for Top Slot on component mount
@@ -239,7 +246,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setTopSlotResult(finalTopSlotResult);
     setIsTopSlotSpinning(true);
     
-    spinTimeouts.current.topSlot = setTimeout(() => {
+    gameTimeouts.current.topSlot = setTimeout(() => {
         setIsTopSlotSpinning(false);
     }, TOP_SLOT_ANIMATION_DURATION_MS);
 
@@ -288,9 +295,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       return rotationBase + fullSpins + (360 - winningSegmentAngle);
     });
     
-    clearSpinTimeouts();
-
-    spinTimeouts.current.spin = setTimeout(async () => {
+    gameTimeouts.current.spin = setTimeout(async () => {
       const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
       const winningLabel = currentWinningSegment.label;
       const betOnWinner = currentBets[winningLabel] || 0;
@@ -377,7 +382,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       setGameState('NUMBER_RESULT');
 
     }, SPIN_DURATION_SECONDS * 1000);
-  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight, clearSpinTimeouts]);
+  }, [forcedWinner, forcedTopSlotLeft, forcedTopSlotRight]);
 
   // Game Loop Timer
   useEffect(() => {
@@ -387,9 +392,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     let timer: NodeJS.Timeout;
 
     if (gameState === 'BETTING' && countdown > 0) {
-        timer = setTimeout(() => {
-          setCountdown(c => c - 1);
-        }, 1000);
+        timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+        gameTimeouts.current.countdown = timer;
     } else if (gameState === 'BETTING' && countdown <= 0) {
         handleSpin();
     } else if (gameState === 'PRE_BONUS') {
@@ -399,22 +403,22 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
         } else {
           startNewRound();
         }
-      }, 3000); // 3 second pause to show animation
+      }, 3000);
+      gameTimeouts.current.preBonus = timer;
     } else if (gameState === 'RESULT') {
-      timer = setTimeout(() => {
-        startNewRound();
-      }, RESULT_DISPLAY_SECONDS * 1000);
+      timer = setTimeout(() => startNewRound(), RESULT_DISPLAY_SECONDS * 1000);
+      gameTimeouts.current.result = timer;
     }
 
     return () => clearTimeout(timer);
   }, [gameState, countdown, handleSpin, isPaused, startNewRound, winningSegment]);
   
-  // Cleanup spin timeout on unmount
+  // Cleanup all timers on unmount
   useEffect(() => {
     return () => {
-        clearSpinTimeouts();
+        clearGameTimeouts();
     };
-  }, [clearSpinTimeouts]);
+  }, [clearGameTimeouts]);
   
   const handleGenerateAndDownload = () => {
       setIsGenerating(true);
