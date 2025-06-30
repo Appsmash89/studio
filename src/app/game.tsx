@@ -148,6 +148,27 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setBetHistory(prev => [...prev, { optionId, amount: selectedChip }]);
   }
 
+  const handleMultiBet = (optionIds: string[]) => {
+    if (gameState !== 'BETTING') return;
+    const totalBetAmount = selectedChip * optionIds.length;
+    if (balance < totalBetAmount) {
+      toast({ variant: "destructive", title: "Not enough balance to place that bet." });
+      return;
+    }
+    setBalance(prev => prev - totalBetAmount);
+    
+    const newBets = { ...bets };
+    const newBetHistory = [...betHistory];
+    
+    optionIds.forEach(optionId => {
+      newBets[optionId] += selectedChip;
+      newBetHistory.push({ optionId, amount: selectedChip });
+    });
+
+    setBets(newBets);
+    setBetHistory(newBetHistory);
+  }
+
   const handleUndoBet = () => {
     if (gameState !== 'BETTING' || betHistory.length === 0) return;
 
@@ -214,7 +235,15 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     const betOnWinner = spinDataRef.current.bets[winningLabel] || 0;
     // The winnings returned from the bonus game already include the Top Slot multiplier.
     // We just need to add the original bet amount back.
-    const roundWinnings = betOnWinner + bonusWinnings;
+    let roundWinnings = betOnWinner + bonusWinnings;
+    
+    // Top Slot multiplier application
+    const multiplierApplied = spinOutcomeRef.current.multiplierApplied;
+    if (multiplierApplied && multiplierApplied.optionId === winningLabel) {
+      roundWinnings = betOnWinner + (bonusWinnings * multiplierApplied.multiplier);
+    } else {
+      roundWinnings = betOnWinner + bonusWinnings;
+    }
 
     setBalance(prev => prev + roundWinnings);
     
@@ -617,6 +646,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                         <BettingInterface
                             bets={bets}
                             handleBet={handleBet}
+                            handleMultiBet={handleMultiBet}
                             gameState={gameState}
                             isPaused={isPaused}
                             chipValues={chipValues}

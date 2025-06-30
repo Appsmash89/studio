@@ -11,6 +11,7 @@ import { BET_OPTIONS } from '@/config/game-config';
 interface BettingInterfaceProps {
     bets: { [key: string]: number };
     handleBet: (optionId: string) => void;
+    handleMultiBet: (optionIds: string[]) => void;
     gameState: string;
     isPaused: boolean;
     chipValues: number[];
@@ -67,6 +68,7 @@ const chipTextColors: { [key: number]: string } = {
 export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     bets,
     handleBet,
+    handleMultiBet,
     gameState,
     isPaused,
     chipValues,
@@ -85,6 +87,9 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     const betOptionRefs = useRef<{[key: string]: HTMLButtonElement | null}>({});
     const containerRef = useRef<HTMLDivElement>(null);
     const [flyingChips, setFlyingChips] = useState<any[]>([]);
+
+    const numberOptions = BET_OPTIONS.slice(0, 4);
+    const bonusOptions = BET_OPTIONS.slice(4, 8);
 
     useEffect(() => {
         if (gameState !== 'BETTING') {
@@ -143,6 +148,41 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         handleBet(optionId);
     };
 
+    const handleMultiBetClick = (optionIds: string[]) => {
+        if (bettingDisabled) return;
+
+        const startEl = chipSelectorButtonRef.current;
+        const containerEl = containerRef.current;
+
+        if (!startEl || !containerEl) {
+            handleMultiBet(optionIds);
+            return;
+        }
+
+        const containerRect = containerEl.getBoundingClientRect();
+        const startRect = startEl.getBoundingClientRect();
+        
+        const newChips = optionIds.map(optionId => {
+            const endEl = betOptionRefs.current[optionId];
+            if (!endEl) return null;
+            const endRect = endEl.getBoundingClientRect();
+
+            return {
+                id: Date.now() + Math.random(),
+                value: selectedChip,
+                startX: startRect.left + startRect.width / 2 - containerRect.left,
+                startY: startRect.top + startRect.height / 2 - containerRect.top,
+                endX: endRect.left + endRect.width / 2 - containerRect.left,
+                endY: endRect.top + endRect.height / 2 - containerRect.top,
+            };
+        }).filter((chip): chip is Exclude<typeof chip, null> => chip !== null);
+
+        if (newChips.length > 0) {
+          setFlyingChips((current) => [...current, ...newChips]);
+        }
+        handleMultiBet(optionIds);
+    };
+
     const otherChips = chipValues.filter(c => c !== selectedChip);
     const arcDegrees = 270;
     const startAngle = -180;
@@ -156,6 +196,53 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         return value;
     }
 
+    const renderBettingButton = (option: typeof BET_OPTIONS[number]) => {
+        const customTexture = assetUrls[`chip-${option.id}`];
+        const style: React.CSSProperties = {};
+
+        if (customTexture) {
+            style.backgroundImage = `url(${customTexture})`;
+            style.backgroundSize = 'cover';
+            style.backgroundPosition = 'center';
+        } else {
+            style.backgroundColor = option.color;
+        }
+        return (
+            <Button
+                key={option.id}
+                ref={(el) => betOptionRefs.current[option.id] = el}
+                variant="secondary"
+                style={style}
+                className={cn(
+                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1",
+                    "border-b-4 border-black/30 hover:border-b-2 active:border-b-0 active:scale-95",
+                    "transition-transform duration-200 disabled:opacity-100"
+                )}
+                onClick={() => handleBetClick(option.id)}
+                disabled={bettingDisabled}
+            >
+                <div className="flex flex-col items-center justify-center gap-1">
+                    <span className={cn(
+                        "font-bold drop-shadow-md",
+                        option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
+                        customTexture && hideText ? 'text-transparent' : option.textColor,
+                        (customTexture && hideText) && 'text-transparent'
+                    )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
+                        {option.label}
+                    </span>
+                    {bets[option.id] > 0 &&
+                        <div className={cn(
+                            "flex items-center justify-center px-2 py-0.5 min-w-[32px] h-6 rounded-full bg-background/70 backdrop-blur-sm border border-accent text-accent font-bold text-xs shadow-md",
+                            (customTexture && hideText) && 'invisible'
+                        )}>
+                            ${bets[option.id].toLocaleString()}
+                        </div>
+                    }
+                </div>
+            </Button>
+        )
+    };
+
     return (
         <>
             {isChipSelectorOpen && (
@@ -164,53 +251,49 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
             <Card className="w-full p-4 bg-transparent border-none shadow-none">
                 <div ref={containerRef} className="relative">
                     <CardContent className="p-0 flex flex-col gap-4">
-                        <div className="grid grid-cols-2 grid-rows-4 gap-2">
-                            {BET_OPTIONS.map(option => {
-                                const customTexture = assetUrls[`chip-${option.id}`];
-                                const style: React.CSSProperties = {};
-
-                                if (customTexture) {
-                                    style.backgroundImage = `url(${customTexture})`;
-                                    style.backgroundSize = 'cover';
-                                    style.backgroundPosition = 'center';
-                                } else {
-                                    style.backgroundColor = option.color;
-                                }
-                                return (
+                        <div className="flex flex-col gap-2">
+                             <div className="relative">
+                                <div className="grid grid-cols-2 grid-rows-2 gap-2">
+                                    {numberOptions.map(renderBettingButton)}
+                                </div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
                                     <Button
-                                        key={option.id}
-                                        ref={(el) => betOptionRefs.current[option.id] = el}
-                                        variant="secondary"
-                                        style={style}
-                                        className={cn(
-                                            "aspect-[2/1] h-auto w-full flex-col p-2 gap-1",
-                                            "border-b-4 border-black/30 hover:border-b-2 active:border-b-0 active:scale-95",
-                                            "transition-transform duration-200 disabled:opacity-100"
-                                        )}
-                                        onClick={() => handleBetClick(option.id)}
+                                        size="icon"
+                                        variant="outline"
+                                        className="rounded-full w-10 h-10 bg-background/70 backdrop-blur-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                                        onClick={() => handleMultiBetClick(numberOptions.map(o => o.id))}
                                         disabled={bettingDisabled}
                                     >
-                                        <div className="flex flex-col items-center justify-center gap-1">
-                                            <span className={cn(
-                                                "font-bold drop-shadow-md",
-                                                option.type === 'number' ? 'text-2xl' : 'text-sm tracking-wide uppercase leading-tight text-center',
-                                                customTexture && hideText ? 'text-transparent' : option.textColor,
-                                                (customTexture && hideText) && 'text-transparent'
-                                            )} style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.4)', fontFamily: "'Playfair Display', serif" }}>
-                                                {option.label}
-                                            </span>
-                                            {bets[option.id] > 0 &&
-                                                <div className={cn(
-                                                    "flex items-center justify-center px-2 py-0.5 min-w-[32px] h-6 rounded-full bg-background/70 backdrop-blur-sm border border-accent text-accent font-bold text-xs shadow-md",
-                                                    (customTexture && hideText) && 'invisible'
-                                                )}>
-                                                    ${bets[option.id].toLocaleString()}
-                                                </div>
-                                            }
-                                        </div>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
+                                            <circle cx="17" cy="7" r="2.5" fill="currentColor"/>
+                                            <circle cx="7" cy="17" r="2.5" fill="currentColor"/>
+                                            <circle cx="17" cy="17" r="2.5" fill="currentColor"/>
+                                        </svg>
                                     </Button>
-                                )
-                            })}
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <div className="grid grid-cols-2 grid-rows-2 gap-2">
+                                    {bonusOptions.map(renderBettingButton)}
+                                </div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        className="rounded-full w-10 h-10 bg-background/70 backdrop-blur-sm border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                                        onClick={() => handleMultiBetClick(bonusOptions.map(o => o.id))}
+                                        disabled={bettingDisabled}
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="7" cy="7" r="2.5" fill="currentColor"/>
+                                            <circle cx="17" cy="7" r="2.5" fill="currentColor"/>
+                                            <circle cx="7" cy="17" r="2.5" fill="currentColor"/>
+                                            <circle cx="17" cy="17" r="2.5" fill="currentColor"/>
+                                        </svg>
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between gap-2 mt-2">
