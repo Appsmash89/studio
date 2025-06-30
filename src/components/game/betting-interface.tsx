@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -149,8 +148,8 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     };
 
     const otherChips = chipValues.filter(c => c !== selectedChip);
-    const arcDegrees = 150; 
-    const startAngle = -120;
+    const arcDegrees = 180; 
+    const startAngle = -135;
     const angleIncrement = arcDegrees / (otherChips.length > 1 ? otherChips.length - 1 : 1);
 
 
@@ -186,7 +185,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                         )}
                                         style={{
                                             transform: isChipSelectorOpen
-                                                ? `rotate(${angle}deg) translate(80px) rotate(${-angle}deg)`
+                                                ? `rotate(${angle}deg) translate(110px) rotate(${-angle}deg)`
                                                 : 'rotate(0deg) translate(0px)',
                                             transitionDuration: isChipSelectorOpen ? '100ms' : '100ms',
                                             transitionDelay: isChipSelectorOpen ? `${index * 5}ms` : '0ms',
