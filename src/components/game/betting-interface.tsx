@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn, adjustHsl } from '@/lib/utils';
 import { RotateCcw, XCircle } from 'lucide-react';
-import { BET_OPTIONS, CHIP_VALUES } from '@/config/game-config';
+import { BET_OPTIONS } from '@/config/game-config';
 
 interface BettingInterfaceProps {
     bets: { [key: string]: number };
@@ -36,7 +36,6 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     hideText,
 }) => {
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
-    const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
         const customTexture = assetUrls[`chip-${option.id}`];
@@ -83,22 +82,6 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         )
     };
     
-    const handleMainChipClick = () => {
-        if (bettingDisabled) return;
-        setIsChipSelectorOpen(prev => !prev);
-    };
-    
-    const handleSelectNewChip = (chipValue: number) => {
-        if (bettingDisabled) return;
-        setSelectedChip(chipValue);
-        setIsChipSelectorOpen(false);
-    };
-
-    const radius = 70; // pixels for the spread
-    const startAngle = -90; // Starting angle in degrees (upwards)
-    const otherChips = CHIP_VALUES.filter(c => c !== selectedChip);
-    const angleIncrement = otherChips.length > 1 ? 180 / (otherChips.length - 1) : 0;
-
     const chipColors: { [key: number]: string } = {
         1: 'hsl(0, 0%, 80%)',
         5: 'hsl(0, 70%, 50%)',
@@ -123,43 +106,22 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between gap-2 mt-2">
-                    {/* Sundial Chip Selector on the left */}
+                    {/* Simplified Chip Display */}
                     <div className="relative w-24 h-24 flex items-center justify-center">
-                        {CHIP_VALUES.map((chip) => {
-                            const isMainChip = chip === selectedChip;
-                            
-                            const displayIndex = otherChips.findIndex(c => c === chip);
-                            const angle = startAngle + (displayIndex * angleIncrement);
-                            
-                            const x = radius * Math.cos(angle * (Math.PI / 180));
-                            const y = radius * Math.sin(angle * (Math.PI / 180));
-
-                            return (
-                                <Button
-                                    key={chip}
-                                    size="icon"
-                                    style={{ 
-                                        backgroundColor: chipColors[chip],
-                                        color: chipTextColors[chip],
-                                     }}
-                                    className={cn(
-                                        'absolute rounded-full w-14 h-14 text-lg font-bold shadow-lg transition-all duration-300 ease-in-out',
-                                        'border-b-4 border-black/30 hover:border-b-2 active:border-b-0',
-                                        isMainChip ? 'z-20' : 'z-10',
-                                        !isMainChip && {
-                                            'transform': isChipSelectorOpen ? `translate(${x}px, ${y}px) scale(1)` : 'translate(0, 0) scale(0.5)',
-                                            'opacity': isChipSelectorOpen ? 1 : 0,
-                                            'pointer-events': isChipSelectorOpen ? 'auto' : 'none',
-                                            'transition-delay': isChipSelectorOpen ? `${displayIndex * 40}ms` : `${(otherChips.length - displayIndex) * 40}ms`
-                                        }
-                                    )}
-                                    onClick={() => isMainChip ? handleMainChipClick() : handleSelectNewChip(chip)}
-                                    disabled={bettingDisabled}
-                                >
-                                    ${chip}
-                                </Button>
-                            );
-                        })}
+                        <Button
+                            size="icon"
+                            style={{ 
+                                backgroundColor: chipColors[selectedChip],
+                                color: chipTextColors[selectedChip],
+                            }}
+                            className={cn(
+                                'rounded-full w-14 h-14 text-lg font-bold shadow-lg',
+                                'border-b-4 border-black/30 hover:border-b-2 active:border-b-0'
+                            )}
+                            disabled={bettingDisabled}
+                        >
+                            ${selectedChip}
+                        </Button>
                     </div>
                     
                     {/* Controls on the right */}
