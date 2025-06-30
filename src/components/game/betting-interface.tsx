@@ -96,7 +96,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 
     const radius = 70; // pixels for the spread
     const startAngle = -90; // Starting angle in degrees (upwards)
-    const angleIncrement = 180 / (CHIP_VALUES.length - 1); // Spread over a 180 degree arc
+    const angleIncrement = 180 / (CHIP_VALUES.filter(c => c !== selectedChip).length - 1); // Spread over a 180 degree arc
 
     const chipColors: { [key: number]: string } = {
         1: 'hsl(0, 0%, 80%)',
