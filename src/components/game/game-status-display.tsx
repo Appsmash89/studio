@@ -33,7 +33,7 @@ export const GameStatusDisplay: React.FC<GameStatusDisplayProps> = ({
     }
 
     return (
-        <div className="h-32 flex flex-col items-center justify-center text-center gap-2">
+        <div className="h-24 flex flex-col items-center justify-center text-center gap-2">
             <div className="flex-grow flex items-center justify-center">
                 {getDisplayMessage()}
             </div>
