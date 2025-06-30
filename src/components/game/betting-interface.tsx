@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,25 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
 }) => {
     const [isChipSelectorOpen, setIsChipSelectorOpen] = useState(false);
     const bettingDisabled = gameState !== 'BETTING' || isPaused;
+    const chipSelectorRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (chipSelectorRef.current && !chipSelectorRef.current.contains(event.target as Node)) {
+                setIsChipSelectorOpen(false);
+            }
+        }
+
+        if (isChipSelectorOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isChipSelectorOpen]);
 
     const renderBetButton = (option: typeof BET_OPTIONS[0]) => {
         const customTexture = assetUrls[`chip-${option.id}`];
@@ -109,7 +128,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between gap-2 mt-2">
-                    <div className="relative w-24 h-24 flex items-center justify-center">
+                    <div ref={chipSelectorRef} className="relative w-24 h-24 flex items-center justify-center">
                         {/* Container for the arc chips */}
                         {otherChips.map((chip, index) => {
                             const angle = startAngle + index * angleIncrement;
@@ -124,7 +143,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                         transform: isChipSelectorOpen
                                             ? `rotate(${angle}deg) translate(80px) rotate(${-angle}deg)`
                                             : 'rotate(0deg) translate(0px)',
-                                        transitionDelay: isChipSelectorOpen ? `${index * 15}ms` : '0ms',
+                                        transitionDelay: isChipSelectorOpen ? `${index * 5}ms` : '0ms',
                                     }}
                                 >
                                     <Button
