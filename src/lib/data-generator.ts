@@ -2,12 +2,12 @@
 import {
   BET_OPTION_INDEX_MAP,
   BET_OPTIONS,
-  CHIP_VALUES,
   initialBetsState,
   NUM_SEGMENTS,
   SEGMENTS_CONFIG,
   TOP_SLOT_LEFT_REEL_ITEMS,
   TOP_SLOT_RIGHT_REEL_ITEMS,
+  getChipValues,
 } from '@/config/game-config';
 import type { GameLogEntry } from '@/types/game';
 
@@ -21,12 +21,13 @@ const simulateRandomBets = () => {
     let totalBet = 0;
     const numBets = Math.floor(Math.random() * 4) + 1; // 1 to 4 bets
     const betOptionsCopy = [...BET_OPTIONS];
+    const chipValues = getChipValues(1000); // Assume a mid-range balance for generation
 
     for (let i = 0; i < numBets; i++) {
         if (betOptionsCopy.length === 0) break;
         const randIndex = Math.floor(Math.random() * betOptionsCopy.length);
         const betOption = betOptionsCopy.splice(randIndex, 1)[0];
-        const chipValue = CHIP_VALUES[Math.floor(Math.random() * CHIP_VALUES.length)];
+        const chipValue = chipValues[Math.floor(Math.random() * chipValues.length)];
         bets[betOption.id] += chipValue;
         totalBet += chipValue;
     }
