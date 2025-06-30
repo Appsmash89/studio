@@ -4,16 +4,76 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/auth-context';
 import Login from '@/components/login';
-import { AlertTriangle, DownloadCloud } from 'lucide-react';
+import { AlertTriangle, DownloadCloud, UploadCloud } from 'lucide-react';
 import { assetManager } from '@/lib/asset-manager';
 import { Progress } from '@/components/ui/progress';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from "@/hooks/use-toast"
+
 
 const Game = dynamic(() => import('@/app/game') as Promise<React.ComponentType<{ assetUrls: Record<string, string> }>>, {
   ssr: false,
   loading: () => <LoadingScreen message="Loading Game..." />,
 });
+
+function StorageDemo() {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast({ variant: "destructive", title: "No file selected." });
+      return;
+    }
+    if (!storage) {
+       toast({ variant: "destructive", title: "Storage not initialized." });
+      return;
+    }
+
+    setUploading(true);
+    const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+
+    try {
+      toast({ title: "Uploading...", description: "Your file is being uploaded to Firebase Storage." });
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      console.log('File available at', downloadURL);
+      toast({ title: "Upload Successful!", description: `File uploaded. URL logged to console.` });
+
+    } catch (error: any) {
+      console.error("Upload failed", error);
+       toast({ variant: "destructive", title: "Upload Failed", description: `Could not upload the file. Check console for details. Common issues include Firebase Storage rules not allowing writes.` });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-card/50 rounded-lg border border-dashed my-6 max-w-lg mx-auto text-center">
+      <h2 className="text-xl font-headline text-accent mb-4">Firebase Storage Demo</h2>
+      <p className="text-muted-foreground mb-4 text-sm">Select a file and click upload. The public URL will be logged to the console.</p>
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <Input 
+          type="file" 
+          onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} 
+          className="flex-grow"
+          disabled={uploading}
+        />
+        <Button onClick={handleUpload} disabled={!file || uploading}>
+          <UploadCloud className="mr-2 h-4 w-4" />
+          {uploading ? 'Uploading...' : 'Upload File'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 
 function LoadingScreen({ message, progress, isFirstLoad }: { message: string, progress?: number, isFirstLoad?: boolean }) {
   return (
@@ -136,5 +196,10 @@ export default function Home() {
     return <Login />;
   }
 
-  return <Game assetUrls={assetUrls} />;
+  return (
+    <>
+      <StorageDemo />
+      <Game assetUrls={assetUrls} />
+    </>
+  );
 }
