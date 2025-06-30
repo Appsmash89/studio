@@ -70,6 +70,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const spinIdCounter = useRef(0);
   
   const [spinDuration, setSpinDuration] = useState(SPIN_DURATION_SECONDS);
+  const [isFastForwarding, setIsFastForwarding] = useState(false);
 
   const gameTimeouts = useRef<{
     spin: NodeJS.Timeout | null,
@@ -127,6 +128,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setActiveMultiplier(null);
     spinOutcomeRef.current = { winningSegment: null, topSlotResult: null, multiplierApplied: null };
     setSpinDuration(SPIN_DURATION_SECONDS);
+    setIsFastForwarding(false);
   }, [clearGameTimeouts]);
 
   useEffect(() => {
@@ -400,15 +402,25 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     if (gameState === 'SPINNING') {
       clearGameTimeouts();
       setSpinDuration(0);
-      processSpinResult();
+      setIsFastForwarding(true);
     } else if (gameState === 'PRE_BONUS') {
       clearGameTimeouts();
-      processSpinResult();
+      if (winningSegment) {
+        setGameState(`BONUS_${winningSegment.label}` as any);
+      } else {
+        startNewRound();
+      }
     } else {
       startNewRound();
     }
-  }, [gameState, clearGameTimeouts, processSpinResult, startNewRound]);
+  }, [gameState, clearGameTimeouts, winningSegment, startNewRound]);
 
+  useEffect(() => {
+    if (isFastForwarding) {
+      processSpinResult();
+      setIsFastForwarding(false);
+    }
+  }, [isFastForwarding, processSpinResult]);
 
   // Game Loop Timer
   useEffect(() => {
