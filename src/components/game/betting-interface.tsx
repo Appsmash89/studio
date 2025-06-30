@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -128,7 +129,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 className={cn(
                     "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative active:scale-95 transition-all duration-200",
                     "border-b-4 border-black/30 hover:border-b-2 active:border-b-0",
-                    isMultiplierActive ? "animate-multiplier-glow" : "shadow-lg hover:shadow-xl"
+                    isMultiplierActive ? "animate-multiplier-glow" : "shadow-lg"
                 )}
                 onClick={() => handleBet(option.id)}
                 disabled={bettingDisabled}
