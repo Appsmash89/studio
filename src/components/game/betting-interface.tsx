@@ -124,7 +124,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     const handleBetClick = (optionId: string) => {
         if (bettingDisabled) return;
 
-        if (balance < selectedChip) {
+        if (balance < selectedChip || selectedChip === 0) {
             handleBet(optionId);
             return;
         }
@@ -159,7 +159,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
         if (bettingDisabled) return;
 
         const totalBetAmount = selectedChip * optionIds.length;
-        if (balance < totalBetAmount) {
+        if (balance < totalBetAmount || selectedChip === 0) {
             handleMultiBet(optionIds);
             return;
         }
