@@ -68,6 +68,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const [roundWinnings, setRoundWinnings] = useState(0);
   const [spinHistory, setSpinHistory] = useState<GameSegment[]>([]);
   const spinIdCounter = useRef(0);
+  const spinTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isTopSlotSpinning, setIsTopSlotSpinning] = useState(false);
   const [topSlotResult, setTopSlotResult] = useState<TopSlotResult | null>(null);
@@ -91,6 +92,9 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   }, [balance, selectedChip]);
 
   const startNewRound = useCallback(() => {
+    if (spinTimeoutRef.current) {
+      clearTimeout(spinTimeoutRef.current);
+    }
     setGameState('BETTING');
     setCountdown(BETTING_TIME_SECONDS);
     setBets(initialBetsState);
@@ -280,7 +284,11 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       return rotationBase + fullSpins + (360 - winningSegmentAngle);
     });
     
-    setTimeout(async () => {
+    if (spinTimeoutRef.current) {
+        clearTimeout(spinTimeoutRef.current);
+    }
+
+    spinTimeoutRef.current = setTimeout(async () => {
       const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
       const winningLabel = currentWinningSegment.label;
       const betOnWinner = currentBets[winningLabel] || 0;
@@ -398,6 +406,15 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
 
     return () => clearTimeout(timer);
   }, [gameState, countdown, handleSpin, isPaused, startNewRound, winningSegment]);
+  
+  // Cleanup spin timeout on unmount
+  useEffect(() => {
+    return () => {
+        if (spinTimeoutRef.current) {
+            clearTimeout(spinTimeoutRef.current);
+        }
+    };
+  }, []);
   
   const handleGenerateAndDownload = () => {
       setIsGenerating(true);
