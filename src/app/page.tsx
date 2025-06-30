@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,8 +8,9 @@ import Login from '@/components/login';
 import { AlertTriangle, DownloadCloud } from 'lucide-react';
 import { assetManager } from '@/lib/asset-manager';
 import { Progress } from '@/components/ui/progress';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, limit, FirestoreError } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 const Game = dynamic(() => import('@/app/game') as Promise<React.ComponentType<{ assetUrls: Record<string, string> }>>, {
@@ -59,7 +61,7 @@ function FirebaseErrorScreen({ message }: { message:string }) {
 }
 
 export default function Home() {
-  const { user, loading: authLoading, error: firebaseError, isGuest } = useAuth();
+  const { user, loading: authLoading, error: firebaseError, isGuest, authError: authContextError } = useAuth();
   const [assetsReady, setAssetsReady] = useState(false);
   const [assetUrls, setAssetUrls] = useState<Record<string, string> | null>(null);
   const [assetLoadingMessage, setAssetLoadingMessage] = useState("Initializing...");
@@ -82,9 +84,9 @@ export default function Home() {
         setAssetUrls(allUrls);
         setAssetsReady(true);
         
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        setAssetError("Could not load game assets. Please check your internet connection and try again.");
+        setAssetError(`Could not load game assets: ${err.message}. Please check your internet connection and try again.`);
       }
     };
 
@@ -100,22 +102,31 @@ export default function Home() {
       try {
         console.log("Fetching high scores from Firestore...");
         const highScoresCol = collection(db, 'highscores');
-        const querySnapshot = await getDocs(highScoresCol);
+        // --- OPTIMIZATION: Use query() and limit() to fetch only the top 10 documents ---
+        const q = query(highScoresCol, limit(10));
+        const querySnapshot = await getDocs(q);
+        
         const highScores = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        console.log('Fetched High Scores:', highScores);
+        
+        console.log('Fetched Top 10 High Scores:', highScores);
         if (querySnapshot.empty) {
           console.log('The "highscores" collection is empty or does not exist. This is expected if you have not added any data to it yet.');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching high scores:", error);
+        if (error.code === 'permission-denied' && !authContextError) {
+          // This specific error is handled more gracefully in the AuthContext, 
+          // so we don't need to show a generic error screen for it here.
+          console.warn("Firestore permission denied for 'highscores' collection. This is likely due to security rules.");
+        }
       }
     };
 
     fetchHighScores();
-  }, []);
+  }, [authContextError]);
 
   if (firebaseError) {
     return <FirebaseErrorScreen message={firebaseError} />;
@@ -126,7 +137,15 @@ export default function Home() {
   }
   
   if (assetError) {
-      return <FirebaseErrorScreen message={assetError} />;
+      return (
+         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
+             <Alert variant="destructive" className="max-w-xl">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Asset Loading Error</AlertTitle>
+                <AlertDescription>{assetError}</AlertDescription>
+            </Alert>
+        </div>
+      );
   }
   
   if (!assetsReady || !assetUrls) {
