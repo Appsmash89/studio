@@ -21,7 +21,7 @@ if (
   !firebaseConfig.authDomain ||
   !firebaseConfig.projectId
 ) {
-  firebaseError = 'Firebase configuration is missing. Please ensure you have a `.env` file with your project credentials. If you just created the file, you may need to restart the development server.';
+  firebaseError = 'Firebase configuration is missing. Please ensure you have a `.env.local` file with your project credentials. If you just created the file, you may need to restart the development server.';
 } else {
     try {
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
