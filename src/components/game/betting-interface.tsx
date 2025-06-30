@@ -83,6 +83,12 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     const chipSelectorRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (gameState !== 'BETTING') {
+            setIsChipSelectorOpen(false);
+        }
+    }, [gameState]);
+
+    useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (chipSelectorRef.current && !chipSelectorRef.current.contains(event.target as Node)) {
                 setIsChipSelectorOpen(false);
