@@ -690,6 +690,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                 setForcedTopSlotLeft={setForcedTopSlotLeft}
                 forcedTopSlotRight={forcedTopSlotRight}
                 setForcedTopSlotRight={setForcedTopSlotRight}
+                balance={balance}
+                setBalance={setBalance}
               />
           </footer>
         </div>

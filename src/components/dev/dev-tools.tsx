@@ -43,6 +43,8 @@ interface DevToolsProps {
     setForcedTopSlotLeft: React.Dispatch<React.SetStateAction<string | null>>;
     forcedTopSlotRight: number | null;
     setForcedTopSlotRight: React.Dispatch<React.SetStateAction<number | null>>;
+    balance: number;
+    setBalance: React.Dispatch<React.SetStateAction<number>>;
 }
 
 
@@ -73,13 +75,25 @@ export const DevTools: React.FC<DevToolsProps> = ({
     setForcedTopSlotLeft,
     forcedTopSlotRight,
     setForcedTopSlotRight,
+    balance,
+    setBalance
 }) => {
     const { toast } = useToast();
+    const [addAmount, setAddAmount] = React.useState<number>(1000);
 
     const handleClearAssetCache = async () => {
         toast({ title: 'Clearing Cache...', description: 'Please wait. The page will reload automatically.' });
         await assetManager.clearCache();
         window.location.reload();
+    };
+
+    const handleAddBalance = () => {
+        if (!addAmount || addAmount <= 0) {
+            toast({ variant: 'destructive', title: 'Invalid Amount', description: 'Please enter a positive number.' });
+            return;
+        }
+        setBalance((prev) => prev + addAmount);
+        toast({ title: 'Balance Updated', description: `$${addAmount.toLocaleString()} added to your wallet.` });
     };
 
     return (
@@ -166,7 +180,7 @@ export const DevTools: React.FC<DevToolsProps> = ({
                         className="h-8"
                     />
                 </div>
-                    <div className="flex items-center space-x-2 mb-2">
+                <div className="flex items-center space-x-2 mb-2">
                     <Checkbox 
                         id="skip-bets" 
                         checked={skipBetsInDataGen} 
@@ -180,7 +194,25 @@ export const DevTools: React.FC<DevToolsProps> = ({
                         Skip random bet placement in simulation data
                     </label>
                 </div>
-                <p className="text-xs text-muted-foreground mb-1">
+
+                <div className="mt-2 pt-2 border-t border-dashed border-muted-foreground/20">
+                    <Label htmlFor="add-balance" className="text-xs font-medium text-muted-foreground">Add to Wallet</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                        <Input
+                            id="add-balance"
+                            type="number"
+                            value={addAmount}
+                            onChange={(e) => setAddAmount(Number(e.target.value) || 0)}
+                            className="h-8"
+                            placeholder="Amount to add"
+                        />
+                        <Button size="sm" onClick={handleAddBalance} variant="outline" className="h-8">
+                            Add Funds
+                        </Button>
+                    </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground mb-1 mt-4">
                     Force Next Spin Outcome:
                 </p>
                 <div className="grid grid-cols-4 gap-2">
