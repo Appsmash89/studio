@@ -117,14 +117,14 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                 <div
                                     key={chip}
                                     className={cn(
-                                        "absolute top-1/2 left-1/2 w-14 h-14 -mt-7 -ml-7 transition-all duration-200",
+                                        "absolute top-1/2 left-1/2 w-14 h-14 -mt-7 -ml-7 transition-all duration-100",
                                         isChipSelectorOpen ? 'opacity-100' : 'opacity-0 scale-50 pointer-events-none'
                                     )}
                                     style={{
                                         transform: isChipSelectorOpen
                                             ? `rotate(${angle}deg) translate(80px) rotate(${-angle}deg)`
                                             : 'rotate(0deg) translate(0px)',
-                                        transitionDelay: isChipSelectorOpen ? `${index * 40}ms` : '0ms',
+                                        transitionDelay: isChipSelectorOpen ? `${index * 15}ms` : '0ms',
                                     }}
                                 >
                                     <Button
