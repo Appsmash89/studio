@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -186,7 +185,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                                         )}
                                         style={{
                                             transform: isChipSelectorOpen
-                                                ? `rotate(${angle}deg) translate(95px) rotate(${-angle}deg)`
+                                                ? `rotate(${angle}deg) translate(70px) rotate(${-angle}deg)`
                                                 : 'rotate(0deg) translate(0px)',
                                             transitionDuration: isChipSelectorOpen ? '100ms' : '100ms',
                                             transitionDelay: isChipSelectorOpen ? `${index * 5}ms` : '0ms',
