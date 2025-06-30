@@ -127,7 +127,7 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
                 variant="secondary"
                 style={style}
                 className={cn(
-                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative active:scale-95 transition-all duration-200",
+                    "aspect-[2/1] h-auto w-full flex-col p-2 gap-1 relative active:scale-95 transition-transform duration-200",
                     "border-b-4 border-black/30 hover:border-b-2 active:border-b-0",
                     isMultiplierActive ? "animate-multiplier-glow" : "shadow-lg"
                 )}
