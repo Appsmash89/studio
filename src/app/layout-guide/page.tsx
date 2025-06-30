@@ -49,7 +49,7 @@ export default function LayoutGuide() {
             </div>
 
             <div className="flex flex-col gap-4 border-2 border-dashed border-muted-foreground/20 p-4 rounded-md">
-                 <div className="relative h-32 border-2 border-cyan-500/50 rounded flex items-center justify-center">
+                 <div className="relative h-24 border-2 border-cyan-500/50 rounded flex items-center justify-center">
                      <div className="bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded text-sm font-semibold">
                         GameStatusDisplay (`/src/components/game/game-status-display.tsx`)
                     </div>
