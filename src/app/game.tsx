@@ -369,6 +369,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
         multiplierApplied = { optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right };
         setActiveMultiplier(multiplierApplied);
+    } else {
+        setActiveMultiplier(null);
     }
 
     spinOutcomeRef.current = { winningSegment: currentWinningSegment, topSlotResult: finalTopSlotResult, multiplierApplied };
