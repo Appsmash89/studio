@@ -254,6 +254,13 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     
     const currentWinningSegment = SEGMENTS_CONFIG[winningSegmentIndex];
     
+    // Set active multiplier state right before the spin starts for immediate visual feedback
+    let multiplierApplied = null;
+    if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
+        multiplierApplied = { optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right };
+        setActiveMultiplier(multiplierApplied);
+    }
+    
     // --- Calculate Final Rotation ---
     // This logic ensures the wheel lands on the correct segment after a fixed spin duration.
     const SEGMENT_ANGLE = 360 / NUM_SEGMENTS;
@@ -277,13 +284,6 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       const { bets: currentBets, totalBet: currentTotalBet } = spinDataRef.current;
       const winningLabel = currentWinningSegment.label;
       const betOnWinner = currentBets[winningLabel] || 0;
-
-      // Set active multiplier state right after spin ends for visual feedback
-      let multiplierApplied = null;
-      if (finalTopSlotResult && finalTopSlotResult.left === currentWinningSegment.label && finalTopSlotResult.right) {
-        multiplierApplied = { optionId: currentWinningSegment.label, multiplier: finalTopSlotResult.right };
-        setActiveMultiplier(multiplierApplied);
-      }
 
       const rightIndex = finalTopSlotResult.right !== null
         ? TOP_SLOT_RIGHT_REEL_ITEMS.findIndex(item => item === finalTopSlotResult.right)
