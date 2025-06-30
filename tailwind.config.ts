@@ -116,7 +116,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
-        'fly-to-target': 'fly-to-target 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'fly-to-target': 'fly-to-target 0.3s cubic-bezier(0.175, 0.885, 0.32, 1) forwards',
       },
     },
   },
