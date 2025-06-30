@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -149,8 +148,8 @@ export const BettingInterface: React.FC<BettingInterfaceProps> = ({
     };
 
     const otherChips = chipValues.filter(c => c !== selectedChip);
-    const arcDegrees = 220; 
-    const startAngle = -155;
+    const arcDegrees = 270;
+    const startAngle = -180;
     const angleIncrement = arcDegrees / (otherChips.length > 1 ? otherChips.length - 1 : 1);
 
 
