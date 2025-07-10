@@ -24,6 +24,7 @@ import { assetManager } from '@/lib/asset-manager';
 import { TransitionOverlay } from '@/components/game/transition-overlay';
 
 import { 
+    ADMIN_EMAILS,
     BET_OPTION_INDEX_MAP,
     SEGMENTS_CONFIG,
     NUM_SEGMENTS,
@@ -512,6 +513,10 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       ? multiplierApplied.multiplier 
       : 1;
 
+  const isDeveloper =
+    process.env.NODE_ENV === 'development' ||
+    (user?.email && ADMIN_EMAILS.includes(user.email));
+
   return (
     <div className="relative flex flex-col min-h-screen text-foreground overflow-y-auto">
       <TransitionOverlay />
@@ -662,42 +667,42 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
                 </div>
             </main>
           
-          <footer className="w-full px-4 pt-4">
-              <DevTools
-                showLegend={showLegend}
-                setShowLegend={setShowLegend}
-                setIsTopSlotSpinning={setIsTopSlotSpinning}
-                handleSkipCountdown={handleSkipCountdown}
-                gameState={gameState}
-                isPaused={isPaused}
-                handleCloseRound={handleCloseRound}
-                setIsPaused={setIsPaused}
-                handleDownloadLatestSpinData={handleDownloadLatestSpinData}
-                gameLog={gameLog}
-                handleGenerateAndDownload={handleGenerateAndDownload}
-                isGenerating={isGenerating}
-                handleDownloadLog={handleDownloadLog}
-                hideText={hideText}
-                setHideText={setHideText}
-                textureRotation={textureRotation}
-                setTextureRotation={setTextureRotation}
-                assetUrls={assetUrls}
-                skipBetsInDataGen={skipBetsInDataGen}
-                setSkipBetsInDataGen={setSkipBetsInDataGen}
-                forcedWinner={forcedWinner}
-                setForcedWinner={setForcedWinner}
-                forcedTopSlotLeft={forcedTopSlotLeft}
-                setForcedTopSlotLeft={setForcedTopSlotLeft}
-                forcedTopSlotRight={forcedTopSlotRight}
-                setForcedTopSlotRight={setForcedTopSlotRight}
-                balance={balance}
-                setBalance={setBalance}
-              />
-          </footer>
+          {isDeveloper && (
+            <footer className="w-full px-4 pt-4">
+                <DevTools
+                  showLegend={showLegend}
+                  setShowLegend={setShowLegend}
+                  setIsTopSlotSpinning={setIsTopSlotSpinning}
+                  handleSkipCountdown={handleSkipCountdown}
+                  gameState={gameState}
+                  isPaused={isPaused}
+                  handleCloseRound={handleCloseRound}
+                  setIsPaused={setIsPaused}
+                  handleDownloadLatestSpinData={handleDownloadLatestSpinData}
+                  gameLog={gameLog}
+                  handleGenerateAndDownload={handleGenerateAndDownload}
+                  isGenerating={isGenerating}
+                  handleDownloadLog={handleDownloadLog}
+                  hideText={hideText}
+                  setHideText={setHideText}
+                  textureRotation={textureRotation}
+                  setTextureRotation={setTextureRotation}
+                  assetUrls={assetUrls}
+                  skipBetsInDataGen={skipBetsInDataGen}
+                  setSkipBetsInDataGen={setSkipBetsInDataGen}
+                  forcedWinner={forcedWinner}
+                  setForcedWinner={setForcedWinner}
+                  forcedTopSlotLeft={forcedTopSlotLeft}
+                  setForcedTopSlotLeft={setForcedTopSlotLeft}
+                  forcedTopSlotRight={forcedTopSlotRight}
+                  setForcedTopSlotRight={setForcedTopSlotRight}
+                  balance={balance}
+                  setBalance={setBalance}
+                />
+            </footer>
+          )}
         </div>
       )}
     </div>
   );
 }
-
-    

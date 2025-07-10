@@ -1,4 +1,9 @@
 
+export const ADMIN_EMAILS = [
+  'developer@example.com',
+  // Add more authorized developer emails here
+];
+
 export const BET_OPTIONS = [
   { id: '1', label: '1', type: 'number', color: 'hsl(220, 15%, 85%)', textColor: 'hsl(var(--background))' },
   { id: '2', label: '2', type: 'number', color: 'hsl(210, 80%, 55%)', textColor: 'white' },
