@@ -1,6 +1,6 @@
 
 export const ADMIN_EMAILS = [
-  'developer@example.com',
+  'developer@example.com','appsmash89@gmail.com'
   // Add more authorized developer emails here
 ];
 
