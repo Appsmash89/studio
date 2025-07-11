@@ -49,7 +49,7 @@ export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl
         >
              <div
                 className={cn(
-                    "w-[360px] text-center transform transition-all duration-300",
+                    "w-[280px] text-center transform transition-all duration-300",
                     animationState === 'in' ? 'animate-bounce-in' : 'animate-bounce-out'
                 )}
             >
