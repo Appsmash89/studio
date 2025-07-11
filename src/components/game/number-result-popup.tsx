@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles } from 'lucide-react';
+import { Confetti } from '@/components/ui/confetti';
 
 interface NumberResultPopupProps {
     winningSegment: { label: string; multiplier: number; };
@@ -12,9 +13,10 @@ interface NumberResultPopupProps {
     customTextureUrl?: string;
     totalWinnings: number;
     topSlotMultiplier: number;
+    isWinner: boolean;
 }
 
-export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl, totalWinnings, topSlotMultiplier }: NumberResultPopupProps) {
+export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl, totalWinnings, topSlotMultiplier, isWinner }: NumberResultPopupProps) {
     const [animationState, setAnimationState] = useState<'in' | 'out'>('in');
 
     useEffect(() => {
@@ -47,6 +49,7 @@ export function NumberResultPopup({ winningSegment, onComplete, customTextureUrl
                 animationState === 'in' ? 'opacity-100' : 'opacity-0'
             )}
         >
+             {isWinner && animationState === 'in' && <Confetti />}
              <div
                 className={cn(
                     "w-[100px] text-center transform transition-all duration-300",

@@ -5,14 +5,16 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles } from 'lucide-react';
+import { Confetti } from '@/components/ui/confetti';
 
 interface BonusIntroPopupProps {
     winningSegment: { label: string; };
     topSlotMultiplier: number;
     onComplete: () => void;
+    isWinner: boolean;
 }
 
-export function BonusIntroPopup({ winningSegment, topSlotMultiplier, onComplete }: BonusIntroPopupProps) {
+export function BonusIntroPopup({ winningSegment, topSlotMultiplier, onComplete, isWinner }: BonusIntroPopupProps) {
     const [animationState, setAnimationState] = useState<'in' | 'out'>('in');
 
     useEffect(() => {
@@ -41,6 +43,7 @@ export function BonusIntroPopup({ winningSegment, topSlotMultiplier, onComplete 
                 animationState === 'in' ? 'opacity-100' : 'opacity-0'
             )}
         >
+            {isWinner && animationState === 'in' && <Confetti />}
             <Card 
                 className={cn(
                     "w-[100px] text-center transform transition-all duration-300",

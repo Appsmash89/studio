@@ -516,6 +516,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
   const isDeveloper =
     process.env.NODE_ENV === 'development' ||
     (user?.email && ADMIN_EMAILS.includes(user.email));
+  
+  const didPlayerWin = winningSegment ? bets[winningSegment.label] > 0 : false;
 
   return (
     <div className="relative flex flex-col min-h-screen text-foreground overflow-y-auto">
@@ -589,6 +591,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
           winningSegment={winningSegment}
           topSlotMultiplier={topSlotMultiplier}
           onComplete={handlePreBonusComplete}
+          isWinner={didPlayerWin}
         />
       )}
       
@@ -599,6 +602,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
             customTextureUrl={assetUrls[`result-popup-${winningSegment.label}`]}
             totalWinnings={roundWinnings}
             topSlotMultiplier={topSlotMultiplier}
+            isWinner={didPlayerWin}
         />
       )}
 
