@@ -155,3 +155,12 @@ The project is configured to be built as a native Android app.
 
 ## 10. Developer Notes & Don'ts
 
+### Don'ts (Lessons Learned from Past Mistakes)
+
+This section documents incorrect patterns that were previously attempted and should be avoided in future modifications to ensure a smooth and efficient development process.
+
+1.  **Do Not Be Inconsistent with `asset-manifest.json`**: This file is the single source of truth for external assets.
+    -   **File Formats**: Do not arbitrarily change asset file extensions unless specifically instructed. Maintain consistency across all asset paths.
+    -   **`baseUrl`**: The `baseUrl` dictates the location of all assets. Do not change it without understanding the consequences. An empty `baseUrl` is for local development assets in `public/`, whereas a CDN URL is for production assets.
+
+2.  **Avoid Unnecessary Back-and-Forth Changes**: Modifying a file, having the user correct it, and then changing it back is inefficient and frustrating. Ensure that any proposed change is well-understood, correct, and directly contributes to the user's request before generating the code.
