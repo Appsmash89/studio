@@ -123,7 +123,11 @@ export default {
         'confetti-blast': {
           '0%': {
             opacity: '1',
-            transform: 'translate(var(--x-start), var(--y-start)) rotate(var(--rotation-start)) scale(1)',
+            transform: 'translate(var(--x-start), var(--y-start)) rotate(var(--rotation-start)) scale(1.2)',
+          },
+          '20%': {
+            opacity: '1',
+            transform: 'translate(var(--x-blast), var(--y-blast)) rotate(calc(var(--rotation-start) + 180deg)) scale(1)',
           },
           '100%': {
             opacity: '0',
@@ -139,7 +143,7 @@ export default {
         'fly-to-target': 'fly-to-target 0.3s cubic-bezier(0.175, 0.885, 0.32, 1) forwards',
         'bounce-in': 'bounce-in 0.3s ease-out forwards',
         'bounce-out': 'bounce-out 0.3s ease-in forwards',
-        'confetti-blast': 'confetti-blast 1.5s ease-out forwards',
+        'confetti-blast': 'confetti-blast cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
       },
     },
   },
