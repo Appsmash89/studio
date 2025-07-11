@@ -172,3 +172,13 @@ To ensure a smooth and efficient development process with the AI assistant, plea
     -   When asking to add assets, provide a clear key and path. For example: "Add an asset with key `new-bonus-background` and path `web-assets/new-bonus-bg.webp` to the asset manifest."
     -   Always expect the `"version"` number to be incremented when this file is changed.
 5.  **Documentation is Key**: The AI is instructed to update this documentation (`src/PROJECT_DOCUMENTATION.md`) after every new feature is added. If you notice it has forgotten, please remind it immediately. A well-documented project is easier for both humans and AI to work with.
+
+### Don'ts (Lessons Learned from Past Mistakes)
+
+This section documents incorrect patterns that were previously attempted and should be avoided in future modifications to ensure a smooth and efficient development process.
+
+1.  **Do Not Be Inconsistent with `asset-manifest.json`**: This file is the single source of truth for external assets.
+    -   **File Formats**: Do not arbitrarily change asset file extensions unless specifically instructed. Maintain consistency across all asset paths.
+    -   **`baseUrl`**: The `baseUrl` dictates the location of all assets. Do not change it without understanding the consequences. An empty `baseUrl` is for local development assets in `public/`, whereas a CDN URL is for production assets.
+
+2.  **Avoid Unnecessary Back-and-Forth Changes**: Modifying a file, having the user correct it, and then changing it back is inefficient and frustrating. Ensure that any proposed change is well-understood, correct, and directly contributes to the user's request before generating the code.
