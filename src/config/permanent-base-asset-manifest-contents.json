@@ -1,0 +1,50 @@
+{
+    "version": "1.0.5",
+    "baseUrl": "https://cdn.jsdelivr.net/gh/Appsmash89/spinriches-assets@main/",
+    "assets": [
+        { "key": "background", "path": "web-assets/background.webp" },
+        { "key": "wheel-full", "path": "web-assets/wheel-full.webp" },
+
+        { "key": "history-1", "path": "web-assets/history-1.webp" },
+        { "key": "history-2", "path": "web-assets/history-2.webp" },
+        { "key": "history-5", "path": "web-assets/history-5.webp" },
+        { "key": "history-10", "path": "web-assets/history-10.webp" },
+        { "key": "history-COIN_FLIP", "path": "web-assets/history-coin-flip.webp" },
+        { "key": "history-PACHINKO", "path": "web-assets/history-pachinko.webp" },
+        { "key": "history-CASH_HUNT", "path": "web-assets/history-cash-hunt.webp" },
+        { "key": "history-CRAZY_TIME", "path": "web-assets/history-crazy-time.webp" },
+
+        { "key": "result-popup-1", "path": "web-assets/result-popup-1.webp" },
+        { "key": "result-popup-2", "path": "web-assets/result-popup-2.webp" },
+        { "key": "result-popup-5", "path": "web-assets/result-popup-5.webp" },
+        { "key": "result-popup-10", "path": "web-assets/result-popup-10.webp" },
+        
+        { "key": "topslot-background", "path": "web-assets/topslot-background.webp" },
+        { "key": "topslot-left-1", "path": "web-assets/topslot-left-1.webp" },
+        { "key": "topslot-left-2", "path": "web-assets/topslot-left-2.webp" },
+        { "key": "topslot-left-5", "path": "web-assets/topslot-left-5.webp" },
+        { "key": "topslot-left-10", "path": "web-assets/topslot-left-10.webp" },
+        { "key": "topslot-left-COIN_FLIP", "path": "web-assets/topslot-left-coin-flip.webp" },
+        { "key": "topslot-left-PACHINKO", "path": "web-assets/topslot-left-pachinko.webp" },
+        { "key": "topslot-left-CASH_HUNT", "path": "web-assets/topslot-left-cash-hunt.webp" },
+        { "key": "topslot-left-CRAZY_TIME", "path": "web-assets/topslot-left-crazy-time.webp" },
+        { "key": "topslot-right-2x", "path": "web-assets/topslot-right-2x.webp" },
+        { "key": "topslot-right-3x", "path": "web-assets/topslot-right-3x.webp" },
+        { "key": "topslot-right-5x", "path": "web-assets/topslot-right-5x.webp" },
+        { "key": "topslot-right-7x", "path": "web-assets/topslot-right-7x.webp" },
+        { "key": "topslot-right-10x", "path": "web-assets/topslot-right-10x.webp" },
+        { "key": "topslot-right-15x", "path": "web-assets/topslot-right-15x.webp" },
+        { "key": "topslot-right-20x", "path": "web-assets/topslot-right-20x.webp" },
+        { "key": "topslot-right-50x", "path": "web-assets/topslot-right-50x.webp" },
+
+        { "key": "chip-1", "path": "web-assets/bet-option-1.webp" },
+        { "key": "chip-2", "path": "web-assets/bet-option-2.webp" },
+        { "key": "chip-5", "path": "web-assets/bet-option-5.webp" },
+        { "key": "chip-10", "path": "web-assets/bet-option-10.webp" },
+        { "key": "chip-COIN_FLIP", "path": "web-assets/bet-option-coin-flip.webp" },
+        { "key": "chip-PACHINKO", "path": "web-assets/bet-option-pachinko.webp" },
+        { "key": "chip-CASH_HUNT", "path": "web-assets/bet-option-cash-hunt.webp" },
+        { "key": "chip-CRAZY_TIME", "path": "web-assets/bet-option-crazy-time.webp" },
+        { "key": "multi-bet-button", "path": "web-assets/multi-bet-button.webp" }
+    ]
+}
