@@ -110,6 +110,16 @@ export default {
             opacity: '0',
           },
         },
+        'bounce-in': {
+          '0%': { transform: 'scale(0.9)', opacity: '0' },
+          '50%': { transform: 'scale(1.05)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'bounce-out': {
+          '0%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.05)', opacity: '1' },
+          '100%': { transform: 'scale(0.9)', opacity: '0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -117,6 +127,8 @@ export default {
         'flip': 'flip 3s ease-out forwards',
         'bulb-blink': 'bulb-blink 1.5s infinite',
         'fly-to-target': 'fly-to-target 0.3s cubic-bezier(0.175, 0.885, 0.32, 1) forwards',
+        'bounce-in': 'bounce-in 0.3s ease-out forwards',
+        'bounce-out': 'bounce-out 0.3s ease-in forwards',
       },
     },
   },

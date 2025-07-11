@@ -11,6 +11,7 @@ import { PachinkoBonus } from '@/components/bonus/pachinko-bonus';
 import { CashHuntBonus } from '@/components/bonus/cash-hunt-bonus';
 import { CrazyTimeBonus } from '@/components/bonus/crazy-time-bonus';
 import { NumberResultPopup } from '@/components/game/number-result-popup';
+import { BonusIntroPopup } from '@/components/game/bonus-intro-popup';
 
 import { GameHeader } from '@/components/game/game-header';
 import { GameHistory } from '@/components/game/game-history';
@@ -269,6 +270,15 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     setGameState('RESULT');
   }, []);
 
+  const handlePreBonusComplete = useCallback(() => {
+    if (winningSegment) {
+        setGameState(`BONUS_${winningSegment.label}` as any);
+    } else {
+        // Fallback in case something goes wrong
+        startNewRound();
+    }
+  }, [winningSegment, startNewRound]);
+
   const processSpinResult = useCallback(() => {
       const outcome = spinOutcomeRef.current;
       if (!outcome || !outcome.winningSegment || !outcome.topSlotResult) return;
@@ -311,11 +321,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
           setGameLog(prev => [newLogEntry, ...prev]);
 
           if (isBonusWin) {
-              if (multiplierApplied) {
-                  setGameState('PRE_BONUS');
-              } else {
-                  setGameState(`BONUS_${winningLabel}` as any);
-              }
+              setGameState('PRE_BONUS');
           } else {
               setGameState('RESULT');
           }
@@ -358,7 +364,7 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       setGameLog(prev => [newLogEntry, ...prev]);
 
       setGameState('NUMBER_RESULT');
-  }, [balance, setBalance]);
+  }, [balance, setBalance, startNewRound]);
 
   const handleSpin = useCallback(async () => {
     setGameState('SPINNING');
@@ -458,14 +464,8 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
     } else if (gameState === 'BETTING' && countdown <= 0) {
         handleSpin();
     } else if (gameState === 'PRE_BONUS') {
-      timer = setTimeout(() => {
-        if (winningSegment) {
-          setGameState(`BONUS_${winningSegment.label}` as any);
-        } else {
-          startNewRound();
-        }
-      }, 3000);
-      gameTimeouts.current.preBonus = timer;
+      // The PRE_BONUS state is now managed by the BonusIntroPopup's onComplete callback.
+      // No automatic timer is needed here anymore.
     } else if (gameState === 'RESULT') {
       timer = setTimeout(() => startNewRound(), RESULT_DISPLAY_SECONDS * 1000);
       gameTimeouts.current.result = timer;
@@ -583,12 +583,22 @@ export default function Game({ assetUrls }: { assetUrls: Record<string, string> 
       {gameState === 'BONUS_PACHINKO' && <PachinkoBonus betAmount={bets['PACHINKO']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
       {gameState === 'BONUS_CASH_HUNT' && <CashHuntBonus betAmount={bets['CASH_HUNT']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
       {gameState === 'BONUS_CRAZY_TIME' && <CrazyTimeBonus betAmount={bets['CRAZY_TIME']} onComplete={handleBonusComplete} topSlotMultiplier={topSlotMultiplier} />}
+      
+      {gameState === 'PRE_BONUS' && winningSegment && (
+        <BonusIntroPopup
+          winningSegment={winningSegment}
+          topSlotMultiplier={topSlotMultiplier}
+          onComplete={handlePreBonusComplete}
+        />
+      )}
+      
       {gameState === 'NUMBER_RESULT' && winningSegment && (
         <NumberResultPopup
             winningSegment={winningSegment}
             onComplete={handleNumberResultComplete}
             customTextureUrl={assetUrls[`result-popup-${winningSegment.label}`]}
             totalWinnings={roundWinnings}
+            topSlotMultiplier={topSlotMultiplier}
         />
       )}
 
