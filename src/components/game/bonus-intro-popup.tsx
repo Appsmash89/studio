@@ -43,7 +43,7 @@ export function BonusIntroPopup({ winningSegment, topSlotMultiplier, onComplete 
         >
             <Card 
                 className={cn(
-                    "w-[280px] text-center transform transition-all duration-300",
+                    "w-[100px] text-center transform transition-all duration-300",
                     animationState === 'in' ? 'animate-bounce-in' : 'animate-bounce-out'
                 )}
             >
